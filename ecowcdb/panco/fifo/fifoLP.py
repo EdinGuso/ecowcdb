@@ -25,7 +25,7 @@ from ecowcdb.panco.fifo.tfaLP import TfaLP
 from ecowcdb.panco.fifo.sfaLP import SfaLP
 from ecowcdb.panco.lpSolvePath import LPSOLVEPATH
 
-from ecowcdb.util.errors import LPErrorType, LPError
+from ecowcdb.util.errors import check_LP_error
 
 
 def edges_forest(network: Network):
@@ -134,15 +134,9 @@ class FifoLP:
         
         s = sp.run(LPSOLVEPATH + ["-timeout", f"{self.timeout}", "-S2", self.filepath], stdout=sp.PIPE, encoding='utf-8').stdout
         
-        s_split = s.split('\n')
-        if s_split[-2] == 'Timeout':
-            raise LPError(LPErrorType.TimeoutError)
-        if s_split[-2] == 'Accuracy error':
-            raise LPError(LPErrorType.AccuracyError)
-        if s_split[0] == 'Suboptimal solution':
-            raise LPError(LPErrorType.SuboptimalSolutionWarning)
+        check_LP_error(s)
         
-        tab_values = s_split[4:-1]
+        tab_values = s.split('\n')[4:-1]
         values = [[token for token in line.split(' ') if not token == ""] for line in tab_values]
         tab_bursts = np.zeros(self.forest.num_flows)
 

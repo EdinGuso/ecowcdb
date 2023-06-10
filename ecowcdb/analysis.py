@@ -1,7 +1,8 @@
 # Standard Library Imports
 from pickle import dump, load
+from math import ceil
 from time import time
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 # Third-Party Library Imports
 from tabulate import tabulate
@@ -15,7 +16,7 @@ from ecowcdb.panco.descriptor.network import Network
 from ecowcdb.panco.fifo.fifoLP import FifoLP
 
 # Local Imports - utility libraries
-from ecowcdb.util.errors import LPError
+from ecowcdb.util.errors import LPError, LPErrorType
 from ecowcdb.util.network import all_forests, scale_network
 from ecowcdb.util.units import convert_result_units, generate_header
 from ecowcdb.util.validation import Validation
@@ -28,68 +29,103 @@ class Analysis:
                  delay_unit: DisplayUnit = DisplayUnit.Second, runtime_unit: DisplayUnit = DisplayUnit.Second,
                  temp_folder: str = '', results_folder: str = '', verbose: List[VerboseKW] = []
                  ) -> None:
-        self._validaton = Validation.Analysis()
-        self._validaton.constructor_arguments(net, generate_forests,min_edges, timeout, delay_unit, runtime_unit, temp_folder, results_folder, verbose)
-        self._net = net
-        self._forests = all_forests(net, min_edges) if generate_forests else []
-        self._timeout = timeout
-        self._total_runtime = 0
-        self._num_iters = 0
-        self._generate_forests = generate_forests
-        self._delay_unit = delay_unit
-        self._runtime_unit = runtime_unit
-        self._temp_folder = temp_folder
-        self._results_folder = results_folder
-        self._verbose = verbose
-        self._results = {}
-        self._HEADER = generate_header(delay_unit, runtime_unit)
-        self._SCALE_FACTORS = [1, 10**-1, 10**-2, 10**-3, 10**-4, 10**-5, 10**-6, 10**1, 10**2, 10**3, 10**4, 10**5, 10**6] # open to discussion
-        self._RESULTS_FILE_FORMAT = '.txt'
-        self._RAW_FILE_FORMAT = '.pickle'
+        self.__validation = Validation.Analysis()
+        self.__validation.constructor_arguments(net, generate_forests,min_edges, timeout, delay_unit, runtime_unit, temp_folder, results_folder, verbose)
+        self.__net = net
+        self.__forests = all_forests(net, min_edges) if generate_forests else []
+        self.__timeout = timeout
+        self.__generate_forests = generate_forests
+        self.__delay_unit = delay_unit
+        self.__runtime_unit = runtime_unit
+        self.__temp_folder = temp_folder
+        self.__results_folder = results_folder
+        self.__verbose = verbose
+        self.__results: Dict[int, List[Tuple[List[Tuple[int, int]], float, float]]] = {}
+        self.__HEADER = generate_header(delay_unit, runtime_unit)
+        self.__total_runtime: float = 0.0
+        self.__num_iters: int = 0
+        self.__timeout_factor_index: int = 0
+        self.__SCALE_FACTORS: List[float] = [1.0, 0.1, 10.0] # open to discussion
+        self.__TIMEOUT_FACTORS: List[float] = [3.0, 10.0, 50.0] # open to discussion
+        self.__RESULTS_FILE_FORMAT: str = '.txt'
+        self.__RAW_FILE_FORMAT: str = '.pickle'
 
-        if VerboseKW.Network in self._verbose:
-            print(self._net)
+        if VerboseKW.Network in self.__verbose:
+            print(self.__net)
+
+    def __compute_timeout(self, timeout_factor: float) -> int:
+        if self.__num_iters == 0:
+            return self.__timeout
+        average_runtime = self.__total_runtime / self.__num_iters
+        upper_bound = ceil(average_runtime * timeout_factor)
+        if self.__timeout < upper_bound:
+            return self.__timeout
+        return upper_bound
+
 
     # encapsulates all the interactions with the panco library
-    # accessed from outside and has the additional validate_forest function call
     def delay(self, foi: int, forest: List[Tuple[int, int]], _internal_call: bool = False) -> float:
 
-        self._validaton.foi(foi, self._net.num_flows)
+        self.__validation.foi(foi, self.__net.num_flows)
         if not _internal_call:
-            self._validaton.forest(forest, list(self._net.edges.keys()))
+            self.__validation.forest(forest, list(self.__net.edges.keys()))
 
-        if VerboseKW.Forest in self._verbose:
+        if VerboseKW.Forest in self.__verbose:
             print(f'Computing delay for {forest=}')
 
-        lp_verbose = True if VerboseKW.LPProgress in self._verbose else False
-
-        for scale_factor in self._SCALE_FACTORS:
+        lp_verbose = True if VerboseKW.LPProgress in self.__verbose else False
+        scale_factor_index = 0
+        could_not_solve = False
+        while not could_not_solve:
+            scale_factor = self.__SCALE_FACTORS[scale_factor_index]
+            timeout_factor = self.__TIMEOUT_FACTORS[self.__timeout_factor_index]
+            scaled_net = scale_network(self.__net, scale_factor)
+            timeout = self.__compute_timeout(timeout_factor)
+            PLP = FifoLP(scaled_net, list_edges=forest, sfa=True, tfa=True,
+                         timeout=timeout, temp_folder=self.__temp_folder, filename="fifo", verbose=lp_verbose)
+            PLP.forest = PLP.forest.make_feed_forward()
             try:
-                scaled_net = scale_network(self._net, scale_factor)
-                PLP = FifoLP(scaled_net, list_edges=forest, sfa=True, tfa=True, timeout=self._timeout, temp_folder=self._temp_folder, filename="fifo", verbose=lp_verbose)
-                PLP.forest = PLP.forest.make_feed_forward()
                 return PLP.delay(foi)
             except LPError as lperror:
-                if VerboseKW.LPErrorMsg in self._verbose:
-                    print(f'{lperror} encountered for {scale_factor=}. Rescaling the problem...')
+                match lperror.error_type():
+                    case LPErrorType.AccuracyError:
+                        if VerboseKW.LPErrorMsg in self.__verbose:
+                            print(f'{lperror} encountered for {scale_factor=}. Rescaling the problem...')
+                        scale_factor_index += 1
+                    case LPErrorType.TimeoutError:
+                        if VerboseKW.LPErrorMsg in self.__verbose:
+                            print(f'{lperror} encountered for {scale_factor=}. Rescaling the problem...')
+                        scale_factor_index += 1
+                    case LPErrorType.SuboptimalSolutionWarning:
+                        if VerboseKW.LPErrorMsg in self.__verbose:
+                            print(f'{lperror} encountered for {timeout=}. Increasing the timeout value...')
+                        self.__timeout_factor_index += 1
+                    case _:
+                        raise ValueError(f'Unhandled error type: {lperror}')
+                if scale_factor_index >= len(self.__SCALE_FACTORS) or self.__timeout_factor_index >= len(self.__TIMEOUT_FACTORS):
+                    self.__timeout_factor_index -= 1
+                    could_not_solve = True
 
-        raise StopIteration('Failed to solve the LP after trying all the scaling factors')
+        if VerboseKW.LPErrorMsg in self.__verbose:
+            print('Could not solve the LP! Skipping this cut')
+
+        return float('inf')
 
     # allows the user to call compute the delay of a specific forest based on index
     def delay_by_index(self, foi: int, index: int) -> float:
 
-        self._validaton.callable(self._generate_forests, self.delay_by_index)
-        self._validaton.index(index, self._forests)
+        self.__validation.callable(self.__generate_forests, self.delay_by_index)
+        self.__validation.index(index, self.__forests)
         
-        return self.delay(foi, self._forests[index], _internal_call=True)
+        return self.delay(foi, self.__forests[index], _internal_call=True)
     
     # allows the user to call compute the delay of specific forests based on indexes
     def delay_by_indexes(self, foi: int, indexes: List[int]) -> List[float]:
 
-        self._validaton.callable(self._generate_forests, self.delay_by_indexes)
-        self._validaton.indexes(indexes)
+        self.__validation.callable(self.__generate_forests, self.delay_by_indexes)
+        self.__validation.indexes(indexes)
 
-        delays = []
+        delays: List[float] = []
 
         for index in indexes:
             delays.append(self.delay_by_index(foi, index))
@@ -99,11 +135,13 @@ class Analysis:
     # perform exhaustive search over all possible cuts for the given flow
     def exhaustive_search(self, foi: int) -> None:
 
-        self._validaton.callable(self._generate_forests, self.exhaustive_search)
+        self.__validation.callable(self.__generate_forests, self.exhaustive_search)
         
-        result = []
+        result: List[Tuple[List[Tuple[int, int]], float, float]] = []
 
-        for forest in tqdm(iterable=self._forests, desc=f'Calculating delay bounds for flow {foi}', unit='forest'):
+        iterable = tqdm(iterable=self.__forests, desc=f'Calculating delay bounds for flow {foi}', unit='forest') if VerboseKW.ProgressBar in self.__verbose else self.__forests
+
+        for forest in iterable:
 
             start = time()
 
@@ -114,70 +152,70 @@ class Analysis:
             elapsed = end - start
 
             result.append((forest, delay, elapsed))
-            self._total_runtime += elapsed
-            self._num_iters += 1
+            self.__total_runtime += elapsed
+            self.__num_iters += 1
         
-        self._results[foi] = sorted(result, key=lambda x: x[1])
+        self.__results[foi] = sorted(result, key=lambda x: x[1])
 
     # perform exhaustive search over all possible cuts for all the flows
     def exhaustive_search_all_flows(self) -> None:
 
-        self._validaton.callable(self._generate_forests, self.exhaustive_search_all_flows)
+        self.__validation.callable(self.__generate_forests, self.exhaustive_search_all_flows)
 
-        for foi in range(self._net.num_flows):
+        for foi in range(self.__net.num_flows):
             self.exhaustive_search(foi)
 
-    def _results_table(self, foi: int) -> str:
+    def __results_table(self, foi: int) -> str:
 
         # Not validating foi due to error with empty network
 
-        table = self._HEADER + convert_result_units(self._results[foi], self._delay_unit, self._runtime_unit)
+        table = self.__HEADER + convert_result_units(self.__results[foi], self.__delay_unit, self.__runtime_unit)
 
         result = '########################\n'
         result += f'###Results for flow {foi}###\n'
         result += '########################\n'
-        result += 'NOT COMPUTED!\n' if foi not in self._results else tabulate(table, headers='firstrow', tablefmt='fancy_grid') + '\n'
+        result += 'NOT COMPUTED!\n' if foi not in self.__results else tabulate(table, headers='firstrow', tablefmt='fancy_grid') + '\n'
 
         return result
     
     # display the results fot the given foi
     def display_results(self, foi: int) -> None:
 
-        print(self._results_table(foi))
+        print(self.__results_table(foi))
 
     def display_all_results(self) -> None:
 
-        for foi in range(self._net.num_flows):
+        for foi in range(self.__net.num_flows):
             self.display_results(foi)
 
     def save_results(self, foi: int, filename: str) -> None:
 
-        self._validaton.filename(filename)
+        self.__validation.filename(filename)
 
-        filepath = self._results_folder + filename + self._RESULTS_FILE_FORMAT
+        filepath = self.__results_folder + filename + self.__RESULTS_FILE_FORMAT
 
         with open(filepath, "a") as file:
-            print(self._results_table(foi), file=file)
+            print(self.__results_table(foi), file=file)
 
     def save_all_results(self, filename: str) -> None:
 
-        for foi in range(self._net.num_flows):
+        for foi in range(self.__net.num_flows):
             self.save_results(foi, filename)
 
     def save_raw_results(self, filename: str) -> None:
 
-        self._validaton.filename(filename)
+        self.__validation.filename(filename)
 
-        filepath = self._results_folder + filename + self._RAW_FILE_FORMAT
+        filepath = self.__results_folder + filename + self.__RAW_FILE_FORMAT
 
         with open(filepath, 'wb') as file:
-            dump(self._results, file)
+            dump(self.__results, file)
 
     def load_raw_results(self, filename: str) -> None:
 
-        self._validaton.filename(filename)
+        self.__validation.filename(filename)
 
-        filepath = self._results_folder + filename + self._RAW_FILE_FORMAT
+        filepath = self.__results_folder + filename + self.__RAW_FILE_FORMAT
 
         with open(filepath, 'rb') as file:
-            self._results = load(file)
+            self.__results = load(file)

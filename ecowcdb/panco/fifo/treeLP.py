@@ -20,7 +20,7 @@ from ecowcdb.panco.fifo.sfaLP import SfaLP
 from ecowcdb.panco.fifo.tfaLP import TfaLP
 from ecowcdb.panco.lpSolvePath import LPSOLVEPATH
 
-from ecowcdb.util.errors import LPErrorType, LPError
+from ecowcdb.util.errors import check_LP_error
 
 
 class TreeLP:
@@ -78,12 +78,8 @@ class TreeLP:
 
         s = sp.run(LPSOLVEPATH + ["-timeout", f"{self.timeout}", "-S1", self.filepath_delay], stdout=sp.PIPE, encoding='utf-8').stdout
 
-        s_split = s.split('\n')
-        if s_split[-2] == 'Timeout':
-            raise LPError(LPErrorType.TimeoutError)
-        elif s_split[-2] == 'Accuracy error':
-            raise LPError(LPErrorType.AccuracyError)
-        
+        check_LP_error(s)
+
         return float(s.split()[-1])
 
     @property
@@ -107,28 +103,6 @@ class TreeLP:
 
         s = sp.run(LPSOLVEPATH + ["-timeout", f"{self.timeout}", "-S1", self.filepath_backlog], stdout=sp.PIPE, encoding='utf-8').stdout
         
-        s_split = s.split('\n')
-        if s_split[-2] == 'Timeout':
-            raise LPError(LPErrorType.TimeoutError)
-        elif s_split[-2] == 'Accuracy error':
-            raise LPError(LPErrorType.AccuracyError)
+        check_LP_error(s)
 
         return float(s.split()[-1])
-
-    # Commented function because it is never called
-    # def backlog_set_of_flows(self, set_flows):
-    #     file = open(self.filename, 'w')
-    #     self.constraints.backlog_set_objective(set_flows, file)
-    #     self.constraints.time_constraints(file)
-    #     self.constraints.arrival_constraints(file)
-    #     self.constraints.fifo_constraints(file)
-    #     self.constraints.service_constraints(file)
-    #     self.constraints.monotony_constraints(file)
-    #     self.constraints.shaping_constraints(file)
-    #     self.constraints.arrival_shaping_constraints(file, True)
-    #     self.constraints.sfa_delay_constraints(file)
-    #     self.constraints.tfa_delay_constraints(file)
-    #     self.burst_constraints(file)
-    #     file.close()
-    #     s = sp.run(LPSOLVEPATH + ["-S1", self.filename], stdout=sp.PIPE, encoding='utf-8').stdout
-    #     return float(s.split()[-1])

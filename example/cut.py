@@ -23,7 +23,7 @@ def delay_by_index_demo():
     net = Networks.Ring().full(R, L, S, N, load, NetworkType.Symmetric)
     analysis = Analysis(net, timeout=30, temp_folder='../temp/',
                         verbose=[VerboseKW.Forest, VerboseKW.LPErrorMsg])
-    delay = analysis.delay_by_index(0, 153)
+    delay = analysis.delay_by_index(0, 252)
     print(f'{delay=}')
 
 
@@ -51,11 +51,11 @@ def quick_demo():
     load = 0.5
 
     net = Networks.Ring().full(R, L, S, N, load, NetworkType.AsymmetricServer)
-    analysis = Analysis(net, min_edges=1, timeout=5,
+    analysis = Analysis(net, min_edges=0, timeout=10,
                         delay_unit=DisplayUnit.MicroSecond,
                         runtime_unit=DisplayUnit.MilliSecond,
                         temp_folder='../temp/',
-                        verbose=[VerboseKW.Network])
+                        verbose=[VerboseKW.Network, VerboseKW.LPErrorMsg, VerboseKW.ProgressBar])
     analysis.exhaustive_search(0)
     analysis.display_results(0)
 
@@ -73,7 +73,7 @@ def large_demo():
                         delay_unit=DisplayUnit.MilliSecond,
                         runtime_unit=DisplayUnit.Second,
                         temp_folder='../temp/', results_folder='../results/',
-                        verbose=[VerboseKW.LPErrorMsg])
+                        verbose=[VerboseKW.LPErrorMsg, VerboseKW.ProgressBar])
     analysis.exhaustive_search(0)
     analysis.save_results(0, 'large_full_ring_11')
     analysis.save_raw_results('large_full_ring_11')

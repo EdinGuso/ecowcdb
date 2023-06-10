@@ -43,7 +43,7 @@ def all_forests(net: Network, min_edges: int) -> List[List[Tuple[int, int]]]:
 # scales everything other than latency, does not change the output unit
 def scale_network(net: Network, factor: float) -> Network:
 
-    if factor == 1:
+    if factor == 1.0:
         return net
 
     servers = []

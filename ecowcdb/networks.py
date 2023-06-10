@@ -11,9 +11,15 @@ from ecowcdb.panco.descriptor.flow import Flow
 from ecowcdb.panco.descriptor.network import Network
 from ecowcdb.panco.descriptor.server import Server
 
+# Local Imports - utility libraries
+from ecowcdb.util.validation import Validation
+
 
 
 class Networks:
+
+    def custom(self, servers: List[Server], flows: List[Flow]):
+        return(Network(servers, flows))
 
     def _generic(self, R: float, L: float, S: float, N: int, load: float, max_flows: int, paths: List[List[int]], network_type: NetworkType) -> Network:
 
@@ -36,8 +42,8 @@ class Networks:
                 asymmetric_server = Server([RateLatency(R/2, L)], [TokenBucket(0, R/2)])
                 servers[0] = asymmetric_server
                 return Network(servers, flows)
-
-        raise ValueError(f'Unhandled network type: {network_type}')
+            case _:
+                raise ValueError(f'Unhandled network type: {network_type}')
 
     def empty(self) -> Network:
         return Network([], [])
@@ -45,10 +51,12 @@ class Networks:
 
     class Tandem:
         def __init__(self) -> None:
-            self._networks = Networks()
+            self.__validation = Validation.Networks()
+            self.__networks = Networks()
 
         def sink_tree(self, R: float, L: float, S: float, N: int, load: float, network_type: NetworkType) -> Network:
-
+            self.__validation.generic_arguments(R, L, S, N, load, network_type)
+            
             paths = []
 
             for i in range(N):
@@ -56,9 +64,10 @@ class Networks:
 
             max_flows = N # 1,2,..,N
 
-            return self._networks._generic(R, L, S, N, load, max_flows, paths, network_type)
+            return self.__networks._generic(R, L, S, N, load, max_flows, paths, network_type)
 
         def interleaved(self, R: float, L: float, S: float, N: int, load: float, network_type: NetworkType) -> Network:
+            self.__validation.generic_arguments(R, L, S, N, load, network_type)
 
             paths = [list(range(N))]
 
@@ -67,9 +76,10 @@ class Networks:
 
             max_flows = 3 # 3...
 
-            return self._networks._generic(R, L, S, N, load, max_flows, paths, network_type)
+            return self.__networks._generic(R, L, S, N, load, max_flows, paths, network_type)
         
         def source_sink(self, R: float, L: float, S: float, N: int, load: float, network_type: NetworkType) -> Network:
+            self.__validation.generic_arguments(R, L, S, N, load, network_type)
 
             paths = [list(range(N))]
 
@@ -79,13 +89,17 @@ class Networks:
 
             max_flows = N # N...
 
-            return self._networks._generic(R, L, S, N, load, max_flows, paths, network_type)
+            return self.__networks._generic(R, L, S, N, load, max_flows, paths, network_type)
 
 
 
     class Mesh:
+        def __init__(self) -> None:
+            self.__validation = Validation.Networks()
+            self.__networks = Networks()
 
         def simple(self, R: float, L: float, S: float, N: int, load: float, network_type: NetworkType) -> Network:
+            self.__validation.generic_arguments(R, L, S, N, load, network_type)
 
             if network_type != NetworkType.Symmetric:
                 raise NotImplementedError('Asymmetric mesh networks not supported yet')
@@ -108,9 +122,11 @@ class Networks:
 
     class Ring:
         def __init__(self) -> None:
-            self._networks = Networks()
+            self.__validation = Validation.Networks()
+            self.__networks = Networks()
 
         def full(self, R: float, L: float, S: float, N: int, load: float, network_type: NetworkType) -> Network:
+            self.__validation.generic_arguments(R, L, S, N, load, network_type)
 
             paths = []
 
@@ -119,9 +135,10 @@ class Networks:
 
             max_flows = N # N...
 
-            return self._networks._generic(R, L, S, N, load, max_flows, paths, network_type)
+            return self.__networks._generic(R, L, S, N, load, max_flows, paths, network_type)
         
         def semi(self, R: float, L: float, S: float, N: int, load: float, network_type: NetworkType) -> Network:
+            self.__validation.generic_arguments(R, L, S, N, load, network_type)
             
             paths = []
 
@@ -130,9 +147,10 @@ class Networks:
 
             max_flows = N//2 + 1 # N//2+1...
 
-            return self._networks._generic(R, L, S, N, load, max_flows, paths, network_type)
+            return self.__networks._generic(R, L, S, N, load, max_flows, paths, network_type)
 
         def complete_full(self, R: float, L: float, S: float, N: int, load: float, network_type: NetworkType) -> Network:
+            self.__validation.generic_arguments(R, L, S, N, load, network_type)
             
             paths = []
 
@@ -142,9 +160,10 @@ class Networks:
 
             max_flows = N * (N + 1) // 2 # N*(N+1)//2...
 
-            return self._networks._generic(R, L, S, N, load, max_flows, paths, network_type)
+            return self.__networks._generic(R, L, S, N, load, max_flows, paths, network_type)
 
         def complete_semi(self, R: float, L: float, S: float, N: int, load: float, network_type: NetworkType) -> Network:
+            self.__validation.generic_arguments(R, L, S, N, load, network_type)
             
             paths = []
 
@@ -154,5 +173,5 @@ class Networks:
 
             max_flows = ((N//2 + 1) * (N//2 + 2)) // 2 # ((N//2+1)*(N//2+2))//2...
 
-            return self._networks._generic(R, L, S, N, load, max_flows, paths, network_type)
+            return self.__networks._generic(R, L, S, N, load, max_flows, paths, network_type)
         

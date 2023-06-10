@@ -19,6 +19,7 @@ from typing import List
 
 from ecowcdb.panco.descriptor.network import Network
 from ecowcdb.panco.lpSolvePath import LPSOLVEPATH
+from ecowcdb.util.errors import check_LP_error
 
 
 class SfaLP:
@@ -73,6 +74,9 @@ class SfaLP:
         if self.verbose:
             print('Solving:', self.filepath)
         s = sp.run(LPSOLVEPATH + ["-S2", self.filepath], stdout=sp.PIPE, encoding='utf-8').stdout
+
+        check_LP_error(s)
+        
         tab_values = s.split('\n')[4:-1]
         values = [[token for token in line.split(' ') if not token == ""] for line in tab_values]
         if not values:

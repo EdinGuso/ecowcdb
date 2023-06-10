@@ -13,8 +13,9 @@ class DisplayUnit(Enum):
 class VerboseKW(Enum):
     Network = 0
     Forest = 1
-    LPProgress = 2
-    LPErrorMsg = 3
+    ProgressBar = 2
+    LPProgress = 3
+    LPErrorMsg = 4
 
 
 
