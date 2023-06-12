@@ -23,6 +23,8 @@ class Networks:
 
     def _generic(self, R: float, L: float, S: float, N: int, load: float, max_flows: int, paths: List[List[int]], network_type: NetworkType) -> Network:
 
+        ASYMMETRICITY_FACTOR = 0.8
+
         service_curve = RateLatency(R, L)
         shaper = TokenBucket(0, R)
         server = Server([service_curve], [shaper])
@@ -35,12 +37,14 @@ class Networks:
             case NetworkType.Symmetric:
                 return Network(servers, flows)
             case NetworkType.AsymmetricFlow:
-                asymmetric_flow = Flow([TokenBucket(S, 2 * load * R / max_flows)], flows[0].path)
-                flows[0] = asymmetric_flow
+                # Every flow has decreased rate except for first flow. First flow dominates
+                for i in range(1,len(flows)):
+                    flows[i] = Flow([TokenBucket(flows[i].arrival_curve[0].sigma, ASYMMETRICITY_FACTOR * flows[i].arrival_curve[0].rho)], flows[i].path)
                 return Network(servers, flows)
             case NetworkType.AsymmetricServer:
-                asymmetric_server = Server([RateLatency(R/2, L)], [TokenBucket(0, R/2)])
-                servers[0] = asymmetric_server
+                # Every server has increased rate except for first flow. First server is bottleneck
+                for i in range(1, len(servers)):
+                    servers[i] = Server([RateLatency(servers[i].service_curve[0].rate/ASYMMETRICITY_FACTOR, servers[i].service_curve[0].latency)], [TokenBucket(0, servers[i].max_service_curve[0].rho/ASYMMETRICITY_FACTOR)])
                 return Network(servers, flows)
             case _:
                 raise ValueError(f'Unhandled network type: {network_type}')

@@ -28,3 +28,4 @@ def check_LP_error(s: str) -> None:
         raise LPError(LPErrorType.AccuracyError)
     if s_split[0] == 'Suboptimal solution':
         raise LPError(LPErrorType.SuboptimalSolutionWarning)
+    

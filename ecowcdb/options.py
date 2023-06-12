@@ -4,10 +4,11 @@ from enum import Enum
 
 
 class DisplayUnit(Enum):
-    Second = 0
+    MicroSecond = 0
     MilliSecond = 1
-    MicroSecond = 2
-
+    Second = 2
+    Minute = 3
+    
 
 
 class VerboseKW(Enum):
@@ -23,3 +24,13 @@ class NetworkType(Enum):
     Symmetric = 0
     AsymmetricFlow = 1
     AsymmetricServer = 2
+
+
+
+class ForestGeneration(Enum):
+    Empty = 0
+    Partial = 1
+    All = 2
+
+
+

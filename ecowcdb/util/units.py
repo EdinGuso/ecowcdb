@@ -8,23 +8,29 @@ from ecowcdb.options import DisplayUnit
 
 def __unit_str(unit: DisplayUnit) -> str:
     match unit:
-        case DisplayUnit.Second:
-            return 's'
-        case DisplayUnit.MilliSecond:
-            return 'ms'
         case DisplayUnit.MicroSecond:
             return 'µs'
-    raise ValueError(f'Unhandled unit type: {unit}')
-
-def __unit_factor(unit: DisplayUnit) -> int:
-    match unit:
-        case DisplayUnit.Second:
-            return 1
         case DisplayUnit.MilliSecond:
-            return 10**3
+            return 'ms'
+        case DisplayUnit.Second:
+            return 's'
+        case DisplayUnit.Minute:
+            return 'min'
+        case _:
+            raise ValueError(f'Unhandled unit type: {unit}')
+
+def __unit_factor(unit: DisplayUnit) -> int | float:
+    match unit:
         case DisplayUnit.MicroSecond:
             return 10**6
-    raise ValueError(f'Unhandled unit type: {unit}')
+        case DisplayUnit.MilliSecond:
+            return 10**3
+        case DisplayUnit.Second:
+            return 1
+        case DisplayUnit.Minute:
+            return 1/60
+        case _:
+            raise ValueError(f'Unhandled unit type: {unit}')
 
 def generate_header(delay_unit: DisplayUnit, runtime_unit: DisplayUnit) -> List[Tuple[str, str, str]]:
     
