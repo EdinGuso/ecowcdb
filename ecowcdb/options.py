@@ -8,6 +8,7 @@ class DisplayUnit(Enum):
     MilliSecond = 1
     Second = 2
     Minute = 3
+    Hour = 4
     
 
 
