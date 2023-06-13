@@ -44,13 +44,13 @@ def __subset_forests(net: Network, min_edges: int, num_forests: int)-> List[List
      	 net (Network, required): Network to generate forests for.
      	 min_edges (int, required): Minimum number of edges that should be included in the forest.
      	 num_forests (int, required): The number of forests to be returned.
-     
-     Returns: 
-     	 List[List[Tuple[int, int]]]: List of forests, where each forest is a list of edge tuples.
-           
+          
      Raises:
          ValueError: If sampling a random forest fails too many times consecutively.
          This may give false positives.
+     
+     Returns: 
+     	 List[List[Tuple[int, int]]]: List of forests, where each forest is a list of edge tuples.
     """
     if num_forests == 0:
         return []
@@ -82,13 +82,13 @@ def is_forest(net: Network) -> bool:
      
      Args:
      	 net (Network, required): Network to be checked.
+          
+     Raises:
+         NameError: Propagates all the unexpected NameErrors from dfs function.
      
      Returns: 
      	 bool: True if the network is a forest False otherwise.
                Note that this does not check if the network is connected.
-          
-     Raises:
-         NameError: Propagates all the unexpected NameErrors from dfs function.
     """
     N = net.num_servers
     for i in range(N):
@@ -118,12 +118,12 @@ def generate_forests(net: Network, forest_generation: ForestGeneration, min_edge
          forest_generation (ForestGeneration, required): The type of forest generation.
      	 min_edges (int, required): Minimum number of edges that should be included in the forest.
      	 num_forests (int, required): The number of forests to be returned.
-     
-     Returns: 
-     	 List[List[Tuple[int, int]]]: List of forests, where each forest is a list of edge tuples.
           
      Raises:
          ValueError: If an unexpected forest generation option is received.
+     
+     Returns: 
+     	 List[List[Tuple[int, int]]]: List of forests, where each forest is a list of edge tuples.
     """
     match forest_generation:
         case ForestGeneration.Empty:
@@ -145,7 +145,7 @@ def generate_symmetric_forests(forest: List[Tuple[int, int]], N: int) -> List[Li
      	 N (int, required): The number of servers in the network
      
      Returns: 
-     	 A list of symmetrically oriented forests.
+     	 List[List[Tuple[int, int]]]: A list of symmetrically oriented forests.
     """
     symmetric_forests = [set(forest)]
     for i in range(1,N):
