@@ -1,9 +1,17 @@
+"""
+ File containing the custom error class and its utility functions. Used to catch and communicate lp_solve related
+ errors.
+"""
+
 # Standard Library Imports
 from enum import Enum
 
 
 
 class LPErrorType(Enum):
+    """
+     Enum used for type of the error.
+    """
     TimeoutError = 1
     AccuracyError = 2
     SuboptimalSolutionWarning = 3
