@@ -2,3 +2,9 @@
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Linear Program files
+*.lp
+
+# Visual Studio Code folder
+.vscode/
