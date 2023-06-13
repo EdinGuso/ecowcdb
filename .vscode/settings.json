@@ -1,0 +1,13 @@
+{
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "python.formatting.provider": "none",
+    "python.analysis.typeCheckingMode": "off",
+    "docify.commentService.programmingLanguage": "python",
+    "docify.commentService.docstringFormat": "Google",
+    "docify.commentService.inlineComments": true,
+    "docify.translateService.docstringFormat": "JavaDoc",
+    "docify.translateService.targetLanguage": "English",
+    "docify.translateService.sourceLanguage": "English"
+}

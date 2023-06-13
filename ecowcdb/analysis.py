@@ -25,6 +25,28 @@ from ecowcdb.util.validation import Validation
 
 class Analysis:
 
+    __validation: Validation.Analysis
+    __results: Dict[int, List[Tuple[List[Tuple[int, int]], float, float]]]
+    __net: Network
+    __forest_generation: ForestGeneration
+    __forests: List[List[Tuple[int, int]]]
+    __timeout: int
+    __delay_unit: DisplayUnit
+    __runtime_unit: DisplayUnit
+    __temp_folder: str
+    __results_folder: str
+    __verbose: List[VerboseKW]
+    __total_runtime: float
+    __num_iters: int
+    __timeout_factor_index: int
+    __SCALE_FACTORS: List[float]
+    __TIMEOUT_FACTORS: List[float]
+    __HEADER: List[Tuple[str, str, str]]
+    __RESULTS_FILE_FORMAT: str
+    __RAW_FILE_FORMAT: str
+
+
+
     def __init__(self, net: Network, forest_generation: ForestGeneration = ForestGeneration.All, num_forests: int = 0, min_edges: int = 0,
                  timeout: int = 600, delay_unit: DisplayUnit = DisplayUnit.Second, runtime_unit: DisplayUnit = DisplayUnit.Second,
                  temp_folder: str = '', results_folder: str = '', verbose: List[VerboseKW] = []
@@ -40,15 +62,15 @@ class Analysis:
         self.__temp_folder = temp_folder
         self.__results_folder = results_folder
         self.__verbose = verbose
-        self.__results: Dict[int, List[Tuple[List[Tuple[int, int]], float, float]]] = {}
+        self.__results = {}
+        self.__total_runtime = 0.0
+        self.__num_iters = 0
+        self.__timeout_factor_index = 0
+        self.__SCALE_FACTORS = [1.0, 0.1, 10.0] # open to discussion
+        self.__TIMEOUT_FACTORS = [3.0, 10.0, 50.0] # open to discussion
         self.__HEADER = generate_header(delay_unit, runtime_unit)
-        self.__total_runtime: float = 0.0
-        self.__num_iters: int = 0
-        self.__timeout_factor_index: int = 0
-        self.__SCALE_FACTORS: List[float] = [1.0, 0.1, 10.0] # open to discussion
-        self.__TIMEOUT_FACTORS: List[float] = [3.0, 10.0, 50.0] # open to discussion
-        self.__RESULTS_FILE_FORMAT: str = '.txt'
-        self.__RAW_FILE_FORMAT: str = '.pickle'
+        self.__RESULTS_FILE_FORMAT = '.txt'
+        self.__RAW_FILE_FORMAT = '.pickle'
 
         if VerboseKW.Network in self.__verbose:
             print(self.__net)
@@ -64,9 +86,6 @@ class Analysis:
             return upper_bound * self.__net.num_servers
         return upper_bound
 
-
-    # encapsulates all the interactions with the panco library
-    def delay(self, foi: int | None, forest: List[Tuple[int, int]], _internal_call: bool = False, _all_delays:bool = False) -> float | List[float]:
         """_summary_
 
         Args:
@@ -82,6 +101,10 @@ class Analysis:
             float | List[float]: _description_
         """
 
+
+    # encapsulates all the interactions with the panco library
+    def delay(self, foi: int | None, forest: List[Tuple[int, int]], _internal_call: bool = False, _all_delays:bool = False) -> float | List[float]:
+        
         self.__validation.foi(foi, self.__net.num_flows, _all_delays)
         if not _internal_call:
             self.__validation.forest(forest, self.__net)
@@ -116,8 +139,12 @@ class Analysis:
                         scale_factor_index += 1
                     case LPErrorType.SuboptimalSolutionWarning:
                         if VerboseKW.LPErrorMsg in self.__verbose:
-                            print(f'{lperror} encountered for {timeout=}. Increasing the timeout value...')
-                        self.__timeout_factor_index += 1
+                            if timeout == self.__timeout:
+                                print(f'{lperror} encountered for {timeout=}. Maximum timeout reached')
+                                self.__timeout_factor_index = len(self.__TIMEOUT_FACTORS)
+                            else:
+                                print(f'{lperror} encountered for {timeout=}. Increasing the timeout value...')
+                                self.__timeout_factor_index += 1
                     case _:
                         raise ValueError(f'Unhandled error type: {lperror}')
                 if scale_factor_index >= len(self.__SCALE_FACTORS) or self.__timeout_factor_index >= len(self.__TIMEOUT_FACTORS):

@@ -118,8 +118,8 @@ def stat_demo():
 if __name__ == '__main__':
     # delay_by_index_demo()
     # delay_by_forest_demo()
-    # quick_demo()
+    quick_demo()
     # large_demo()
-    partial_demo()
+    # partial_demo()
     # load_demo()
     # stat_demo()

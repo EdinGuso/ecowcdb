@@ -124,5 +124,3 @@ class Validation:
             self.__validation._positive(N, 'N')
             self.__validation._positive(load, 'load')
             self.__validation._upper_bound(load, 'load', 1.0)
-
-
