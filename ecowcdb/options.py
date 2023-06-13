@@ -11,7 +11,6 @@ class DisplayUnit(Enum):
     Hour = 4
     
 
-
 class VerboseKW(Enum):
     Network = 0
     Forest = 1
@@ -20,18 +19,13 @@ class VerboseKW(Enum):
     LPErrorMsg = 4
 
 
-
 class NetworkType(Enum):
     Symmetric = 0
     AsymmetricFlow = 1
     AsymmetricServer = 2
 
 
-
 class ForestGeneration(Enum):
     Empty = 0
     Partial = 1
     All = 2
-
-
-

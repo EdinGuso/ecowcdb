@@ -1,5 +1,6 @@
 # Standard Library Imports
 from pickle import load
+from typing import Dict, List, Tuple
 
 # Third-Party Library Imports
 from scipy.stats import pearsonr
@@ -10,6 +11,10 @@ from ecowcdb.util.validation import Validation
 
 
 class Stats:
+    __validation: Validation.Stats
+    __RAW_FILE_FORMAT: str
+    __results: Dict[int, List[Tuple[List[Tuple[int, int]], float, float]]]
+
     def __init__(self, results_folder: str, filename: str) -> None:
         self.__validation = Validation.Stats()
         self.__validation.constructor_arguments(results_folder, filename)
