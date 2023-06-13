@@ -29,8 +29,6 @@ class LPError(Exception):
          Args:
          	 error_type (LPErrorType, required): The type of error to be raised.
         """
-        if not isinstance(error_type, LPErrorType):
-            raise ValueError("Invalid error type")
         self.__error_type = error_type
 
     def __str__(self) -> str:
