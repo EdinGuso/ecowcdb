@@ -21,7 +21,7 @@ def delay_by_index_demo():
     load = 0.5
 
     net = Networks.Ring().full(R, L, S, N, load, NetworkType.Symmetric)
-    analysis = Analysis(net, timeout=30, temp_folder='../temp/',
+    analysis = Analysis(net, timeout=600, temp_folder='../temp/',
                         verbose=[VerboseKW.Forest, VerboseKW.LPErrorMsg])
     delay = analysis.delay_by_index(0, 252)
     print(f'{delay=}')
@@ -36,9 +36,9 @@ def delay_by_forest_demo():
     load = 0.5
 
     net = Networks.Ring().full(R, L, S, N, load, NetworkType.Symmetric)
-    analysis = Analysis(net, timeout=600, generate_forests=False,
-                        temp_folder='../temp/', verbose=[VerboseKW.LPErrorMsg, VerboseKW.LPProgress])
-    delay = analysis.delay(0, [(0, 1), (1, 2), (2, 3), (10, 11), (11, 0)])
+    analysis = Analysis(net, forest_generation=ForestGeneration.Empty, timeout=10,
+                        temp_folder='../temp/', verbose=[VerboseKW.LPErrorMsg])
+    delay = 1000 * analysis.delay(0, [(0, 1), (1, 2), (2, 3), (10, 11), (11, 0)])
     print(f'{delay=}')
 
 
@@ -65,7 +65,7 @@ def large_demo():
     R = 10**7 # Kb/s
     L = 10**-5 # s
     S = 8 # Kb
-    N = 11 # servers
+    N = 12 # servers
     load = 0.5
 
     net = Networks.Ring().full(R, L, S, N, load, NetworkType.Symmetric)
@@ -75,8 +75,8 @@ def large_demo():
                         temp_folder='../temp/', results_folder='../results/',
                         verbose=[VerboseKW.LPErrorMsg, VerboseKW.ProgressBar])
     analysis.exhaustive_search(0)
-    analysis.save_results(0, 'large_full_ring_11')
-    analysis.save_raw_results('large_full_ring_11')
+    analysis.save_results(0, 'large_full_ring_12_new')
+    analysis.save_raw_results('large_full_ring_12_new')
     analysis.display_results(0)
 
 
@@ -102,9 +102,15 @@ def partial_demo():
 
 
 def load_demo():
-    net = Networks().empty()
-    analysis = Analysis(net, generate_forests=False, results_folder='../results/', delay_unit=DisplayUnit.MilliSecond)
-    analysis.load_raw_results('large_full_ring_12')
+    R = 10**7 # Kb/s
+    L = 10**-5 # s
+    S = 8 # Kb
+    N = 12 # servers
+    load = 0.5
+
+    net = Networks.Ring().full(R, L, S, N, load, NetworkType.Symmetric)
+    analysis = Analysis(net, forest_generation=ForestGeneration.Empty, results_folder='../results/', delay_unit=DisplayUnit.MilliSecond)
+    analysis.load_raw_results('large_full_ring_new/large_full_ring_12_new')
     analysis.display_results(0)
 
 
@@ -117,8 +123,8 @@ def stat_demo():
 
 if __name__ == '__main__':
     # delay_by_index_demo()
-    # delay_by_forest_demo()
-    quick_demo()
+    delay_by_forest_demo()
+    # quick_demo()
     # large_demo()
     # partial_demo()
     # load_demo()

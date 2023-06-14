@@ -105,6 +105,21 @@ class Validation:
         if arg > upper_bound:
             raise ValueError(f'Argument \'{arg_name}\' cannot be larger than {upper_bound}')
         
+    def _equal(self, arg: int | float, arg_name: str, equal: int | float) -> None:
+        """
+         Validates that arg is equal to equal.
+         
+         Args:
+         	 arg (int | float, required): The argument to check.
+         	 arg_name (str, required): The name of the argument for error messages.
+         	 upper_bound (int | float, required): The value arg should be equal to.
+         
+         Raises:
+             ValueError: If arg is not equal to equal.
+        """
+        if arg != equal:
+            raise ValueError(f'Argument \'{arg_name}\' must be equal to {equal}')
+        
     def _exists_in_dict(self, arg: Any, arg_name: str, dictionary: Dict[Any, Any]) -> None:
         """
          Validates that arg exists in dict.
@@ -142,7 +157,7 @@ class Validation:
 
         def __init__(self) -> None:
             """
-             Initialize the Validation.Analysis object. This is the constructor for the class.
+             Initialize the Validation object. This is the constructor for the class.
             """
             self.__validation = Validation()
         
@@ -280,7 +295,7 @@ class Validation:
 
         def __init__(self) -> None:
             """
-             Initialize the Validation.Analysis object. This is the constructor for the class.
+             Initialize the Validation object. This is the constructor for the class.
             """
             self.__validation = Validation()
         
@@ -316,20 +331,22 @@ class Validation:
              __validation (Validation, private): Base Validation object used to access generic validation functions.
 
          Methods:
-             generic_arguments (public): Validates all the arguments passed to the constructor of the Stats class.
-             foi (public): Validates the given foi.
+             generic_arguments (public): Validates all the arguments passed to the generic functions of the Networks
+             class.
+             custom_network_arguments (public): Validates all the arguments passed to the custom function of the
+             Networks class.
         """
         # __validation: Validation
         
         def __init__(self) -> None:
             """
-             Initialize the Validation.Analysis object. This is the constructor for the class.
+             Initialize the Validation object. This is the constructor for the class.
             """
             self.__validation = Validation()
 
         def generic_arguments(self, R: float, L: float, S: float, N: int, load: float, network_type: NetworkType) -> None:
             """
-             Validates all the arguments passed to the generic constructors of the Networks class.
+             Validates all the arguments passed to the generic functions of the Networks class.
              
              Args:
              	 R (float, required): float to be validated.
@@ -346,8 +363,59 @@ class Validation:
             self.__validation._type(load, 'load', float)
             self.__validation._type(network_type, 'network_type', NetworkType)
             self.__validation._positive(R, 'R')
-            self.__validation._positive(L, 'L')
-            self.__validation._positive(S, 'S')
+            self.__validation._non_negative(L, 'L')
+            self.__validation._non_negative(S, 'S')
             self.__validation._positive(N, 'N')
             self.__validation._positive(load, 'load')
             self.__validation._upper_bound(load, 'load', 1.0)
+
+        def custom_network_arguments(self,
+                                     servers_args: List[Tuple[List[Tuple[float, float]], List[Tuple[float, float]]]],
+                                     flows_args: List[Tuple[List[Tuple[float, float]], List[int]]]) -> None:
+            """
+             Validates all the arguments passed to the custom function of the Networks class.
+            
+             Args:
+                 servers_args (List[Tuple[List[Tuple[float, float]], List[Tuple[float, float]]]], required): Server
+                 arguments to be validated.
+         	     flows_args (List[Tuple[List[Tuple[float, float]], List[int]]], required): Flow arguments to be
+                 validated.
+            """
+            self.__validation._type(servers_args, 'servers_args', list)
+            for server_args in servers_args:
+                self.__validation._type(server_args, 'server_args', tuple)
+                self.__validation._equal(len(server_args), 'len(server_args)', 2)
+                self.__validation._type(server_args[0], 'server_args[0]', list)
+                for service_curve_args in server_args[0]:
+                    self.__validation._type(service_curve_args, 'service_curve_args', tuple)
+                    self.__validation._equal(len(service_curve_args), 'len(service_curve_args)', 2)
+                    self.__validation._type(service_curve_args[0], 'service_curve_args[0]', float)
+                    self.__validation._non_negative(service_curve_args[0], 'service_curve_args[0]')
+                    self.__validation._type(service_curve_args[1], 'service_curve_args[1]', float)
+                    self.__validation._non_negative(service_curve_args[1], 'service_curve_args[1]')
+                self.__validation._type(server_args[1], 'server_args[1]', list)
+                for shaper_args in server_args[1]:
+                    self.__validation._type(shaper_args, 'shaper_args', tuple)
+                    self.__validation._equal(len(shaper_args), 'len(shaper_args)', 2)
+                    self.__validation._type(shaper_args[0], 'shaper_args[0]', float)
+                    self.__validation._non_negative(shaper_args[0], 'shaper_args[0]')
+                    self.__validation._type(shaper_args[1], 'shaper_args[1]', float)
+                    self.__validation._non_negative(shaper_args[1], 'shaper_args[1]')
+
+            self.__validation._type(flows_args, 'flows_args', list)
+            for flow_args in flows_args:
+                self.__validation._type(flow_args, 'flow_args', tuple)
+                self.__validation._equal(len(flow_args), 'len(flow_args)', 2)
+                self.__validation._type(flow_args[0], 'flow_args[0]', list)
+                for arrival_curve_args in flow_args[0]:
+                    self.__validation._type(arrival_curve_args, 'arrival_curve_args', tuple)
+                    self.__validation._equal(len(arrival_curve_args), 'len(arrival_curve_args)', 2)
+                    self.__validation._type(arrival_curve_args[0], 'arrival_curve_args[0]', float)
+                    self.__validation._non_negative(arrival_curve_args[0], 'arrival_curve_args[0]')
+                    self.__validation._type(arrival_curve_args[1], 'arrival_curve_args[1]', float)
+                    self.__validation._non_negative(arrival_curve_args[1], 'arrival_curve_args[1]')
+                self.__validation._type(flow_args[1], 'flow_args[1]', list)
+                for server_id in flow_args[1]:
+                    self.__validation._type(server_id, 'server_id', int)
+                    self.__validation._non_negative(server_id, 'server_id')
+                    self.__validation._upper_bound(server_id, 'server_id', len(servers_args))

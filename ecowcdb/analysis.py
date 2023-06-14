@@ -257,7 +257,7 @@ class Analysis:
 
     def __results_table(self, foi: int) -> str:
 
-        # Not validating foi due to error with empty network
+        self.__validation.foi(foi, self.__net.num_flows, False)
 
         table = self.__HEADER + convert_result_units(self.__results[foi], self.__delay_unit, self.__runtime_unit)
 
