@@ -12,9 +12,12 @@ class LPErrorType(Enum):
     """
      Enum used for type of the error.
     """
+    AccuracyError = 0
     TimeoutError = 1
-    AccuracyError = 2
-    SuboptimalSolutionWarning = 3
+    InfeasibleProblemError = 2
+    LPSolveFailure = 3
+    SuboptimalSolutionWarning = 4
+    UnhandledLPError = 5
 
 
 class LPError(Exception):
@@ -60,7 +63,7 @@ class LPError(Exception):
 
 def check_LP_error(s: str) -> None:
     """
-     Called after every lp_solve call. Raises exceptions if necessary
+     Called after every lp_solve call. Raises exceptions if necessary.
      
      Args:
      	 s (str, required): The string to check. Output of lp_solve.
@@ -69,10 +72,21 @@ def check_LP_error(s: str) -> None:
      	 LPError: The correct type of LPError.
     """
     s_split = s.split('\n')
-    if s_split[-2] == 'Timeout':
-        raise LPError(LPErrorType.TimeoutError)
+    
+    # Known and handled errors:
     if s_split[-2] == 'Accuracy error':
         raise LPError(LPErrorType.AccuracyError)
+    if s_split[-2] == 'Timeout':
+        raise LPError(LPErrorType.TimeoutError)
+    if s_split[0] == 'This problem is infeasible':
+        raise LPError(LPErrorType.InfeasibleProblemError)
+    if s_split[-2] == 'lp_solve failed':
+        raise LPError(LPErrorType.LPSolveFailure)
     if s_split[0] == 'Suboptimal solution':
         raise LPError(LPErrorType.SuboptimalSolutionWarning)
+    
+    # General check for correctness of the output:
+    if s_split[1].startswith('Value of objective function:'):
+        return
+    raise LPError(LPErrorType.UnhandledLPError)
     

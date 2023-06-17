@@ -75,13 +75,19 @@ class SfaLP:
             print('Solving:', self.filepath)
         s = sp.run(LPSOLVEPATH + ["-S2", self.filepath], stdout=sp.PIPE, encoding='utf-8').stdout
 
+        # Pre-check for LP_Error checking. We don't consider infeasible solution error as an actual error in sfa.
+        if s.startswith('This problem is infeasible'):
+            for f in range(self.forest.num_flows):
+                self.forest.flows[f].arrival_curve[0].sigma = np.inf 
+            return self.forest
+        
         check_LP_error(s)
         
         tab_values = s.split('\n')[4:-1]
         values = [[token for token in line.split(' ') if not token == ""] for line in tab_values]
-        if not values:
-            for f in range(self.forest.num_flows):
-                self.forest.flows[f].arrival_curve[0].sigma = np.inf
+        # if not values:
+        #     for f in range(self.forest.num_flows):
+        #         self.forest.flows[f].arrival_curve[0].sigma = np.inf
         for [s1, s2] in values:
             if s1[0] == 'x':
                 self.forest.flows[int(float(s1[1:]))].arrival_curve[0].sigma = float(s2)

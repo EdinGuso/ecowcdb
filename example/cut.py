@@ -21,7 +21,7 @@ def delay_by_index_demo():
     load = 0.5
 
     net = Networks.Ring().full(R, L, S, N, load, NetworkType.Symmetric)
-    analysis = Analysis(net, timeout=600, temp_folder='../temp/',
+    analysis = Analysis(net, timeout=1, temp_folder='../temp/',
                         verbose=[VerboseKW.Forest, VerboseKW.LPErrorMsg])
     delay = analysis.delay_by_index(0, 252)
     print(f'{delay=}')
@@ -47,7 +47,7 @@ def quick_demo():
     R = 10**7 # Kb/s
     L = 10**-5 # s
     S = 8 # Kb
-    N = 5 # servers
+    N = 3 # servers
     load = 0.9
 
     net = Networks.Ring().full(R, L, S, N, load, NetworkType.AsymmetricFlow)

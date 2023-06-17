@@ -128,31 +128,32 @@ class Analysis:
                     return PLP.all_delays
                 return PLP.delay(foi)
             except LPError as lperror:
-                match lperror.error_type():
-                    case LPErrorType.AccuracyError:
-                        if VerboseKW.LPErrorMsg in self.__verbose:
-                            print(f'{lperror} encountered for {scale_factor=}. Rescaling the problem...')
+                error_msg = ''
+                if lperror.error_type() in [LPErrorType.AccuracyError, LPErrorType.TimeoutError, LPErrorType.LPSolveFailure]:
+                    if scale_factor_index == len(self.__SCALE_FACTORS)-1:
+                        error_msg = f'{lperror} encountered for {scale_factor=}. Could not solve after trying every scaling factor. Skipping this cut!'
+                        could_not_solve = True
+                    else:
+                        error_msg = f'{lperror} encountered for {scale_factor=}. Rescaling the problem...'
                         scale_factor_index += 1
-                    case LPErrorType.TimeoutError:
-                        if VerboseKW.LPErrorMsg in self.__verbose:
-                            print(f'{lperror} encountered for {scale_factor=}. Rescaling the problem...')
-                        scale_factor_index += 1
-                    case LPErrorType.SuboptimalSolutionWarning:
-                        if VerboseKW.LPErrorMsg in self.__verbose:
-                            if timeout == self.__timeout:
-                                print(f'{lperror} encountered for {timeout=}. Maximum timeout reached')
-                                self.__timeout_factor_index = len(self.__TIMEOUT_FACTORS)
-                            else:
-                                print(f'{lperror} encountered for {timeout=}. Increasing the timeout value...')
-                                self.__timeout_factor_index += 1
-                    case _:
-                        raise ValueError(f'Unhandled error type: {lperror}')
-                if scale_factor_index >= len(self.__SCALE_FACTORS) or self.__timeout_factor_index >= len(self.__TIMEOUT_FACTORS):
-                    self.__timeout_factor_index -= 1
+                elif lperror.error_type() in [LPErrorType.SuboptimalSolutionWarning]:
+                    if timeout == self.__timeout:
+                        error_msg = f'{lperror} encountered for {timeout=}. Maximum timeout reached. Skipping this cut!'
+                        could_not_solve = True
+                    elif self.__timeout_factor_index == len(self.__TIMEOUT_FACTORS)-1:
+                        error_msg = f'{lperror} encountered for {timeout=}. Could not solve after trying every timeout factor. Skipping this cut!'
+                        could_not_solve = True
+                    else:
+                        error_msg = f'{lperror} encountered for {timeout=}. Increasing the timeout value...'
+                        self.__timeout_factor_index += 1
+                elif lperror.error_type() in [LPErrorType.InfeasibleProblemError, LPErrorType.UnhandledLPError]:
+                    error_msg = f'{lperror} encountered. Could not solve the LP. Skipping this cut!'
                     could_not_solve = True
-
-        if VerboseKW.LPErrorMsg in self.__verbose:
-            print('Could not solve the LP! Skipping this cut')
+                else:
+                    raise ValueError(f'Unhandled error type: {lperror}.')
+                
+                if VerboseKW.LPErrorMsg in self.__verbose:
+                    print(error_msg)
 
         return float('inf')
 
