@@ -7,6 +7,9 @@ from itertools import combinations
 from random import randint, sample, seed
 from typing import List, Tuple
 
+# Third-Party Library Imports
+from tqdm import tqdm
+
 # Local Imports - ecowcdb libraries
 from ecowcdb.options import ForestGeneration
 
@@ -18,7 +21,7 @@ from ecowcdb.panco.descriptor.server import Server
 
 
 
-def __all_forests(net: Network, min_edges: int) -> List[List[Tuple[int, int]]]:
+def __all_forests(net: Network, min_edges: int, verbose: bool) -> List[List[Tuple[int, int]]]:
     """
      Returns all valid forests for the given network.
      This is a helper function for generate_forests.
@@ -26,20 +29,29 @@ def __all_forests(net: Network, min_edges: int) -> List[List[Tuple[int, int]]]:
      Args:
      	 net (Network, required): Network to generate forests for.
      	 min_edges (int, required): Minimum number of edges that should be included in the forest.
+         verbose (bool, required): Whether the progressbar will be displayed or not
      
      Returns: 
      	 List[List[Tuple[int, int]]]: List of forests, where each forest is a list of edge tuples.
     """
     forests = []
     edges = list(net.edges.keys())
-    for i in range(min_edges, len(edges)+1):
-        for subset_edges in combinations(edges, i):
-            if is_forest(net.decomposition(list(subset_edges))[0]):
-                forests.append(list(subset_edges))
+    if verbose:
+        with tqdm(total=2**len(edges), desc='Selecting all valid forests from all cuts', unit='cut') as pbar:
+            for i in range(min_edges, len(edges)+1):
+                for subset_edges in combinations(edges, i):
+                    if is_forest(net.decomposition(list(subset_edges))[0]):
+                        forests.append(list(subset_edges))
+                    pbar.update(1)
+    else:
+        for i in range(min_edges, len(edges)+1):
+            for subset_edges in combinations(edges, i):
+                if is_forest(net.decomposition(list(subset_edges))[0]):
+                    forests.append(list(subset_edges))
     
     return forests
 
-def __subset_forests(net: Network, min_edges: int, num_forests: int)-> List[List[Tuple[int, int]]]:
+def __subset_forests(net: Network, min_edges: int, num_forests: int, verbose: bool)-> List[List[Tuple[int, int]]]:
     """
      Returns a random subset of valid forests for the given network.
      This is a helper function for generate_forests.
@@ -48,6 +60,7 @@ def __subset_forests(net: Network, min_edges: int, num_forests: int)-> List[List
      	 net (Network, required): Network to generate forests for.
      	 min_edges (int, required): Minimum number of edges that should be included in the forest.
      	 num_forests (int, required): The number of forests to be returned.
+         verbose (bool, required): Whether the progressbar will be displayed or not
           
      Raises:
          ValueError: If sampling a random forest fails too many times consecutively.
@@ -64,17 +77,30 @@ def __subset_forests(net: Network, min_edges: int, num_forests: int)-> List[List
     forests = [[]]
     edges = list(net.edges.keys())
     consecutive_fails = 0
-    # Randomly sample the forests and add them to the list of valid forests.
-    while len(forests) < num_forests:
-        num_edges = randint(min_edges,len(edges))
-        subset_edges = sorted(sample(edges, num_edges), key=lambda x: x[0])
-        if subset_edges not in forests and is_forest(net.decomposition(subset_edges)[0]):
-            forests.append(subset_edges)
-            consecutive_fails = 0
-        else:
-            consecutive_fails += 1
-            if consecutive_fails > FAIL_LIMIT:
-                raise ValueError(f'Argument \'num_forests\' exceedes the number of valid forests')
+    if verbose:
+        with tqdm(total=num_forests, desc='Selecting a subset of forests at random', unit='forest', initial=1) as pbar:
+            while len(forests) < num_forests:
+                num_edges = randint(min_edges,len(edges))
+                subset_edges = sorted(sample(edges, num_edges), key=lambda x: x[0])
+                if subset_edges not in forests and is_forest(net.decomposition(subset_edges)[0]):
+                    forests.append(subset_edges)
+                    consecutive_fails = 0
+                    pbar.update(1)
+                else:
+                    consecutive_fails += 1
+                    if consecutive_fails > FAIL_LIMIT:
+                        raise ValueError(f'Argument \'num_forests\' exceedes the number of valid forests')
+    else:
+        while len(forests) < num_forests:
+            num_edges = randint(min_edges,len(edges))
+            subset_edges = sorted(sample(edges, num_edges), key=lambda x: x[0])
+            if subset_edges not in forests and is_forest(net.decomposition(subset_edges)[0]):
+                forests.append(subset_edges)
+                consecutive_fails = 0
+            else:
+                consecutive_fails += 1
+                if consecutive_fails > FAIL_LIMIT:
+                    raise ValueError(f'Argument \'num_forests\' exceedes the number of valid forests')
 
     # Sort the forests based on the length. Smaller forests will be processed first.
     return sorted(forests, key=lambda x: len(x))
@@ -109,7 +135,7 @@ def is_forest(net: Network) -> bool:
 
     return True
 
-def generate_forests(net: Network, forest_generation: ForestGeneration, min_edges: int, num_forests: int
+def generate_forests(net: Network, forest_generation: ForestGeneration, min_edges: int, num_forests: int, verbose: bool
                      ) -> List[List[Tuple[int, int]]]:
     """
      Generate forests based on the network.
@@ -133,11 +159,11 @@ def generate_forests(net: Network, forest_generation: ForestGeneration, min_edge
         case ForestGeneration.Empty:
             return []
         case ForestGeneration.Partial:
-            return __subset_forests(net, min_edges, num_forests)
+            return __subset_forests(net, min_edges, num_forests, verbose)
         case ForestGeneration.All:
-            return __all_forests(net, min_edges)
+            return __all_forests(net, min_edges, verbose)
         case _:
-            raise ValueError(f'Unhandled forest generation type: {generate_forests}')
+            raise ValueError(f'Unhandled forest generation type: {forest_generation}')
 
 def generate_symmetric_forests(forest: List[Tuple[int, int]], N: int) -> List[List[Tuple[int, int]]]:
     """

@@ -25,8 +25,9 @@ class VerboseKW(Enum):
     Network = 0
     Forest = 1
     ProgressBar = 2
-    LPProgress = 3
-    LPErrorMsg = 4
+    ForestProgressBar = 3
+    LPProgress = 4
+    LPErrorMsg = 5
 
 
 class NetworkType(Enum):

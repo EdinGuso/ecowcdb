@@ -38,9 +38,8 @@ class Analysis:
     __verbose: List[VerboseKW]
     __total_runtime: float
     __num_iters: int
-    __timeout_factor_index: int
+    __timeout_factor: int
     __SCALE_FACTORS: List[float]
-    __TIMEOUT_FACTORS: List[float]
     __HEADER: List[Tuple[str, str, str, str]]
     __RESULTS_FILE_FORMAT: str
     __RAW_FILE_FORMAT: str
@@ -55,7 +54,8 @@ class Analysis:
         self.__validation.constructor_arguments(net, forest_generation, num_forests, min_edges, timeout, delay_unit, runtime_unit, temp_folder, results_folder, verbose)
         self.__net = net
         self.__forest_generation = forest_generation
-        self.__forests = generate_forests(net, forest_generation, min_edges, num_forests)
+        forest_generation_verbose = True if VerboseKW.ForestProgressBar in verbose else False
+        self.__forests = generate_forests(net, forest_generation, min_edges, num_forests, forest_generation_verbose)
         self.__timeout = timeout
         self.__delay_unit = delay_unit
         self.__runtime_unit = runtime_unit
@@ -65,9 +65,8 @@ class Analysis:
         self.__results = {}
         self.__total_runtime = 0.0
         self.__num_iters = 0
-        self.__timeout_factor_index = 0
+        self.__timeout_factor = 2
         self.__SCALE_FACTORS = [1.0, 0.1, 10.0] # open to discussion
-        self.__TIMEOUT_FACTORS = [3.0, 10.0, 50.0] # open to discussion
         self.__HEADER = generate_header(delay_unit, runtime_unit)
         self.__RESULTS_FILE_FORMAT = '.txt'
         self.__RAW_FILE_FORMAT = '.pickle'
@@ -117,9 +116,8 @@ class Analysis:
         could_not_solve = False
         while not could_not_solve:
             scale_factor = self.__SCALE_FACTORS[scale_factor_index]
-            timeout_factor = self.__TIMEOUT_FACTORS[self.__timeout_factor_index]
             scaled_net = scale_network(self.__net, scale_factor)
-            timeout = self.__compute_timeout(timeout_factor, _all_delays)
+            timeout = self.__compute_timeout(self.__timeout_factor, _all_delays)
             PLP = FifoLP(scaled_net, list_edges=forest, sfa=True, tfa=True,
                          timeout=timeout, temp_folder=self.__temp_folder, filename="fifo", verbose=lp_verbose)
             PLP.forest = PLP.forest.make_feed_forward()
@@ -140,12 +138,9 @@ class Analysis:
                     if timeout == self.__timeout:
                         error_msg = f'{lperror} encountered for {timeout=}. Maximum timeout reached. Skipping this cut!'
                         could_not_solve = True
-                    elif self.__timeout_factor_index == len(self.__TIMEOUT_FACTORS)-1:
-                        error_msg = f'{lperror} encountered for {timeout=}. Could not solve after trying every timeout factor. Skipping this cut!'
-                        could_not_solve = True
                     else:
-                        error_msg = f'{lperror} encountered for {timeout=}. Increasing the timeout value...'
-                        self.__timeout_factor_index += 1
+                        error_msg = f'{lperror} encountered for {timeout=}. Doubling the timeout value...' #
+                        self.__timeout_factor *= 2
                 elif lperror.error_type() in [LPErrorType.InfeasibleProblemError, LPErrorType.UnhandledLPError]:
                     error_msg = f'{lperror} encountered. Could not solve the LP. Skipping this cut!'
                     could_not_solve = True
