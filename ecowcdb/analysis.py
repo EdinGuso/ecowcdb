@@ -41,7 +41,7 @@ class Analysis:
     __timeout_factor_index: int
     __SCALE_FACTORS: List[float]
     __TIMEOUT_FACTORS: List[float]
-    __HEADER: List[Tuple[str, str, str]]
+    __HEADER: List[Tuple[str, str, str, str]]
     __RESULTS_FILE_FORMAT: str
     __RAW_FILE_FORMAT: str
 
@@ -275,7 +275,6 @@ class Analysis:
 
     def display_all_results(self) -> None:
 
-        # does not work when loading a file, and initing with empty network
         for foi in range(self.__net.num_flows):
             self.display_results(foi)
 
@@ -290,7 +289,6 @@ class Analysis:
 
     def save_all_results(self, filename: str) -> None:
 
-        # does not work when loading a file, and initing with empty network
         for foi in range(self.__net.num_flows):
             self.save_results(foi, filename)
 

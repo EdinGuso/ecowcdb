@@ -66,7 +66,7 @@ def __unit_factor(unit: DisplayUnit) -> int | float:
         case _:
             raise ValueError(f'Unhandled unit type: {unit}')
 
-def generate_header(delay_unit: DisplayUnit, runtime_unit: DisplayUnit) -> List[Tuple[str, str, str]]:
+def generate_header(delay_unit: DisplayUnit, runtime_unit: DisplayUnit) -> List[Tuple[str, str, str, str]]:
     """
      Generates the header for the results table.
      
@@ -75,13 +75,13 @@ def generate_header(delay_unit: DisplayUnit, runtime_unit: DisplayUnit) -> List[
      	 runtime_unit (DisplayUnit, required): Runtime unit to use for runtime.
      
      Returns: 
-     	 List[Tuple[str, str, str]]: List of tuples where each tuple consists of 3 strings.
+     	 List[Tuple[str, str, str]]: List of tuples where each tuple consists of 4 strings.
     """
-    return [('Edges Kept', f'Delay ({__unit_str(delay_unit)})', f'Elapsed Time ({__unit_str(runtime_unit)})')]
+    return [('# of Edges', 'Edges Kept', f'Delay ({__unit_str(delay_unit)})', f'Elapsed Time ({__unit_str(runtime_unit)})')]
 
 def convert_result_units(results: List[Tuple[List[Tuple[int, int]], float, float]],
                          delay_unit: DisplayUnit, runtime_unit: DisplayUnit
-                         ) -> List[Tuple[str, str, str]]:
+                         ) -> List[Tuple[str, str, str, str]]:
     """
      Scales the results by the correct factor according to the display unit.
      Then, turns all the results into strings.
@@ -93,11 +93,13 @@ def convert_result_units(results: List[Tuple[List[Tuple[int, int]], float, float
      	 runtime_unit (DisplayUnit, required): Runtime unit to use for runtime.
 
      Returns: 
-     	 List[Tuple[str, str, str]]: List of tuples where each tuple consists of 3 strings.
+     	 List[Tuple[str, str, str, str]]: List of tuples where each tuple consists of 4 strings. First string is number
+         of edges, second string is the list of edges, third one is the delay, and the last one is the runtime.
     """
     table = []
     for entry in results:
-        table.append((entry[0].__str__(),
+        table.append((len(entry[0]).__str__(),
+                      entry[0].__str__(),
                       (entry[1] * __unit_factor(delay_unit)).__str__(),
                       (entry[2] * __unit_factor(runtime_unit)).__str__()))
     return table

@@ -36,7 +36,7 @@ def delay_by_forest_demo():
     load = 0.5
 
     net = Networks.Ring().full(R, L, S, N, load, NetworkType.Symmetric)
-    analysis = Analysis(net, forest_generation=ForestGeneration.Empty, timeout=10,
+    analysis = Analysis(net, forest_generation=ForestGeneration.Empty, timeout=60,
                         temp_folder='../temp/', verbose=[VerboseKW.LPErrorMsg])
     delay = 1000 * analysis.delay(0, [(0, 1), (1, 2), (2, 3), (10, 11), (11, 0)])
     print(f'{delay=}')
@@ -47,7 +47,7 @@ def quick_demo():
     R = 10**7 # Kb/s
     L = 10**-5 # s
     S = 8 # Kb
-    N = 3 # servers
+    N = 5 # servers
     load = 0.9
 
     net = Networks.Ring().full(R, L, S, N, load, NetworkType.AsymmetricFlow)
@@ -123,8 +123,8 @@ def stat_demo():
 
 if __name__ == '__main__':
     # delay_by_index_demo()
-    delay_by_forest_demo()
-    # quick_demo()
+    # delay_by_forest_demo()
+    quick_demo()
     # large_demo()
     # partial_demo()
     # load_demo()
