@@ -139,9 +139,9 @@ class Analysis:
                         error_msg = f'{lperror} encountered for {timeout=}. Maximum timeout reached. Skipping this cut!'
                         could_not_solve = True
                     else:
-                        error_msg = f'{lperror} encountered for {timeout=}. Doubling the timeout value...' #
+                        error_msg = f'{lperror} encountered for {timeout=}. Doubling the timeout value...'
                         self.__timeout_factor *= 2
-                elif lperror.error_type() in [LPErrorType.InfeasibleProblemError, LPErrorType.UnhandledLPError]:
+                elif lperror.error_type() in [LPErrorType.InfeasibleProblemError, LPErrorType.UnboundedProblemError, LPErrorType.UnhandledLPError]:
                     error_msg = f'{lperror} encountered. Could not solve the LP. Skipping this cut!'
                     could_not_solve = True
                 else:

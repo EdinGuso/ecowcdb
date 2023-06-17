@@ -15,9 +15,10 @@ class LPErrorType(Enum):
     AccuracyError = 0
     TimeoutError = 1
     InfeasibleProblemError = 2
-    LPSolveFailure = 3
-    SuboptimalSolutionWarning = 4
-    UnhandledLPError = 5
+    UnboundedProblemError = 3
+    LPSolveFailure = 4
+    SuboptimalSolutionWarning = 5
+    UnhandledLPError = 6
 
 
 class LPError(Exception):
@@ -80,6 +81,8 @@ def check_LP_error(s: str) -> None:
         raise LPError(LPErrorType.TimeoutError)
     if s_split[0] == 'This problem is infeasible':
         raise LPError(LPErrorType.InfeasibleProblemError)
+    if s_split[0] == 'This problem is unbounded':
+        raise LPError(LPErrorType.UnboundedProblemError)
     if s_split[-2] == 'lp_solve failed':
         raise LPError(LPErrorType.LPSolveFailure)
     if s_split[0] == 'Suboptimal solution':

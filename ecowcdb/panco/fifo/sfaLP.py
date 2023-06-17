@@ -19,7 +19,7 @@ from typing import List
 
 from ecowcdb.panco.descriptor.network import Network
 from ecowcdb.panco.lpSolvePath import LPSOLVEPATH
-from ecowcdb.util.errors import check_LP_error
+from ecowcdb.util.errors import check_LP_error, LPError
 
 
 class SfaLP:
@@ -74,15 +74,15 @@ class SfaLP:
         if self.verbose:
             print('Solving:', self.filepath)
         s = sp.run(LPSOLVEPATH + ["-S2", self.filepath], stdout=sp.PIPE, encoding='utf-8').stdout
-
-        # Pre-check for LP_Error checking. We don't consider infeasible solution error as an actual error in sfa.
-        if s.startswith('This problem is infeasible'):
+        
+        # If there is an error while computing SFA, return infinite bound.
+        try:
+            check_LP_error(s)
+        except LPError as _:
             for f in range(self.forest.num_flows):
                 self.forest.flows[f].arrival_curve[0].sigma = np.inf 
             return self.forest
-        
-        check_LP_error(s)
-        
+
         tab_values = s.split('\n')[4:-1]
         values = [[token for token in line.split(' ') if not token == ""] for line in tab_values]
         # if not values:
