@@ -23,8 +23,7 @@ from ecowcdb.panco.descriptor.server import Server
 
 def __all_forests(net: Network, min_edges: int, verbose: bool) -> List[List[Tuple[int, int]]]:
     """
-     Returns all valid forests for the given network.
-     This is a helper function for generate_forests.
+     Returns all valid forests for the given network. This is a helper function for generate_forests.
      
      Args:
      	 net (Network, required): Network to generate forests for.
@@ -34,27 +33,28 @@ def __all_forests(net: Network, min_edges: int, verbose: bool) -> List[List[Tupl
      Returns: 
      	 List[List[Tuple[int, int]]]: List of forests, where each forest is a list of edge tuples.
     """
-    forests = []
-    edges = list(net.edges.keys())
-    if verbose:
-        with tqdm(total=2**len(edges), desc='Selecting all valid forests from all cuts', unit='cut') as pbar:
-            for i in range(min_edges, len(edges)+1):
-                for subset_edges in combinations(edges, i):
-                    if is_forest(net.decomposition(list(subset_edges))[0]):
-                        forests.append(list(subset_edges))
-                    pbar.update(1)
-    else:
+    # Inner function defined to avoid code duplication.
+    def loop():
         for i in range(min_edges, len(edges)+1):
             for subset_edges in combinations(edges, i):
                 if is_forest(net.decomposition(list(subset_edges))[0]):
                     forests.append(list(subset_edges))
+                if verbose:
+                    pbar.update(1)
+
+    forests = []
+    edges = list(net.edges.keys())
+    if verbose:
+        with tqdm(total=2**len(edges), desc='Selecting all valid forests from all cuts', unit='cut') as pbar:
+            loop()
+    else:
+        loop()
     
     return forests
 
 def __subset_forests(net: Network, min_edges: int, num_forests: int, verbose: bool)-> List[List[Tuple[int, int]]]:
     """
-     Returns a random subset of valid forests for the given network.
-     This is a helper function for generate_forests.
+     Returns a random subset of valid forests for the given network. This is a helper function for generate_forests.
      
      Args:
      	 net (Network, required): Network to generate forests for.
@@ -69,6 +69,21 @@ def __subset_forests(net: Network, min_edges: int, num_forests: int, verbose: bo
      Returns: 
      	 List[List[Tuple[int, int]]]: List of forests, where each forest is a list of edge tuples.
     """
+    # Inner function defined to avoid code duplication.
+    def loop():
+        while len(forests) < num_forests:
+            num_edges = randint(min_edges,len(edges))
+            subset_edges = sorted(sample(edges, num_edges), key=lambda x: x[0])
+            if subset_edges not in forests and is_forest(net.decomposition(subset_edges)[0]):
+                forests.append(subset_edges)
+                consecutive_fails = 0
+                if verbose:
+                    pbar.update(1)
+            else:
+                consecutive_fails += 1
+                if consecutive_fails > FAIL_LIMIT:
+                    raise ValueError(f'Argument \'num_forests\' exceedes the number of valid forests')
+
     if num_forests == 0:
         return []
     
@@ -79,28 +94,9 @@ def __subset_forests(net: Network, min_edges: int, num_forests: int, verbose: bo
     consecutive_fails = 0
     if verbose:
         with tqdm(total=num_forests, desc='Selecting a subset of forests at random', unit='forest', initial=1) as pbar:
-            while len(forests) < num_forests:
-                num_edges = randint(min_edges,len(edges))
-                subset_edges = sorted(sample(edges, num_edges), key=lambda x: x[0])
-                if subset_edges not in forests and is_forest(net.decomposition(subset_edges)[0]):
-                    forests.append(subset_edges)
-                    consecutive_fails = 0
-                    pbar.update(1)
-                else:
-                    consecutive_fails += 1
-                    if consecutive_fails > FAIL_LIMIT:
-                        raise ValueError(f'Argument \'num_forests\' exceedes the number of valid forests')
+            loop()
     else:
-        while len(forests) < num_forests:
-            num_edges = randint(min_edges,len(edges))
-            subset_edges = sorted(sample(edges, num_edges), key=lambda x: x[0])
-            if subset_edges not in forests and is_forest(net.decomposition(subset_edges)[0]):
-                forests.append(subset_edges)
-                consecutive_fails = 0
-            else:
-                consecutive_fails += 1
-                if consecutive_fails > FAIL_LIMIT:
-                    raise ValueError(f'Argument \'num_forests\' exceedes the number of valid forests')
+        loop()
 
     # Sort the forests based on the length. Smaller forests will be processed first.
     return sorted(forests, key=lambda x: len(x))
