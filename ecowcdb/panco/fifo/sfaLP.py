@@ -12,14 +12,14 @@ __email__ = "anne.bouillard@huawei.com"
 __copyright__ = "Copyright (C) 2022, Huawei Technologies France"
 __license__ = "BSD-3"
 
-
 import numpy as np
 import subprocess as sp
 from typing import List
 
 from ecowcdb.panco.descriptor.network import Network
 from ecowcdb.panco.lpSolvePath import LPSOLVEPATH
-from ecowcdb.util.errors import check_LP_error, LPError
+
+from ecowcdb.util.errors import LPError, check_LP_error
 
 
 class SfaLP:
@@ -71,6 +71,7 @@ class SfaLP:
         file.write(';\n')
         self.sfa_variables(file)
         file.close()
+        
         if self.verbose:
             print('Solving:', self.filepath)
         s = sp.run(LPSOLVEPATH + ["-S2", self.filepath], stdout=sp.PIPE, encoding='utf-8').stdout

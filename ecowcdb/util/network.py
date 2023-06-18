@@ -4,6 +4,7 @@
 
 # Standard Library Imports
 from itertools import combinations
+from math import comb
 from random import randint, sample, seed
 from typing import List, Tuple
 
@@ -44,8 +45,12 @@ def __all_forests(net: Network, min_edges: int, verbose: bool) -> List[List[Tupl
 
     forests = []
     edges = list(net.edges.keys())
+    num_cuts = 2**len(edges)
+    for i in range(0, min_edges):
+        num_cuts -= comb(len(edges), i)
+    
     if verbose:
-        with tqdm(total=2**len(edges), desc='Selecting all valid forests from all cuts', unit='cut') as pbar:
+        with tqdm(total=num_cuts, desc='Selecting all valid forests from all cuts', unit='cut') as pbar:
             loop()
     else:
         loop()
@@ -70,7 +75,6 @@ def __subset_forests(net: Network, min_edges: int, num_forests: int, verbose: bo
      	 List[List[Tuple[int, int]]]: List of forests, where each forest is a list of edge tuples.
     """
     # Inner function defined to avoid code duplication.
-    
     def loop():
         FAIL_LIMIT = 10**4
         consecutive_fails = 0
@@ -89,7 +93,6 @@ def __subset_forests(net: Network, min_edges: int, num_forests: int, verbose: bo
 
     if num_forests == 0:
         return []
-    
     
     seed(0)
     edges = list(net.edges.keys())

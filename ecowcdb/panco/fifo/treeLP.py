@@ -75,7 +75,6 @@ class TreeLP:
 
         if self.verbose:
             print('Solving:', self.filepath_delay)
-
         s = sp.run(LPSOLVEPATH + ["-timeout", f"{self.timeout}", "-S1", self.filepath_delay], stdout=sp.PIPE, encoding='utf-8').stdout
 
         check_LP_error(s)
@@ -100,7 +99,6 @@ class TreeLP:
 
         if self.verbose:
             print('Solving:', self.filepath_backlog)
-
         s = sp.run(LPSOLVEPATH + ["-timeout", f"{self.timeout}", "-S1", self.filepath_backlog], stdout=sp.PIPE, encoding='utf-8').stdout
         
         check_LP_error(s)

@@ -131,7 +131,6 @@ class FifoLP:
 
         if self.verbose:
             print('Solving:', self.filepath)
-        
         s = sp.run(LPSOLVEPATH + ["-timeout", f"{self.timeout}", "-S2", self.filepath], stdout=sp.PIPE, encoding='utf-8').stdout
         
         check_LP_error(s)
@@ -139,7 +138,6 @@ class FifoLP:
         tab_values = s.split('\n')[4:-1]
         values = [[token for token in line.split(' ') if not token == ""] for line in tab_values]
         tab_bursts = np.zeros(self.forest.num_flows)
-
         for [s1, s2] in values:
             if s1[0] == 'x':
                 tab_bursts[int(float(s1[1:]))] = float(s2)

@@ -149,8 +149,6 @@ class Validation:
              callable (public): Checks whether a given function is callable.
              foi (public): Validates the given foi.
              forest (public): Validates the given forest.
-             index (public): Validates the given index.
-             indexes (public): Validates given indexes.
              filename (public): Validates the given filename.
         """
         # __validation: Validation
@@ -211,22 +209,14 @@ class Validation:
                 raise ValueError(f'Cannot execute function \'{foo.__name__}\' because argument \'forest_generation\'\
                                  option was set to {ForestGeneration.Empty} in the constructor')
 
-        def foi(self, foi: int | None, num_flows: int, all_delays: bool) -> None:
+        def foi(self, foi: int, num_flows: int) -> None:
             """
              Validates the given foi. Checks if it is an int, non-negative, and less than the largest possible flow.
              
              Args:
-                 foi (int | None, required): Flow of interest to be validated. None if all_delays is True.
+                 foi (int, required): Flow of interest to be validated.
              	 num_flows (int, required): The number of flows in the network.
-             	 all_delays (bool, required): Indicates whether all_delays are being computed.
-             
-             Raises: 
-             	 ValueError: If foi is not None when all_delays is True.
             """
-            if all_delays:
-                if foi is not None:
-                    raise ValueError(f'Argument \'foi\' must be {None} when argument \'all_delays\' is set to {True}')
-                return
             self.__validation._type(foi, 'foi', int)
             self.__validation._non_negative(foi, 'foi')
             self.__validation._upper_bound(foi, 'foi', num_flows-1)
@@ -248,27 +238,6 @@ class Validation:
                     raise ValueError(f'Edges within \'forest\' must be valid edges of this network')
             if not is_forest(net.decomposition(forest)[0]):
                 raise ValueError(f'Argument \'forest\' is not a valid forest')
-
-        def index(self, index: int, forests: List[List[Tuple[int, int]]]) -> None:
-            """
-             Validates the given index. Checks if it is an int, non-negative, and less than the number of forests.
-             
-             Args:
-                 index (int, required): Index to be validated.
-             	 forests (List[List[Tuple[int, int]]], required): All forests generated for this analysis.
-            """
-            self.__validation._type(index, 'index', int)
-            self.__validation._non_negative(index, 'index')            
-            self.__validation._upper_bound(index, 'index', len(forests)-1)            
-            
-        def indexes(self, indexes: List[int]) -> None:
-            """
-             Validates given indexes. Checks if it is a list.
-
-             Args:
-                 indexes (List[int], required): Indexes to be validated.
-            """
-            self.__validation._type(indexes, 'indexes', list)
             
         def filename(self, filename: str) -> None:
             """

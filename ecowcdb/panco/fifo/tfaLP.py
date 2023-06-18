@@ -16,12 +16,12 @@ import numpy as np
 import subprocess as sp
 from typing import List
 
-
 from ecowcdb.panco.descriptor.network import Network
 from ecowcdb.panco.descriptor.flow import Flow
 from ecowcdb.panco.descriptor.curves import TokenBucket
 from ecowcdb.panco.lpSolvePath import LPSOLVEPATH
-from ecowcdb.util.errors import check_LP_error, LPError
+
+from ecowcdb.util.errors import LPError, check_LP_error
 
 
 class TfaLP:
@@ -109,6 +109,7 @@ class TfaLP:
         self.tfa_constraints_server(file)
         self.tfa_variables(file)
         file.close()
+        
         if self.verbose:
             print('Solving:', self.filepath)
         s = sp.run(LPSOLVEPATH + ["-S2", self.filepath], stdout=sp.PIPE, encoding='utf-8').stdout
