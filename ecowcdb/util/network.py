@@ -70,7 +70,10 @@ def __subset_forests(net: Network, min_edges: int, num_forests: int, verbose: bo
      	 List[List[Tuple[int, int]]]: List of forests, where each forest is a list of edge tuples.
     """
     # Inner function defined to avoid code duplication.
+    
     def loop():
+        FAIL_LIMIT = 10**4
+        consecutive_fails = 0
         while len(forests) < num_forests:
             num_edges = randint(min_edges,len(edges))
             subset_edges = sorted(sample(edges, num_edges), key=lambda x: x[0])
@@ -87,11 +90,10 @@ def __subset_forests(net: Network, min_edges: int, num_forests: int, verbose: bo
     if num_forests == 0:
         return []
     
-    FAIL_LIMIT = 10**4
+    
     seed(0)
-    forests = [[]]
     edges = list(net.edges.keys())
-    consecutive_fails = 0
+    forests = [[]]
     if verbose:
         with tqdm(total=num_forests, desc='Selecting a subset of forests at random', unit='forest', initial=1) as pbar:
             loop()

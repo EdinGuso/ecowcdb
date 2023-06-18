@@ -54,7 +54,7 @@ class Analysis:
         self.__validation.constructor_arguments(net, forest_generation, num_forests, min_edges, timeout, delay_unit, runtime_unit, temp_folder, results_folder, verbose)
         self.__net = net
         self.__forest_generation = forest_generation
-        forest_generation_verbose = True if VerboseKW.ForestProgressBar in verbose else False
+        forest_generation_verbose = True if VerboseKW.FG_ProgressBar in verbose else False
         self.__forests = generate_forests(net, forest_generation, min_edges, num_forests, forest_generation_verbose)
         self.__timeout = timeout
         self.__delay_unit = delay_unit
@@ -111,7 +111,7 @@ class Analysis:
         if VerboseKW.Forest in self.__verbose:
             print(f'Computing delay for {forest=}')
 
-        lp_verbose = True if VerboseKW.LPProgress in self.__verbose else False
+        lp_verbose = True if VerboseKW.LP_Details in self.__verbose else False
         scale_factor_index = 0
         could_not_solve = False
         while not could_not_solve:
@@ -147,7 +147,7 @@ class Analysis:
                 else:
                     raise ValueError(f'Unhandled error type: {lperror}.')
                 
-                if VerboseKW.LPErrorMsg in self.__verbose:
+                if VerboseKW.LP_Errors in self.__verbose:
                     print(error_msg)
 
         return float('inf')
@@ -180,7 +180,7 @@ class Analysis:
         
         result: List[Tuple[List[Tuple[int, int]], float, float]] = []
 
-        iterable = tqdm(iterable=self.__forests, desc=f'Calculating delay bounds for flow {foi}', unit='forest') if VerboseKW.ProgressBar in self.__verbose else self.__forests
+        iterable = tqdm(iterable=self.__forests, desc=f'Calculating delay bounds for flow {foi}', unit='forest') if VerboseKW.ES_ProgressBar in self.__verbose else self.__forests
 
         for forest in iterable:
 
@@ -208,7 +208,7 @@ class Analysis:
     # Always computes for foi = 0 first because it is symmetric anyway and we copy results
     def __exhaustive_search_symmetric_cycle(self) -> None:
         result: List[Tuple[List[Tuple[int, int]], float, float]] = []
-        iterable = tqdm(iterable=self.__forests, desc=f'Calculating delay bounds for all flows', unit='forest') if VerboseKW.ProgressBar in self.__verbose else self.__forests
+        iterable = tqdm(iterable=self.__forests, desc=f'Calculating delay bounds for all flows', unit='forest') if VerboseKW.ES_ProgressBar in self.__verbose else self.__forests
 
         pre_computed_forests = set()
         for forest in iterable:

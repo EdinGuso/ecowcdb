@@ -22,7 +22,7 @@ def delay_by_index_demo():
 
     net = Networks.Ring().full(R, L, S, N, load, NetworkType.Symmetric)
     analysis = Analysis(net, timeout=1, temp_folder='../temp/',
-                        verbose=[VerboseKW.Forest, VerboseKW.LPErrorMsg])
+                        verbose=[VerboseKW.Forest, VerboseKW.LP_Errors])
     delay = analysis.delay_by_index(0, 252)
     print(f'{delay=}')
 
@@ -37,7 +37,7 @@ def delay_by_forest_demo():
 
     net = Networks.Ring().full(R, L, S, N, load, NetworkType.Symmetric)
     analysis = Analysis(net, forest_generation=ForestGeneration.Empty, timeout=60,
-                        temp_folder='../temp/', verbose=[VerboseKW.LPErrorMsg])
+                        temp_folder='../temp/', verbose=[VerboseKW.LP_Errors])
     delay = 1000 * analysis.delay(0, [(0, 1), (1, 2), (2, 3), (10, 11), (11, 0)])
     print(f'{delay=}')
 
@@ -55,7 +55,7 @@ def quick_demo():
                         delay_unit=DisplayUnit.MicroSecond,
                         runtime_unit=DisplayUnit.MilliSecond,
                         temp_folder='../temp/',
-                        verbose=[VerboseKW.Network, VerboseKW.LPErrorMsg, VerboseKW.ProgressBar])
+                        verbose=[VerboseKW.Network, VerboseKW.LP_Errors, VerboseKW.ES_ProgressBar])
     analysis.exhaustive_search(0)
     analysis.display_results(0)
 
@@ -73,7 +73,7 @@ def large_demo():
                         delay_unit=DisplayUnit.MilliSecond,
                         runtime_unit=DisplayUnit.Second,
                         temp_folder='../temp/', results_folder='../results/',
-                        verbose=[VerboseKW.LPErrorMsg, VerboseKW.ProgressBar])
+                        verbose=[VerboseKW.LP_Errors, VerboseKW.ES_ProgressBar])
     analysis.exhaustive_search(0)
     analysis.save_results(0, 'large_full_ring_12_new')
     analysis.save_raw_results('large_full_ring_12_new')
@@ -93,7 +93,7 @@ def partial_demo():
     analysis = Analysis(net, forest_generation=ForestGeneration.Partial, num_forests=50, timeout=7200,
                         delay_unit=DisplayUnit.MicroSecond, runtime_unit=DisplayUnit.Minute,
                         temp_folder='../temp/', results_folder='../results/',
-                        verbose=[VerboseKW.LPErrorMsg, VerboseKW.ProgressBar])
+                        verbose=[VerboseKW.LP_Errors, VerboseKW.ES_ProgressBar])
     analysis.exhaustive_search(0)
     analysis.save_results(0, 'partial_full_ring_20')
     analysis.save_raw_results('partial_full_ring_20')
@@ -121,11 +121,31 @@ def stat_demo():
 
 
 
+def generic_demo():
+    R = 10**7 # Kb/s
+    L = 10**-5 # s
+    S = 8 # Kb
+    N = 9 # servers
+    load = 0.5
+
+    net = Networks.Mesh().simple(R, L, S, N, load, NetworkType.Symmetric)
+    analysis = Analysis(net, forest_generation=ForestGeneration.Partial, num_forests=20, min_edges=0, timeout=1800,
+                        delay_unit=DisplayUnit.MicroSecond, runtime_unit=DisplayUnit.Minute,
+                        temp_folder='../temp/', results_folder='../results/',
+                        verbose=[VerboseKW.LP_Errors, VerboseKW.ES_ProgressBar])
+    analysis.exhaustive_search(0)
+    analysis.save_results(0, 'mesh_9')
+    analysis.save_raw_results('mesh_9')
+    analysis.display_results(0)
+
+
+
 if __name__ == '__main__':
     # delay_by_index_demo()
     # delay_by_forest_demo()
-    quick_demo()
+    # quick_demo()
     # large_demo()
     # partial_demo()
     # load_demo()
     # stat_demo()
+    generic_demo()
