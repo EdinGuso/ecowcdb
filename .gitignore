@@ -6,5 +6,10 @@ __pycache__/
 # Linear Program files
 *.lp
 
+# Results files
+*.pickle
+*.txt
+*.png
+
 # Visual Studio Code folder
 .vscode/
