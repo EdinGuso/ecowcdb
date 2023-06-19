@@ -1,3 +1,7 @@
+"""
+ File containing the analysis tool.
+"""
+
 # Standard Library Imports
 from pickle import dump, load
 from math import ceil
@@ -25,8 +29,9 @@ from ecowcdb.util.validation import Validation
 
 class Analysis:
     """
-     Class for creating tandem networks. Tandem networks are networks arranged on a straight line. After creating
-     an object of the class, one can use that object to generate different types of tandem networks.
+     Class for analyzing networks. Can perform exhaustive search, partial search, and individual cut's delay analysis.
+     After the analysis, the user can either display the results, save the results to a text file, or save the results
+     object to a pickle file.
      
      Attributes:
          __validation (Validation, private): Validation object used to validate user inputs.
@@ -84,16 +89,44 @@ class Analysis:
     __RESULTS_FILE_FORMAT: str
     __RAW_FILE_FORMAT: str
 
-    def __init__(self, net: Network, forest_generation: ForestGeneration = ForestGeneration.All, num_forests: int = 0, min_edges: int = 0,
-                 timeout: int = 600, delay_unit: DisplayUnit = DisplayUnit.Second, runtime_unit: DisplayUnit = DisplayUnit.Second,
-                 temp_folder: str = '', results_folder: str = '', verbose: List[VerboseKW] = []
-                 ) -> None:
+    def __init__(self, net: Network, forest_generation: ForestGeneration = ForestGeneration.All, num_forests: int = 0,
+                 min_edges: int = 0, timeout: int = 600, delay_unit: DisplayUnit = DisplayUnit.Second,
+                 runtime_unit: DisplayUnit = DisplayUnit.Second, temp_folder: str = '', results_folder: str = '',
+                 verbose: List[VerboseKW] = []) -> None:
+        """
+        Initialize analysis. This function will validate all the inputs and generate everything needed to start the
+        analysis.
+        
+         Args:
+             net (Network, required): Network to analyze.
+             forest_generation (ForestGeneration, optional): Specifies the type of forest generation to use. Default is
+             ForestGeneration.All which means all valid forests are generated.
+             num_forests (int, optional): Number of forests to generate. This is only used when the forest_generation
+             is set to ForestGeneration.Partial. Default is 0 which means no forests will be generated.
+             min_edges (int, optional): Minimum number of edges in generated forests. Default is 0 which means there is
+             no restrictions on forest size.
+             timeout (int, optional): Hard limit for timeout [seconds]. Every lp_solve call will be at most this long.
+             Default is 600 [seconds].
+             delay_unit (DisplayUnit, optional): Unit of time in which the delays will be displayed in the results
+             table. Default is DelayUnit.Second.
+             runtime_unit (DisplayUnit, optional): Unit of time in which the runtimes will be displayed in the results
+             table. Default is DelayUnit.Second.
+             temp_folder (str, optional): Folder to store temporary .lp files. It is the user's responsibility to
+             ensure that the provided folder exists. Default is '' which means that temp files will be stored in the
+             directory from where the intial call was made.
+             results_folder (str, optional): Folder to store analysis results. It is the user's responsibility to
+             ensure that the provided folder exists. Default is '' which means that results will be stored in the
+             directory from where the intial call was made.
+             verbose (List[VerboseKW], optional): List of verbosity options. Default is [] which means all options are
+             disabled.
+        """
         self.__validation = Validation.Analysis()
-        self.__validation.constructor_arguments(net, forest_generation, num_forests, min_edges, timeout, delay_unit, runtime_unit, temp_folder, results_folder, verbose)
+        self.__validation.constructor_arguments(net, forest_generation, num_forests, min_edges, timeout, delay_unit,
+                                                runtime_unit, temp_folder, results_folder, verbose)
         self.__net = net
         self.__forest_generation = forest_generation
-        forest_generation_verbose = True if VerboseKW.FG_ProgressBar in verbose else False
-        self.__forests = generate_forests(net, forest_generation, min_edges, num_forests, forest_generation_verbose)
+        self.__forests = generate_forests(net, forest_generation, min_edges, num_forests,
+                                          True if VerboseKW.FG_ProgressBar in verbose else False)
         self.__timeout = timeout
         self.__delay_unit = delay_unit
         self.__runtime_unit = runtime_unit
@@ -104,7 +137,7 @@ class Analysis:
         self.__total_runtime = 0.0
         self.__num_iters = 0
         self.__timeout_factor = 2
-        self.__SCALE_FACTORS = [1.0, 0.1, 10.0] # open to discussion
+        self.__SCALE_FACTORS = [1.0, 0.1, 10.0]
         self.__HEADER = generate_header(delay_unit, runtime_unit)
         self.__RESULTS_FILE_FORMAT = '.txt'
         self.__RAW_FILE_FORMAT = '.pickle'
@@ -112,35 +145,47 @@ class Analysis:
         if VerboseKW.Network in self.__verbose:
             print(self.__net)
 
-    def __compute_timeout(self, timeout_factor: float, all_delays: bool) -> int:
+    def __compute_timeout(self, all_delays: bool) -> int:
+        """
+         Dynamic timeout computation method. This function is called before each delay computation.
+         
+         Args:
+         	 all_delays (bool, required): If true delay is being computed for all the flows, and the timeout value will
+             be properly scaled.
+         
+         Returns: 
+         	 int: The timeout to use during the lp_solve calls in delay computation.
+        """
         if self.__num_iters == 0:
             return self.__timeout
         average_runtime = self.__total_runtime / self.__num_iters
-        upper_bound = ceil(average_runtime * timeout_factor)
+        upper_bound = ceil(average_runtime * self.__timeout_factor)
         if self.__timeout < upper_bound:
             return self.__timeout
         if all_delays:
-            return upper_bound * self.__net.num_servers
+            return upper_bound * self.__net.num_flows
         return upper_bound
 
-        """_summary_
-
-        Args:
-            foi (int | None): _description_
-            forest (List[Tuple[int, int]]): _description_
-            _internal_call (bool, internal/private): _description_. Defaults to False.
-            _all_delays (bool, internal/private): _description_. Defaults to False.
-
-        Raises:
-            ValueError: _description_
-
-        Returns:
-            float | List[float]: _description_
-        """
-
-
-    # encapsulates all the interactions with the panco library
     def delay(self, foi: int | None, forest: List[Tuple[int, int]], _internal_call: bool = False, _all_delays:bool = False) -> float | List[float]:
+        """
+         Compute the delay for a given forest. This function encapsulates all the interactions with the panco library.
+         
+         Args:
+         	 foi (int | None, required): Flow of interest. None only if _all_delays is True.
+         	 forest (List[Tuple[int, int]], required): List of edges representing the forest.
+         	 _internal_call (bool, internal): This is an internal parameter and should not be changed by the user.
+             Indicates whether the function was called internally. Default is False.
+         	 _all_delays (bool, internal): This is an internal parameter and should not be changed by the user.
+             Indicates whether all flow delays should be computed. Default is False.
+
+         Raises:
+             ValueError: If an unrecognized LPError is caught.
+         
+         Returns: 
+         	 float | List[float]: The delay for the foi if _all_delays is False, list of delays for all flows if
+             _all_delays is True. User should always expect a single float, not a list.
+        """
+        # If it is not an internal call, we need to check the user inputs.
         if not _internal_call:
             self.__validation.foi(foi, self.__net.num_flows)
             self.__validation.forest(forest, self.__net)
@@ -154,9 +199,9 @@ class Analysis:
         while not could_not_solve:
             scale_factor = self.__SCALE_FACTORS[scale_factor_index]
             scaled_net = scale_network(self.__net, scale_factor)
-            timeout = self.__compute_timeout(self.__timeout_factor, _all_delays)
-            PLP = FifoLP(scaled_net, list_edges=forest, sfa=True, tfa=True,
-                         timeout=timeout, temp_folder=self.__temp_folder, filename="fifo", verbose=lp_verbose)
+            timeout = self.__compute_timeout(_all_delays)
+            PLP = FifoLP(scaled_net, list_edges=forest, sfa=True, tfa=True, timeout=timeout,
+                         temp_folder=self.__temp_folder, filename="fifo", verbose=lp_verbose)
             PLP.forest = PLP.forest.make_feed_forward()
             try:
                 if _all_delays:
@@ -164,21 +209,25 @@ class Analysis:
                 return PLP.delay(foi)
             except LPError as lperror:
                 error_msg = ''
-                if lperror.error_type() in [LPErrorType.AccuracyError, LPErrorType.TimeoutError, LPErrorType.LPSolveFailure]:
+                if lperror.error_type() in [LPErrorType.AccuracyError, LPErrorType.TimeoutError,
+                                            LPErrorType.LPSolveFailure]:
                     if scale_factor_index == len(self.__SCALE_FACTORS)-1:
-                        error_msg = f'{lperror} encountered for {scale_factor=}. Could not solve after trying every scaling factor. Skipping this cut!'
+                        error_msg = f'{lperror} encountered for {scale_factor=}. Could not solve after trying every \
+                            scaling factor. Skipping this cut!'
                         could_not_solve = True
                     else:
                         error_msg = f'{lperror} encountered for {scale_factor=}. Rescaling the problem...'
                         scale_factor_index += 1
                 elif lperror.error_type() in [LPErrorType.SuboptimalSolutionWarning]:
                     if timeout == self.__timeout:
-                        error_msg = f'{lperror} encountered for {timeout=}. Maximum timeout reached. Skipping this cut!'
+                        error_msg = f'{lperror} encountered for {timeout=}. Maximum timeout reached. Skipping this \
+                            cut!'
                         could_not_solve = True
                     else:
                         error_msg = f'{lperror} encountered for {timeout=}. Doubling the timeout value...'
                         self.__timeout_factor *= 2
-                elif lperror.error_type() in [LPErrorType.InfeasibleProblemError, LPErrorType.UnboundedProblemError, LPErrorType.UnhandledLPError]:
+                elif lperror.error_type() in [LPErrorType.InfeasibleProblemError, LPErrorType.UnboundedProblemError,
+                                              LPErrorType.UnhandledLPError]:
                     error_msg = f'{lperror} encountered. Could not solve the LP. Skipping this cut!'
                     could_not_solve = True
                 else:
@@ -187,6 +236,7 @@ class Analysis:
                 if VerboseKW.LP_Errors in self.__verbose:
                     print(error_msg)
 
+        # Return infinity if this cut has failed.
         return float('inf')
     
     # Copies the results obtained in exhaustive search to other flows
