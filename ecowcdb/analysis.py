@@ -166,7 +166,8 @@ class Analysis:
             return upper_bound * self.__net.num_flows
         return upper_bound
 
-    def delay(self, foi: int | None, forest: List[Tuple[int, int]], _internal_call: bool = False, _all_delays:bool = False) -> float | List[float]:
+    def delay(self, foi: int | None, forest: List[Tuple[int, int]], _internal_call: bool = False,
+              _all_delays:bool = False) -> float | List[float]:
         """
          Compute the delay for a given forest. This function encapsulates all the interactions with the panco library.
          
