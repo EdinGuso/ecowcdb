@@ -41,7 +41,7 @@ class Networks:
         self.__validation = Validation.Networks()
 
     def _generic(self, R: float, L: float, S: float, N: int, load: float, max_flows: int, paths: List[List[int]],
-                 network_type: NetworkType) -> Network:
+                 network_type: NetworkType, symmetric_cycle: bool = False) -> Network:
         """
          Creates a generic network according to given parameters. This is the function that does the heavy lifting of the
          network creation.
@@ -55,6 +55,7 @@ class Networks:
              max_flows (int, required): Maximum number of flows crossing any server.
              paths (List[List[int]], required): List of paths to create flows for.
              network_type (NetworkType, required): Type of network to create.
+             fully_symmetric (bool, optional): Indicates whether the network is fully symmetric. Default is False.
         
          Returns: 
              Network: A generic network generated according to the input parameters.
@@ -77,6 +78,7 @@ class Networks:
                 for i in range(1,len(flows)):
                     flows[i] = Flow([TokenBucket(flows[i].arrival_curve[0].sigma,
                                                  ASYMMETRICITY_FACTOR * flows[i].arrival_curve[0].rho)], flows[i].path)
+                symmetric_cycle = False
             case NetworkType.AsymmetricServer:
                 # Every server has increased rate except for first flow. First server is bottleneck.
                 for i in range(1, len(servers)):
@@ -84,9 +86,10 @@ class Networks:
                             [RateLatency(servers[i].service_curve[0].rate/ASYMMETRICITY_FACTOR,
                                          servers[i].service_curve[0].latency)],
                             [TokenBucket(0, servers[i].max_service_curve[0].rho/ASYMMETRICITY_FACTOR)])
+                symmetric_cycle = False
             case _:
                 raise ValueError(f'Unhandled network type: {network_type}')
-        return Network(servers, flows)
+        return Network(servers, flows, symmetric_cycle=symmetric_cycle)
             
     def custom(self, servers_args: List[Tuple[List[Tuple[float, float]], List[Tuple[float, float]]]],
                flows_args: List[Tuple[List[Tuple[float, float]], List[int]]]) -> Network:
@@ -341,7 +344,7 @@ class Networks:
 
             max_flows = N # N...
 
-            return self.__networks._generic(R, L, S, N, load, max_flows, paths, network_type)
+            return self.__networks._generic(R, L, S, N, load, max_flows, paths, network_type, symmetric_cycle=True)
         
         def semi(self, R: float, L: float, S: float, N: int, load: float, network_type: NetworkType) -> Network:
             """
@@ -367,7 +370,7 @@ class Networks:
 
             max_flows = N//2 + 1 # N//2+1...
 
-            return self.__networks._generic(R, L, S, N, load, max_flows, paths, network_type)
+            return self.__networks._generic(R, L, S, N, load, max_flows, paths, network_type, symmetric_cycle=True)
 
         def complete_full(self, R: float, L: float, S: float, N: int, load: float, network_type: NetworkType) -> Network:
             """

@@ -267,7 +267,7 @@ class Network:
     [[0, 1], [0, 1]]
     """
 
-    def __init__(self, servers: List[Server], flows: List[Flow], arrival_shaping=None):
+    def __init__(self, servers: List[Server], flows: List[Flow], arrival_shaping=None, symmetric_cycle=False):
         """
         Construction of a network
         """
@@ -284,6 +284,7 @@ class Network:
         self.flows_in_server = net_topology[2]
         self._depth = None
         self.arrival_shaping = arrival_shaping
+        self.symmetric_cycle = symmetric_cycle
 
     def __str__(self) -> str:
         return "Flows:\n%s\nServers:\n%s" % (list_to_str(self.flows), list_to_str(self.servers))

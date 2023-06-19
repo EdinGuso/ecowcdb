@@ -241,16 +241,34 @@ class Analysis:
     
     # Copies the results obtained in exhaustive search to other flows
     def __exhaustive_search_symmetric_copy(self) -> None:
+        """
+         Copies the results of flow 0 to all other flows by offsetting the node indexes in edges. This is a helper
+         function for __exhaustive_search_symmetric_cycle.
+        """
         N = self.__net.num_flows
         for foi in range(1, N):
-            self.__results[foi] = [(sorted([((edge[0]+foi)%N,(edge[1]+foi)%N) for edge in result[0]], key=lambda x: x[0]), result[1], result[2]) for result in self.__results[0]]
+            # One-liner which offsets edges in the forest to obtain results of other flows.
+            self.__results[foi]\
+                = [(sorted([((edge[0]+foi)%N,(edge[1]+foi)%N) for edge in result[0]], key=lambda x: x[0]),
+                    result[1], result[2]) for result in self.__results[0]]
 
-    # Always computes for foi = 0 first because it is symmetric anyway and we copy results
     def __exhaustive_search_symmetric_cycle(self) -> None:
+        """
+         Exhaustive search for symmetric cycles. More efficient computation for a single flow by exploiting the fact
+         that there are many symmetric forests. Computing results for a single flow and all flows is the same runtime.
+         Therefore, even if the user asks for a single flow to be computed, all flows are computed.
+        """
         result = []
-        iterable = tqdm(iterable=self.__forests, desc=f'Calculating delay bounds for all flows', unit='forest') if VerboseKW.ES_ProgressBar in self.__verbose else self.__forests
+        forests = self.__forests
+        if VerboseKW.ES_ProgressBar in self.__verbose:
+            forests = tqdm(
+                iterable=self.__forests,
+                desc=f'Symmetric cycle detected. Calculating delay bounds for all flows',
+                unit='forest')
+
         pre_computed_forests = set()
-        for forest in iterable:
+        for forest in forests:
+            # Check whether the result for that forest was computed by symmetricity in a previous iteration.
             if tuple(forest) in pre_computed_forests:
                 pre_computed_forests.remove(tuple(forest))
                 continue
@@ -260,7 +278,8 @@ class Analysis:
             delays = self.delay(None, forest, _internal_call=True, _all_delays=True)
             end = time()
             elapsed = end - start
-            for delay, symmetric_forest in zip(delays[:len(symmetric_forests)], [symmetric_forests[0]] + symmetric_forests[1:][::-1]):
+            for delay, symmetric_forest in zip(delays[:len(symmetric_forests)],
+                                               [symmetric_forests[0]] + symmetric_forests[1:][::-1]):
                 result.append((symmetric_forest, delay, elapsed/len(symmetric_forests)))
                 pre_computed_forests.add(tuple(symmetric_forest))
 
@@ -273,15 +292,35 @@ class Analysis:
         self.__results[0] = sorted(result, key=lambda x: x[1])
         self.__exhaustive_search_symmetric_copy()
 
-    # perform exhaustive search over all possible cuts for the given flow
     def exhaustive_search(self, foi: int, _internal_call: bool = False) -> None:
+        """
+         Perform exhaustive search for the given flow over all forests in self.__forests. Saves results in
+         self.__results.
+         
+         Args:
+         	 foi (int, required): Flow of interest.
+         	 _internal_call (bool, internal): This is an internal parameter and should not be changed by the user.
+             Indicates whether the function was called internally. Default is False.
+        """
+        # If it is not an internal call, we need to check the user inputs.
         if not _internal_call:
             self.__validation.callable(self.__forest_generation, self.exhaustive_search)
             self.__validation.foi(foi, self.__net.num_flows)
+
+        # If it is a symmetric cycle, we can perform the efficient exhaustive search.
+        if self.__net.symmetric_cycle:
+            self.__exhaustive_search_symmetric_cycle()
+            return
         
         result = []
-        iterable = tqdm(iterable=self.__forests, desc=f'Calculating delay bounds for flow {foi}', unit='forest') if VerboseKW.ES_ProgressBar in self.__verbose else self.__forests
-        for forest in iterable:
+        forests = self.__forests
+        if VerboseKW.ES_ProgressBar in self.__verbose:
+            forests = tqdm(
+                iterable=self.__forests,
+                desc=f'Calculating delay bounds for flow {foi}',
+                unit='forest')
+
+        for forest in forests:
             start = time()
             delay = self.delay(foi, forest, _internal_call=True)
             end = time()
@@ -294,11 +333,14 @@ class Analysis:
         self.__num_iters = 0
         self.__results[foi] = sorted(result, key=lambda x: x[1])
 
-    # perform exhaustive search over all possible cuts for all the flows
-    def exhaustive_search_all_flows(self, all_flows_symmetric: bool = False) -> None:
+    def exhaustive_search_all_flows(self) -> None:
+        """
+         Perform exhaustive search for all flows over all forests in self.__forests. Saves results in self.__results.
+        """
         self.__validation.callable(self.__forest_generation, self.exhaustive_search_all_flows)
 
-        if all_flows_symmetric:
+        # If it is a symmetric cycle, we can perform the efficient exhaustive search.
+        if self.__net.symmetric_cycle:
             self.__exhaustive_search_symmetric_cycle()
             return
 
@@ -307,6 +349,16 @@ class Analysis:
 
 
     def __results_table(self, foi: int) -> str:
+        """
+         Returns a table of results for the flow of interest. It is formatted to be a human readable table. This is a
+         helper function for display_results and save_results.
+         
+         Args:
+         	 foi (int, requried): Flow of interest.
+         
+         Returns: 
+         	 str: Results table
+        """
         self.__validation.foi(foi, self.__net.num_flows)
 
         table = self.__HEADER + convert_result_units(self.__results[foi], self.__delay_unit, self.__runtime_unit)
@@ -314,26 +366,56 @@ class Analysis:
         result = '########################\n'
         result += f'###Results for flow {foi}###\n'
         result += '########################\n'
-        result += 'NOT COMPUTED!\n' if foi not in self.__results else tabulate(table, headers='firstrow', tablefmt='fancy_grid') + '\n'
+        result += 'NOT COMPUTED!\n' if foi not in self.__results else tabulate(table,
+                                                                               headers='firstrow',
+                                                                               tablefmt='fancy_grid') + '\n'
 
         return result
     
     def display_results(self, foi: int) -> None:
+        """
+         Displays the results for the given flow of interest.
+         
+         Args:
+         	 foi (int, requried): Flow of interest.
+        """
         print(self.__results_table(foi))
 
     def save_results(self, foi: int, filename: str) -> None:
+        """
+         Saves the results for the given flow of interest to the given file.
+         
+         Args:
+         	 foi (int, requried): Flow of interest.
+         	 filename (str, required): Name of the file to save. The name should not include the extension as the
+             extension is added automatically within the function.
+        """
         self.__validation.filename(filename)
         filepath = self.__results_folder + filename + self.__RESULTS_FILE_FORMAT
         with open(filepath, "w") as file:
             print(self.__results_table(foi), file=file)
 
     def save_raw_results(self, filename: str) -> None:
+        """
+         Save the results object to the given file.
+         Args:
+         	 filename (str, required): Name of the file to save. The name should not include the extension as the
+             extension is added automatically within the function.
+        """
         self.__validation.filename(filename)
         filepath = self.__results_folder + filename + self.__RAW_FILE_FORMAT
         with open(filepath, 'wb') as file:
             dump(self.__results, file)
 
     def load_raw_results(self, filename: str) -> None:
+        """
+         Load results object from the given file.
+         
+         Args:
+         	 filename (str, required): Name of the file to load. The name should not include the extension as the
+             extension is added automatically within the function. It is user's responsibility to ensure that the given
+             file exists.
+        """
         self.__validation.filename(filename)
         filepath = self.__results_folder + filename + self.__RAW_FILE_FORMAT
         with open(filepath, 'rb') as file:
