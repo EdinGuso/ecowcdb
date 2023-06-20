@@ -413,7 +413,7 @@ class Analysis:
     def load_raw_results(self, filename: str) -> None:
         """
          Load results object from the given file. The Network object within the Analysis and Network object in the save
-         fila must be equal.
+         file must be equal.
          
          Args:
          	 filename (str, required): Name of the file to load. The name should not include the extension as the
@@ -424,11 +424,5 @@ class Analysis:
         filepath = self.__results_folder + filename + self.__RAW_FILE_FORMAT
         with open(filepath, 'rb') as file:
             loaded_object = load(file)
-            if 'net' in loaded_object:
-                print('IF')
-                self.__validation.net(self.__net, loaded_object['net'])
-                self.__results = loaded_object['results']
-            else:
-                print('ELSE')
-                self.__results = loaded_object
-            
+            self.__validation.net(self.__net, loaded_object['net'])
+            self.__results = loaded_object['results']
