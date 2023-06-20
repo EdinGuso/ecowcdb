@@ -26,7 +26,8 @@ class Stats:
 
         filepath = results_folder + filename + self.__RAW_FILE_FORMAT
         with open(filepath, 'rb') as file:
-            self.__results = load(file)
+            loaded_object = load(file)
+            self.__results = loaded_object['results']
 
     def delay_runtime_correlation(self, foi: int) -> None:
         self.__validation.foi(foi, self.__results)

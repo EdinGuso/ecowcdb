@@ -247,6 +247,20 @@ class Validation:
              	 filename (str, required): Filename to be validated
             """
             self.__validation._type(filename, 'filename', str)
+
+        def net(self, net: Network, loaded_net: Network) -> None:
+            """
+             Validates that the loaded net is equal to the actual net.
+
+             Args:
+                 net (Network, required): Network being analyzed.
+                 loaded_net (Network, required): Network in the save file.
+
+             Raises:
+                 ValueError: If the two networks are not equal.
+            """
+            if net != loaded_net:
+                raise ValueError(f'Loaded network must be equal to the actual network.')
             
             
     class Stats:

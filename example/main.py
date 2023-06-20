@@ -38,14 +38,14 @@ def partial_demo():
     N = 128 # servers
     load = 0.5
 
-    net = Networks.Tandem().interleaved(R, L, S, N, load, NetworkType.Symmetric)
+    net = Networks.Tandem().sink_tree(R, L, S, N, load, NetworkType.Symmetric)
     analysis = Analysis(net, forest_generation=ForestGeneration.Partial, num_forests=100, min_edges=0, timeout=1800,
                         delay_unit=DisplayUnit.MicroSecond, runtime_unit=DisplayUnit.Minute,
                         temp_folder='../temp/', results_folder='../results/',
                         verbose=[VerboseKW.ES_ProgressBar, VerboseKW.LP_Errors])
     analysis.exhaustive_search(0)
-    analysis.save_results(0, f'partial_interleaved_tandem_{N}')
-    analysis.save_raw_results(f'partial_interleaved_tandem_{N}')
+    analysis.save_results(0, f'tandem/sink_tree/partial_{N}')
+    analysis.save_raw_results(f'tandem/sink_tree/partial_{N}')
     analysis.display_results(0)
 
 
@@ -91,6 +91,22 @@ def delay_demo():
     print(f'{delay=} microseconds')
 
 
+def fix():
+    R = 10**7 # Kb/s
+    L = 10**-5 # s
+    S = 8 # Kb
+    N = 128 # servers
+    load = 0.5
+
+    net = Networks.Tandem().sink_tree(R, L, S, N, load, NetworkType.Symmetric)
+    analysis = Analysis(net, forest_generation=ForestGeneration.Empty, results_folder='../results/')
+    analysis.load_raw_results('tandem/source_sink/partial_128')
+    analysis.save_raw_results('tandem/source_sink/partial_128')
+    analysis.load_raw_results('tandem/source_sink/partial_128')
+
+
+
+
 def stat_demo():
     stats = Stats('../results/', 'tandem/sink_tree/exhaustive_12')
     stats.delay_runtime_correlation(0)
@@ -99,9 +115,10 @@ def stat_demo():
 
 
 if __name__ == '__main__':
-    exhaustive_demo()
+    # exhaustive_demo()
     # partial_demo()
     # quick_demo()
     # load_demo()
     # delay_demo()
     # stat_demo()
+    fix()

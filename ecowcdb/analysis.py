@@ -98,7 +98,8 @@ class Analysis:
         analysis.
         
          Args:
-             net (Network, required): Network to analyze.
+             net (Network, required): Network to analyze. This network cannot be modified after Analysis object
+             creation.
              forest_generation (ForestGeneration, optional): Specifies the type of forest generation to use. Default is
              ForestGeneration.All which means all valid forests are generated.
              num_forests (int, optional): Number of forests to generate. This is only used when the forest_generation
@@ -213,16 +214,16 @@ class Analysis:
                 if lperror.error_type() in [LPErrorType.AccuracyError, LPErrorType.TimeoutError,
                                             LPErrorType.LPSolveFailure]:
                     if scale_factor_index == len(self.__SCALE_FACTORS)-1:
-                        error_msg = f'{lperror} encountered for {scale_factor=}. Could not solve after trying every \
-                            scaling factor. Skipping this cut!'
+                        error_msg = f'{lperror} encountered for {scale_factor=}. Could not solve after trying every '
+                        error_msg += 'scaling factor. Skipping this cut!'
                         could_not_solve = True
                     else:
                         error_msg = f'{lperror} encountered for {scale_factor=}. Rescaling the problem...'
                         scale_factor_index += 1
                 elif lperror.error_type() in [LPErrorType.SuboptimalSolutionWarning]:
                     if timeout == self.__timeout:
-                        error_msg = f'{lperror} encountered for {timeout=}. Maximum timeout reached. Skipping this \
-                            cut!'
+                        error_msg = f'{lperror} encountered for {timeout=}. Maximum timeout reached. Skipping this '
+                        error_msg += 'cut!'
                         could_not_solve = True
                     else:
                         error_msg = f'{lperror} encountered for {timeout=}. Doubling the timeout value...'
@@ -404,13 +405,15 @@ class Analysis:
              extension is added automatically within the function.
         """
         self.__validation.filename(filename)
+        saved_object = {'net': self.__net, 'results': self.__results}
         filepath = self.__results_folder + filename + self.__RAW_FILE_FORMAT
         with open(filepath, 'wb') as file:
-            dump(self.__results, file)
+            dump(saved_object, file)
 
     def load_raw_results(self, filename: str) -> None:
         """
-         Load results object from the given file.
+         Load results object from the given file. The Network object within the Analysis and Network object in the save
+         fila must be equal.
          
          Args:
          	 filename (str, required): Name of the file to load. The name should not include the extension as the
@@ -420,4 +423,12 @@ class Analysis:
         self.__validation.filename(filename)
         filepath = self.__results_folder + filename + self.__RAW_FILE_FORMAT
         with open(filepath, 'rb') as file:
-            self.__results = load(file)
+            loaded_object = load(file)
+            if 'net' in loaded_object:
+                print('IF')
+                self.__validation.net(self.__net, loaded_object['net'])
+                self.__results = loaded_object['results']
+            else:
+                print('ELSE')
+                self.__results = loaded_object
+            
