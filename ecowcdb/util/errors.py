@@ -11,6 +11,15 @@ from enum import Enum
 class LPErrorType(Enum):
     """
      Enum used for type of the error.
+
+     Members:
+         AccuracyError: lp_solve could not satisfy the constraints.
+         TimeoutError: lp_solve could not solve within the given time limit.
+         InfeasibleProblemError: lp is infeasible.
+         UnboundedProblemError: lp is unbounded.
+         LPSolveFailure: lp_solve failed.
+         SuboptimalSolutionWarning: lp_solve did not reach optimal solution within the given time limit.
+         UnhandledLPError: None of the defined errors were detected, but the output is not valid either.
     """
     AccuracyError = 0
     TimeoutError = 1
