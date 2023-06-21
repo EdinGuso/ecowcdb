@@ -58,17 +58,17 @@ class Analysis:
          __RAW_FILE_FORMAT (str, private): File extension of the raw dump of the results.
      
      Methods:
-         __compute_timeout (private): desc.
-         delay (public): desc.
-         __exhaustive_search_symmetric_copy (private): desc.
-         __exhaustive_search_symmetric_cycle (private): desc.
-         exhaustive_search (public): desc.
-         exhaustive_search_all_flows (public): desc.
-         __results_table (private): desc.
-         display_results (public): desc.
-         save_results (public): desc.
-         save_raw_results (public): desc.
-         load_raw_results (public): desc.
+         __compute_timeout (private): Dynamic timeout computation method.
+         delay (public): Computes the delay for a given forest.
+         __exhaustive_search_symmetric_copy (private): Copies the results to symmetric flows. 
+         __exhaustive_search_symmetric_cycle (private): Exhaustive search for symmetric cycles.
+         exhaustive_search (public): Performs exhaustive search for the given flow.
+         exhaustive_search_all_flows (public): Performs exhaustive search for all flows.
+         __results_table (private): Returns a table of results for the flow of interest.
+         display_results (public): Displays the results for the given flow of interest.
+         save_results (public): Saves the results for the given flow of interest.
+         save_raw_results (public): Saves the results and network objects.
+         load_raw_results (public): Loads the results object.
     """
     __validation: Validation.Analysis
     __results: Dict[int, List[Tuple[List[Tuple[int, int]], float, float]]]
@@ -170,7 +170,7 @@ class Analysis:
     def delay(self, foi: int | None, forest: List[Tuple[int, int]], _internal_call: bool = False,
               _all_delays:bool = False) -> float | List[float]:
         """
-         Compute the delay for a given forest. This function encapsulates all the interactions with the panco library.
+         Computes the delay for a given forest. This function encapsulates all the interactions with the panco library.
          
          Args:
          	 foi (int | None, required): Flow of interest. None only if _all_delays is True.
@@ -296,7 +296,7 @@ class Analysis:
 
     def exhaustive_search(self, foi: int, _internal_call: bool = False) -> None:
         """
-         Perform exhaustive search for the given flow over all forests in self.__forests. Saves results in
+         Performs exhaustive search for the given flow over all forests in self.__forests. Saves results in
          self.__results.
          
          Args:
@@ -399,7 +399,7 @@ class Analysis:
 
     def save_raw_results(self, filename: str) -> None:
         """
-         Save the results object to the given file.
+         Saves the results object and the network to the given file.
          Args:
          	 filename (str, required): Name of the file to save. The name should not include the extension as the
              extension is added automatically within the function.
@@ -412,8 +412,8 @@ class Analysis:
 
     def load_raw_results(self, filename: str) -> None:
         """
-         Load results object from the given file. The Network object within the Analysis and Network object in the save
-         file must be equal.
+         Loads results object from the given file. The Network object within the Analysis and Network object in the
+         save file must be equal.
          
          Args:
          	 filename (str, required): Name of the file to load. The name should not include the extension as the
