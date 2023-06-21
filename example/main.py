@@ -99,10 +99,25 @@ def stat_demo():
     stats.forestsize_runtime_correlation(0)
 
 
+def ecowcdb_demo():
+    R = 10**7 # Kb/s
+    L = 10**-5 # s
+    S = 8 # Kb
+    N = 12 # servers
+    load = 0.5
+
+    net = Networks.Ring().full(R, L, S, N, load, NetworkType.Symmetric)
+    ecowcdb = ECOWCDB(net, '../temp/')
+    delay = ecowcdb.delay(0, 120)
+
+    print(f'ECOWCDB returned {delay=}')
+
+
 if __name__ == '__main__':
-    exhaustive_demo()
+    # exhaustive_demo()
     # partial_demo()
     # quick_demo()
     # load_demo()
     # delay_demo()
     # stat_demo()
+    ecowcdb_demo()
