@@ -106,11 +106,10 @@ def ecowcdb_demo():
     N = 12 # servers
     load = 0.5
 
-    net = Networks.Ring().full(R, L, S, N, load, NetworkType.Symmetric)
+    net = Networks.Ring().complete_semi(R, L, S, N, load, NetworkType.Symmetric)
     ecowcdb = ECOWCDB(net, '../temp/')
-    delay = ecowcdb.delay(0, 120)
+    delay = ecowcdb.delay(0, 300)
 
-    print(f'ECOWCDB returned {delay=}')
 
 
 if __name__ == '__main__':

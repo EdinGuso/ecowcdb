@@ -224,3 +224,9 @@ def scale_network(net: Network, factor: float) -> Network:
         flows.append(Flow(arrival_curves, flow.path))
 
     return Network(servers, flows)
+
+def path_to_edges(path: List[int]) -> List[Tuple[int, int]]:
+    edges = []
+    for i in range(len(path)-1):
+        edges.append((path[i], path[i+1]))
+    return edges
