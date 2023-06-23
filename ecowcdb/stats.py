@@ -54,7 +54,18 @@ class Stats:
             loaded_object = load(file)
             self.__results = loaded_object['results']
 
-    def __filter_inf(self, list1, list2):
+    def __filter_inf(self, list1: List[float], list2: List[float]) -> Tuple[List[float], List[float]]:
+        """
+         Filters inf values from two lists. If any list has an inf value at any index, items from both lists are
+         removed. This is a helper function for correlation functions.
+         
+         Args:
+         	 list1 (List[float], required): List of float values to be filtered
+         	 list2 (List[float], required): List of float values to be filtered ( same order as list1 )
+         
+         Returns: 
+         	 Tuple[List[float], List[float]]: A tuple of two lists with filtered inf values from each list
+        """
         filtered_list1 = []
         filtered_list2 = []
         for item1, item2 in zip(list1, list2):
