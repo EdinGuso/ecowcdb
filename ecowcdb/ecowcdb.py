@@ -3,11 +3,6 @@
 """
 
 # Standard Library Imports
-from copy import deepcopy
-from math import floor
-from signal import alarm, signal, SIGALRM
-from sys import stdout
-from time import time
 from typing import List, Tuple
 
 # Local Imports - panco libraries
@@ -65,6 +60,10 @@ class ECOWCDB:
     
     def best_delay(self, foi: int) -> float:
         forest = flow_preserving_min_depth_max_forest(self.__edges, self.__net.num_servers, self.__net.flows[foi].path)
+        return self.__delay(foi, 0, forest)
+    
+    def delay(self, foi: int, max_depth: int) -> float:
+        forest = flow_preserving_min_depth_max_forest(self.__edges, self.__net.num_servers, self.__net.flows[foi].path, max_depth)
         return self.__delay(foi, 0, forest)
 
     # def delay(self, foi: int, time_limit: int | float) -> float:

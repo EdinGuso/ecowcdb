@@ -103,12 +103,14 @@ def ecowcdb_demo():
     R = 10**7 # Kb/s
     L = 10**-5 # s
     S = 8 # Kb
-    N = 5 # servers
+    N = 6 # servers
     load = 0.5
 
-    net = Networks.Mesh().simple(R, L, S, N, load, NetworkType.Symmetric)
+    net = Networks.Ring().complete_full(R, L, S, N, load, NetworkType.Symmetric)
     ecowcdb = ECOWCDB(net, '../temp/')
-    delay = ecowcdb.best_delay(0)
+    best_delay = ecowcdb.best_delay(0)
+    print(best_delay)
+    delay = ecowcdb.delay(0, 1)
     print(delay)
 
 

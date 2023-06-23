@@ -237,7 +237,8 @@ def __reverse_adj_list_from_edges(edges: List[Tuple[int, int]], N: int) -> List[
         reverse_adj_list[edge[1]].append(edge[0])
     return reverse_adj_list
 
-def flow_preserving_min_depth_max_forest(edges: List[Tuple[int, int]], N: int, flow_path: List[int]) -> List[Tuple[int, int]]:
+
+def flow_preserving_min_depth_max_forest(edges: List[Tuple[int, int]], N: int, flow_path: List[int], max_depth: int = -1) -> List[Tuple[int, int]]:
     reverse_adjacency_list = __reverse_adj_list_from_edges(edges, N)
     flow_edges = __path_to_edges(flow_path)
     forest = []
@@ -248,18 +249,24 @@ def flow_preserving_min_depth_max_forest(edges: List[Tuple[int, int]], N: int, f
     node_depth_queue.append((flow_edges[-1][1], 0))
     for edge in flow_edges[::-1]:
         visited.add(edge[0])
-        node_depth_queue.append((edge[0], node_depth_queue[-1][1]+1))
-        forest.append(edge)
+        if node_depth_queue[-1][1] == max_depth:
+            node_depth_queue.append((edge[0], 0))
+        else:
+            node_depth_queue.append((edge[0], node_depth_queue[-1][1]+1))
+            forest.append(edge)
 
     while len(node_depth_queue) != 0:
         node_depth_queue = sorted(node_depth_queue, key=lambda x: x[1])
-        node = node_depth_queue.pop(0)
-        for neighbour in reverse_adjacency_list[node[0]]:
+        node_depth = node_depth_queue.pop(0)
+        for neighbour in reverse_adjacency_list[node_depth[0]]:
             if neighbour in visited:
                 continue
             visited.add(neighbour)
-            node_depth_queue.append((neighbour, node[1]+1))
-            forest.append((neighbour, node[0]))
+            if node_depth[1] == max_depth:
+                node_depth_queue.append((neighbour, 0))
+            else:
+                node_depth_queue.append((neighbour, node_depth[1]+1))
+                forest.append((neighbour, node_depth[0]))
 
     # DELETE START
     cut_edges = []
@@ -272,3 +279,7 @@ def flow_preserving_min_depth_max_forest(edges: List[Tuple[int, int]], N: int, f
     # DELETE END
 
     return forest
+
+
+
+
