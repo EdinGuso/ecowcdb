@@ -54,6 +54,16 @@ class Stats:
             loaded_object = load(file)
             self.__results = loaded_object['results']
 
+    def __filter_inf(self, list1, list2):
+        filtered_list1 = []
+        filtered_list2 = []
+        for item1, item2 in zip(list1, list2):
+            if item1 != float('inf') and item2 != float('inf'):
+                filtered_list1.append(item1)
+                filtered_list2.append(item2)
+
+        return filtered_list1, filtered_list2
+
     def delay_runtime_correlation(self, foi: int) -> None:
         """
          Calculate and print the Pearson correlation between delays and runtimes.
@@ -65,6 +75,8 @@ class Stats:
 
         delays = [item[1] for item in self.__results[foi]]
         runtimes = [item[2] for item in self.__results[foi]]
+
+        delays, runtimes = self.__filter_inf(delays, runtimes)
 
         correlation, p_value = pearsonr(delays, runtimes)
         print(f'The correlation between delays and runtimes:\n{correlation=}\n{p_value=}')
@@ -81,6 +93,8 @@ class Stats:
         forest_sizes = [len(item[0]) for item in self.__results[foi]]
         delays = [item[1] for item in self.__results[foi]]
 
+        forest_sizes, delays = self.__filter_inf(forest_sizes, delays)
+
         correlation, p_value = pearsonr(forest_sizes, delays)
         print(f'The correlation between forest sizes and delays:\n{correlation=}\n{p_value=}')
 
@@ -95,6 +109,8 @@ class Stats:
 
         forest_sizes = [len(item[0]) for item in self.__results[foi]]
         runtimes = [item[2] for item in self.__results[foi]]
+
+        forest_sizes, runtimes = self.__filter_inf(forest_sizes, runtimes)
 
         correlation, p_value = pearsonr(forest_sizes, runtimes)
         print(f'The correlation between forest sizes and runtimes:\n{correlation=}\n{p_value=}')

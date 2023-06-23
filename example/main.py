@@ -103,12 +103,42 @@ def ecowcdb_demo():
     R = 10**7 # Kb/s
     L = 10**-5 # s
     S = 8 # Kb
-    N = 12 # servers
+    N = 5 # servers
     load = 0.5
 
-    net = Networks.Ring().complete_semi(R, L, S, N, load, NetworkType.Symmetric)
+    net = Networks.Mesh().simple(R, L, S, N, load, NetworkType.Symmetric)
     ecowcdb = ECOWCDB(net, '../temp/')
-    delay = ecowcdb.delay(0, 300)
+    delay = ecowcdb.best_delay(0)
+    print(delay)
+
+
+def __stat_gen(filename):
+    print(f'DISPLAYING STAT RESULTS FOR \'{filename}\'')
+    stats = Stats('../results/', filename)
+    stats.delay_runtime_correlation(0)
+    stats.forestsize_delay_correlation(0)
+    stats.forestsize_runtime_correlation(0)
+    print('')
+
+def stat_run():
+    __stat_gen('tandem/interleaved/exhaustive_12')
+    __stat_gen('tandem/interleaved/partial_128')
+    __stat_gen('tandem/sink_tree/exhaustive_12')
+    __stat_gen('tandem/sink_tree/partial_128')
+    __stat_gen('tandem/source_sink/exhaustive_12')
+    __stat_gen('ring/full/exhaustive_12')
+    __stat_gen('ring/full/partial_24')
+    __stat_gen('mesh/simple/exhaustive_4')
+    __stat_gen('mesh/simple/partial_9')
+
+
+
+
+
+
+
+
+
 
 
 
@@ -120,3 +150,4 @@ if __name__ == '__main__':
     # delay_demo()
     # stat_demo()
     ecowcdb_demo()
+    # stat_run()

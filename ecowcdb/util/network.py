@@ -225,8 +225,50 @@ def scale_network(net: Network, factor: float) -> Network:
 
     return Network(servers, flows)
 
-def path_to_edges(path: List[int]) -> List[Tuple[int, int]]:
+def __path_to_edges(path: List[int]) -> List[Tuple[int, int]]:
     edges = []
     for i in range(len(path)-1):
         edges.append((path[i], path[i+1]))
     return edges
+
+def __reverse_adj_list_from_edges(edges: List[Tuple[int, int]], N: int) -> List[List[int]]:
+    reverse_adj_list = [[] for _ in range(N)]
+    for edge in edges:
+        reverse_adj_list[edge[1]].append(edge[0])
+    return reverse_adj_list
+
+def flow_preserving_min_depth_max_forest(edges: List[Tuple[int, int]], N: int, flow_path: List[int]) -> List[Tuple[int, int]]:
+    reverse_adjacency_list = __reverse_adj_list_from_edges(edges, N)
+    flow_edges = __path_to_edges(flow_path)
+    forest = []
+    visited = set()
+    node_depth_queue = []
+
+    visited.add(flow_edges[-1][1])
+    node_depth_queue.append((flow_edges[-1][1], 0))
+    for edge in flow_edges[::-1]:
+        visited.add(edge[0])
+        node_depth_queue.append((edge[0], node_depth_queue[-1][1]+1))
+        forest.append(edge)
+
+    while len(node_depth_queue) != 0:
+        node_depth_queue = sorted(node_depth_queue, key=lambda x: x[1])
+        node = node_depth_queue.pop(0)
+        for neighbour in reverse_adjacency_list[node[0]]:
+            if neighbour in visited:
+                continue
+            visited.add(neighbour)
+            node_depth_queue.append((neighbour, node[1]+1))
+            forest.append((neighbour, node[0]))
+
+    # DELETE START
+    cut_edges = []
+    for edge in edges:
+        if edge not in forest:
+            cut_edges.append(edge)
+
+    print(f'{forest=}')
+    print(f'{cut_edges=}')
+    # DELETE END
+
+    return forest
