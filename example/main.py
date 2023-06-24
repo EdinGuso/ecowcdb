@@ -18,17 +18,17 @@ def exhaustive_demo():
     R = 10**7 # Kb/s
     L = 10**-5 # s
     S = 8 # Kb
-    N = 4 # servers
+    N = 11 # servers
     load = 0.5
     
-    net = Networks.Mesh().simple(R, L, S, N, load, NetworkType.Symmetric)
+    net = Networks.Ring().complete_semi(R, L, S, N, load, NetworkType.Symmetric)
     analysis = Analysis(net, forest_generation=ForestGeneration.All, min_edges=0, timeout=600,
                         delay_unit=DisplayUnit.MicroSecond, runtime_unit=DisplayUnit.Second,
                         temp_folder='../temp/', results_folder='../results/',
                         verbose=[VerboseKW.ES_ProgressBar, VerboseKW.LP_Errors])
     analysis.exhaustive_search(0)
-    analysis.save_results(0, f'mesh/simple/exhaustive_{N}')
-    analysis.save_raw_results(f'mesh/simple/exhaustive_{N}')
+    analysis.save_results(0, f'ring/complete_semi/exhaustive_{N}')
+    analysis.save_raw_results(f'ring/complete_semi/exhaustive_{N}')
     analysis.display_results(0)
 
 
@@ -103,10 +103,10 @@ def ecowcdb_demo():
     R = 10**7 # Kb/s
     L = 10**-5 # s
     S = 8 # Kb
-    N = 12 # servers
+    N = 10 # servers
     load = 0.5
 
-    net = Networks.Ring().full(R, L, S, N, load, NetworkType.Symmetric)
+    net = Networks.Ring().complete_semi(R, L, S, N, load, NetworkType.Symmetric)
     ecowcdb = ECOWCDB(net, '../temp/')
     delay = ecowcdb.delay(0, -1)
     print(delay)
@@ -143,11 +143,11 @@ def stat_run():
 
 
 if __name__ == '__main__':
-    # exhaustive_demo()
+    exhaustive_demo()
     # partial_demo()
     # quick_demo()
     # load_demo()
     # delay_demo()
     # stat_demo()
-    ecowcdb_demo()
+    # ecowcdb_demo()
     # stat_run()
