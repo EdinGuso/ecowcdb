@@ -10,22 +10,60 @@ from ecowcdb.panco.descriptor.network import Network
 from ecowcdb.panco.fifo.fifoLP import FifoLP
 
 # Local Imports - utility libraries
-from ecowcdb.util.errors import LPError
-from ecowcdb.util.network import flow_preserving_min_depth_max_forest
-# from ecowcdb.util.validation import Validation
+from ecowcdb.util.errors import LPError, LPErrorType
+from ecowcdb.util.network import flow_preserving_min_depth_max_forest, scale_network
+from ecowcdb.util.validation import Validation
+
 
 
 class ECOWCDB:
-    # __validation: Validation.ECOWCDB
+    __validation: Validation.ECOWCDB
     __net: Network
     __edges: List[Tuple[int, int]]
     __temp_folder: str
     
     def __init__(self, net: Network, temp_folder: str = '') -> None:
-        # self.__validation = Validation.ECOWCDB()
+        self.__validation = Validation.ECOWCDB()
+        self.__validation.constructor_arguments(net, temp_folder)
         self.__net = net
         self.__edges = list(net.edges.keys())
         self.__temp_folder = temp_folder
+
+    def __delay(self, foi: int, forest: List[Tuple[int, int]]) -> float:
+        scale_factor = 1.0
+        timeout = 1000
+        while True:
+            net = scale_network(self.__net, scale_factor)
+            PLP = FifoLP(net, list_edges=forest, sfa=True, tfa=True, timeout=timeout, temp_folder=self.__temp_folder)
+            PLP.forest = PLP.forest.make_feed_forward()
+            try:
+                return PLP.delay(foi)
+            except LPError as lperror:
+                if lperror.error_type() in [LPErrorType.AccuracyError, LPErrorType.TimeoutError,
+                                            LPErrorType.LPSolveFailure]:
+                    if scale_factor < 10**-2:
+                        return float('inf')
+                    else:
+                        scale_factor *= 0.1
+                elif lperror.error_type() in [LPErrorType.SuboptimalSolutionWarning]:
+                    if timeout > 10**6:
+                        return float('inf')
+                    else:
+                        timeout *= 10
+                elif lperror.error_type() in [LPErrorType.InfeasibleProblemError, LPErrorType.UnboundedProblemError,
+                                              LPErrorType.UnhandledLPError]:
+                    return float('inf')
+                else:
+                    raise ValueError(f'Unhandled error type: {lperror}.')
+
+    def delay(self, foi: int, max_depth: int = -1) -> float:
+        self.__validation.foi(foi, self.__net.num_flows)
+        self.__validation.max_depth(max_depth)
+        
+        forest = flow_preserving_min_depth_max_forest(self.__edges, self.__net.num_servers, self.__net.flows[foi].path, max_depth)
+        return self.__delay(foi, forest)
+
+
 
     # def __next_forest(self, flow_edges: List[Tuple[int, int]], i: int) -> bool:
     #     # CAN I ASSUME THAT FLOWS DO NOT HAVE CYCLES??
@@ -53,26 +91,13 @@ class ECOWCDB:
     #         return False
     #     return True
 
-    def __delay(self, foi: int, timeout: int, forest: List[Tuple[int, int]]) -> float:
-        PLP = FifoLP(self.__net, list_edges=forest, sfa=True, tfa=True, timeout=timeout, temp_folder=self.__temp_folder)
-        PLP.forest = PLP.forest.make_feed_forward()
-        return PLP.delay(foi)
-    
-    def best_delay(self, foi: int) -> float:
-        forest = flow_preserving_min_depth_max_forest(self.__edges, self.__net.num_servers, self.__net.flows[foi].path)
-        return self.__delay(foi, 0, forest)
-    
-    def delay(self, foi: int, max_depth: int) -> float:
-        forest = flow_preserving_min_depth_max_forest(self.__edges, self.__net.num_servers, self.__net.flows[foi].path, max_depth)
-        return self.__delay(foi, 0, forest)
+
 
     # def delay(self, foi: int, time_limit: int | float) -> float:
     #     def timeout_handler(signum, frame):
     #         raise TimeoutError("Function timed out.")
     #     cls = '\r' + ' '*50 + '\r'
         
-        
-
     #     self.__remaining_edges = list(self.__net.edges.keys())
     #     self.__selected_edges = []
 

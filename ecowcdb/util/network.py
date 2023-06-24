@@ -237,7 +237,6 @@ def __reverse_adj_list_from_edges(edges: List[Tuple[int, int]], N: int) -> List[
         reverse_adj_list[edge[1]].append(edge[0])
     return reverse_adj_list
 
-
 def flow_preserving_min_depth_max_forest(edges: List[Tuple[int, int]], N: int, flow_path: List[int], max_depth: int = -1) -> List[Tuple[int, int]]:
     reverse_adjacency_list = __reverse_adj_list_from_edges(edges, N)
     flow_edges = __path_to_edges(flow_path)
@@ -267,19 +266,5 @@ def flow_preserving_min_depth_max_forest(edges: List[Tuple[int, int]], N: int, f
             else:
                 node_depth_queue.append((neighbour, node_depth[1]+1))
                 forest.append((neighbour, node_depth[0]))
-
-    # DELETE START
-    cut_edges = []
-    for edge in edges:
-        if edge not in forest:
-            cut_edges.append(edge)
-
-    print(f'{forest=}')
-    print(f'{cut_edges=}')
-    # DELETE END
-
-    return forest
-
-
-
-
+    
+    return sorted(forest, key=lambda x: x[0])
