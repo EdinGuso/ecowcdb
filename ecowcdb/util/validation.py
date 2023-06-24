@@ -1,6 +1,6 @@
 """
  File containing the Validation classes. The classes and functions within this file perform strict user input
- validation to ensure a controlled environment within the analysis part of the code.
+ validation to ensure a controlled environment within other classes.
 """
 
 # Standard Library Imports
@@ -402,3 +402,56 @@ class Validation:
                     self.__validation._type(server_id, 'server_id', int)
                     self.__validation._non_negative(server_id, 'server_id')
                     self.__validation._upper_bound(server_id, 'server_id', len(servers_args))
+
+    
+    class ECOWCDB:
+        """
+         Class that handles all the user input validation for ECOWCDB class.
+
+         Attributes:
+             __validation (Validation, private): Base Validation object used to access generic validation functions.
+
+         Methods:
+             constructor_arguments (public): Validates all the arguments passed to the constructor of the ECOWCDB class.
+             foi (public): Validates the given foi.
+             max_depth (public): Validates the given max depth.
+        """
+        # __validation: Validation
+
+        def __init__(self) -> None:
+            """
+             Initialize the Validation object. This is the constructor for the class.
+            """
+            self.__validation = Validation()
+        
+        def constructor_arguments(self, net: Network, temp_folder: str) -> None:
+            """
+             Validates all the arguments passed to the constructor of the ECOWCDB class.
+             
+             Args:
+             	 net (Network, required): Network to be validated.
+             	 temp_folder (str, required): str to be validated.
+            """
+            self.__validation._type(net, 'net', Network)
+            self.__validation._type(temp_folder, 'temp_folder', str)
+
+        def foi(self, foi: int, num_flows: int) -> None:
+            """
+             Validates the given foi. Checks if it is an int, non-negative, and less than the largest possible flow.
+             
+             Args:
+                 foi (int, required): Flow of interest to be validated.
+             	 num_flows (int, required): The number of flows in the network.
+            """
+            self.__validation._type(foi, 'foi', int)
+            self.__validation._non_negative(foi, 'foi')
+            self.__validation._upper_bound(foi, 'foi', num_flows-1)
+
+        def max_depth(self, max_depth: int) -> None:
+            """
+             Validates the given max depth. Checks if it is an int.
+             
+             Args:
+                 max_depth (int, required): Max depth to be validated.
+            """
+            self.__validation._type(max_depth, 'max_depth', int)
