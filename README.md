@@ -6,9 +6,8 @@ Advisors: Seyed Mohammadhossein Tabatabaee, Stéphan Plassart, Jean-Yves Le Boud
 
 Institute: Computer Communications and Applications Laboratory 2 (LCA2), École Polytechnique Fédérale de Lausane (EPFL)
 
-Table of Contents
-========================
-...
+# Table of Contents
+The readme consists of 2 main parts: Report and Project. Report section includes the project discussion, while the Project section is what you would expect from a regular readme.
 
 - [ECOWCDB](#ecowcdb-efficient-computation-of-worst-case-delay-bounds-for-time-sensitive-networks)
 - [Table of Contents](#table-of-contents)
@@ -30,47 +29,44 @@ Table of Contents
         - [Dependencies](#dependencies)
     - [How to Use](#how-to-use)
     - [Extend This Project](#extend-this-project-future-work)
-    - [Contact](#contact)
+- [Contact](#contact)
 - [References](#references)
 
 # Report
 
+## Introduction
+The first goal of this project was to analyze the trade-off between accuracy and tractability of worst-case delay-bounds in time-sensitive networks with FIFO scheduling. Then, using the results of this analysis, we designed efficient heuristics that find the sweet spot of the trade-off.
 
-# Introduction
-This project builds on top of the [panco](https://github.com/Huawei-Paris-Research-Center/panco) project.
-
-...
-
-## Background
+### Background
 **Time-Sensitive Networking (TSN)** is a collection of standards and technologies that enables precise and time-critical communication in Ethernet networks. It provides mechanisms for deterministic data transmission, synchronization, and quality of service (QoS) enhancements, allowing for real-time and reliable delivery of time-sensitive data.
 
-**Network calculus** provides mathematical tools to quantify and predict the behavior of network traffic, including delay, throughput, and packet loss. It helps in understanding the performance limits and guarantees of network systems [1].
+**Network calculus** provides mathematical tools to quantify and predict the behavior of network traffic, including delay, throughput, and packet loss. It helps in understanding the performance limits and guarantees of network systems [[1]](#references).
 
-In the context of TSN, network calculus aids in analyzing and designing Ethernet networks to meet the timing requirements of time-sensitive applications. By applying network calculus principles, network designers can determine the maximum delay and bounds on end-to-end latency for time-critical traffic flows. They can also evaluate network capacity and ensure that sufficient resources are allocated to meet the real-time demands of the applications.
+In the context of TSN, network calculus aids in analyzing and designing networks to meet the timing requirements of time-sensitive applications. By applying network calculus principles, network designers can determine the maximum delay and bounds on end-to-end latency for time-critical traffic flows. They can also evaluate network capacity and ensure that sufficient resources are allocated to meet the real-time demands of the applications.
 
-There has been recent work focusing on the trade-off between accuracy and computational tractability when applying Network Calculus techniques to First-In-First-Out (FIFO) networks [2]. FIFO networks follow a simple queuing discipline where packets are served in the order of arrival.
+There has been recent work focusing on the trade-off between accuracy and computational tractability when applying Network Calculus techniques to First-In-First-Out (FIFO) networks [[2]](#references). FIFO networks follow a simple queuing discipline where packets are served in the order of arrival.
 
-[2] explores how different assumptions and approaches can affect the accuracy and tractability of Network Calculus analysis in FIFO networks. It delves into various techniques proposed in the literature, which aim to overcome the challenges posed by FIFO scheduling. Additionally, the authors propose a new algorithm based on linear programming that presents a trade-off between accuracy and tractability. Striking a balance between accurate performance bounds and manageable computational complexity becomes a crucial objective.
+[[2]](#references) explores how different assumptions and approaches can affect the accuracy and tractability of Network Calculus analysis in FIFO networks. It delves into various techniques proposed in the literature, which aim to overcome the challenges posed by FIFO scheduling. Additionally, the authors propose a new algorithm based on linear programming that presents a trade-off between accuracy and tractability. Striking a balance between accurate performance bounds and manageable computational complexity becomes a crucial objective.
 
-## Challenges
+### Challenges
+The main challenge we are aiming to solve in this project is finding the balance between accuracy and tractability.
+
+## Contribution
 ...
 
-# Contribution
+### Solution
 ...
 
-## Solution
+### Achievments
 ...
 
-## Achievments
+## Skills
 ...
 
-# Skills
+## Major Events
 ...
 
-# Major Events
-...
-
-# Self-Assesment
+## Self-Assesment
 ...
 
 
@@ -84,27 +80,52 @@ There has been recent work focusing on the trade-off between accuracy and comput
 # Project
 
 
-# Project Structure
+## Project Structure
+    .
+    └- README.md
+    └- installation.md
+    └- LICENSE
+    └- ecowcdb/
+    |   └- __init__.py
+    |   └- analysis.py
+    |   └- ecowcdb.py
+    |   └- networks.py
+    |   └- options.py
+    |   └- stats.py
+    |   └- util/
+    |   |   └- __init__.py
+    |   |   └- errors.py
+    |   |   └- network.py
+    |   |   └- units.py
+    |   |   └- validation.py
+    |   └- panco/
+    |       └- ...
+    └- example/
+    |   └-
+    |   └-
+    └- results/
+    |   └- results.md
+    └- temp/
+        └- temp.md
+
+### File Description
 ...
 
-## File Description
+
+
+## Installation
 ...
 
-
-
-# Installation
+### Requirements
 ...
 
-## Requirements
+### Dependencies
 ...
 
-## Dependencies
+## How to Use
 ...
 
-# How to Use
-...
-
-# Extend this Project (Future Work)
+## Extend this Project (Future Work)
 ...
 
 # Contact
@@ -113,9 +134,9 @@ There has been recent work focusing on the trade-off between accuracy and comput
 
 # References
 
-[1] Boudec, J.-Y. L., & Thiran, P. (2001). Network calculus: A theory of deterministic queuing systems for the internet. Springer. 
+[1] Boudec, J.-Y. L. and Thiran, P. (2001). Network calculus: A theory of deterministic queuing systems for the internet. Springer. 
 
-
+[2] Bouillard, A. (2022). Trade-off between accuracy and Tractability of network calculus in FIFO networks. Performance Evaluation, 153, 102250. https://doi.org/10.1016/j.peva.2021.102250 
 
 
 
