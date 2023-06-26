@@ -99,12 +99,16 @@ The main challenge we are aiming to solve in this project is finding the balance
     |   |   └- units.py
     |   |   └- validation.py
     |   └- panco/
+    |       └- __init__.py
+    |       └- lpSolvePath.py
+    |       └- lp_solve
     |       └- ...
     └- example/
-    |   └-
-    |   └-
+    |   └- example.md
+    |   └- ...
     └- results/
     |   └- results.md
+    |   └- ...
     └- temp/
         └- temp.md
 
