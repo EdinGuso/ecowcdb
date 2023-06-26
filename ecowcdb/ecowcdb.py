@@ -18,7 +18,9 @@ from ecowcdb.util.validation import Validation
 
 class ECOWCDB:
     """
-     Class for computing best delays for networks.
+     Class for computing best delays for networks. (Disclaimer: The functions provided in this class are heurtistic
+     functions based on analytical observations and statistics. The functions may not provide the best possible or
+     shortest runtime delays.)
 
      Attributes:
          __validation (Validation.ECOWCDB, private): Validation object used to validate user inputs.
@@ -90,16 +92,59 @@ class ECOWCDB:
                     return float('inf')
                 else:
                     raise ValueError(f'Unhandled error type: {lperror}.')
-
-    def delay(self, foi: int, max_depth: int = -1) -> float:
+                
+    def best_delay(self, foi: int) -> float:
         """
-         Computes the best ecowcdb delay of the flow of interest for the given max_depth.
+         Computes the best ecowcdb delay of the flow of interest. (Disclaimer: The obtained delay is not necessarily
+         the best delay for this network. It is likely a very good delay, and it will likely take longer time to
+         compute.)
+         
+         Args:
+         	 foi (int, required): Flow of interest.
+         
+         Returns: 
+         	 float: The delay [seconds] or float('inf') if the delay could not be computed.
+        """
+        self.__validation.foi(foi, self.__net.num_flows)
+
+        forest = flow_preserving_min_depth_max_forest(self.__edges, self.__net.num_servers, self.__net.flows[foi].path)
+        return self.__delay(foi, forest)
+
+    def delay(self, foi: int, max_depth: int) -> float:
+        """
+         Computes the best ecowcdb delay of the flow of interest for the given max_depth. The resulting forest can have
+         multiple components which are not connected. (Disclaimer: The obtained delay is not necessarily the best delay
+         for this network for this depth. It is likely a very good delay for this depth, and it will likely take a
+         moderate amount of time to compute.)
          
          Args:
          	 foi (int, required): Flow of interest.
          	 max_depth (int, optional): Maximum allowed depth of the forest. Negative values correspond to unlimited
-             depth. If it is a non-negative value, flow preservation is not guaranteed and the best ecowcdb delay may
-             not be obtained. Defaults is -1 which means unlimited depth.
+             depth (same as best_delay). If it is a non-negative value, flow preservation is not guaranteed and the
+             best ecowcdb delay may not be obtained.
+         
+         Returns:
+         	 float: The delay [seconds] or float('inf') if the delay could not be computed.
+        """
+        self.__validation.foi(foi, self.__net.num_flows)
+        self.__validation.max_depth(max_depth)
+
+        forest = flow_preserving_min_depth_max_forest(self.__edges, self.__net.num_servers, self.__net.flows[foi].path,
+                                                      max_depth)
+        return self.__delay(foi, forest)
+    
+    def quick_delay(self, foi: int, max_depth: int) -> float:
+        """
+         Computes a quick delay of the flow of interest for the given max_depth. The resulting forest has a single
+         component. After an edge is cut, no further edges along that path are considered. (Disclaimer: The obtained
+         delay is not necessarily the quickest delay for this network for this depth. It is likely a mediocre delay
+         for this depth, and it will likely take shorter time to compute.)
+         
+         Args:
+         	 foi (int, required): Flow of interest.
+         	 max_depth (int, optional): Maximum allowed depth of the forest. Negative values correspond to unlimited
+             depth (same as best_delay). If it is a non-negative value, flow preservation is not guaranteed and the
+             best ecowcdb delay may not be obtained.
          
          Returns: 
          	 float: The delay [seconds] or float('inf') if the delay could not be computed.
@@ -107,100 +152,7 @@ class ECOWCDB:
         self.__validation.foi(foi, self.__net.num_flows)
         self.__validation.max_depth(max_depth)
 
-        forest = flow_preserving_min_depth_max_forest(self.__edges, self.__net.num_servers, self.__net.flows[foi].path, max_depth)
+        forest = flow_preserving_min_depth_max_forest(self.__edges, self.__net.num_servers, self.__net.flows[foi].path,
+                                                      max_depth, True)
         return self.__delay(foi, forest)
 
-
-
-
-
-
-
-    # def __next_forest(self, flow_edges: List[Tuple[int, int]], i: int) -> bool:
-    #     # CAN I ASSUME THAT FLOWS DO NOT HAVE CYCLES??
-    #     if i < len(self.__PATH_RATE):
-    #         while len(self.__selected_edges) / len(flow_edges) < self.__PATH_RATE[i]:
-    #             next_edge = flow_edges[len(self.__selected_edges)]
-    #             self.__selected_edges += [next_edge]
-    #             self.__remaining_edges.remove(next_edge)
-    #     elif i < len(self.__PATH_RATE) + len(self.__OTHER_RATE):
-    #         if len(self.__remaining_edges) == 0:
-    #             return False
-    #         edge_added = False
-    #         while (len(self.__selected_edges) - len(flow_edges)) / (len(list(self.__net.edges.keys())) - len(flow_edges)) < self.__OTHER_RATE[i-len(self.__PATH_RATE)]:
-    #             for edge in self.__remaining_edges:
-    #                 if edge not in self.__selected_edges and edge[1] in [e[0] for e in self.__selected_edges]:
-    #                     if is_forest(self.__net.decomposition(self.__selected_edges + [edge])[0]):
-    #                         self.__selected_edges += [edge]
-    #                         self.__remaining_edges.remove(edge)
-    #                         edge_added = True
-    #                         break
-    #             if not edge_added or len(self.__remaining_edges) == 0:
-    #                 return False
-    #     else:
-    #         print('ERROR: should never enter this condition')
-    #         return False
-    #     return True
-
-
-
-    # def delay(self, foi: int, time_limit: int | float) -> float:
-    #     def timeout_handler(signum, frame):
-    #         raise TimeoutError("Function timed out.")
-    #     cls = '\r' + ' '*50 + '\r'
-        
-    #     self.__remaining_edges = list(self.__net.edges.keys())
-    #     self.__selected_edges = []
-
-    #     best_delay = float('inf')
-    #     new_delay = float('inf')
-    #     runtime = 0.0
-    #     forest_index = 0
-    #     flow_edges = path_to_edges(self.__net.flows[foi].path)
-        
-    #     while True:
-    #         start = time()
-    #         timeout = floor(time_limit - runtime)
-    #         if timeout <= 0:
-    #             print(f'{cls}Timed out!-other')
-    #             break
-
-    #         prev_forest = deepcopy(self.__selected_edges)
-    #         if not self.__next_forest(flow_edges, forest_index):
-    #             print(f'{cls}Found the best (ecowcdb) delay!')
-    #             break
-    #         if prev_forest == self.__selected_edges and prev_forest != []:
-    #             forest_index += 1
-    #             continue
-    #         print(f'{cls}Optimizing delay... (time left = {timeout}s)', end='')
-
-    #         stdout.flush()
-
-    #         # ONLY AVAILABLE IN UNIX!!!!
-    #         # CAN USE Threading.Timer() maybe
-    #         # don't waste time on timeout
-    #         signal(SIGALRM, timeout_handler)
-    #         alarm(timeout)
-
-    #         try:
-    #             new_delay = self.__delay(foi, timeout, self.__selected_edges)
-    #         except LPError as lperror:
-    #             # SHOULD I JUST SKIP A CUT IF THERE IS ERROR?
-    #             # EXPLAIN PROBLEM REGARDING TIMEOUT ERRORS...
-    #             # explain in documentation and maybe provide a message to the users
-    #             print(lperror)
-    #             forest_index += 1
-    #         except TimeoutError:
-    #             print(f'{cls}Timed out!')
-    #             break
-    #         else:
-    #             forest_index += 1
-
-    #         if new_delay < best_delay:
-    #             best_delay = new_delay
-    #             print(f'{cls}Delay bound improved: {10**6*best_delay:.2f} microseconds')
-
-    #         end = time()
-    #         runtime += (end - start)
-
-    #     return best_delay

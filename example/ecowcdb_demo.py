@@ -17,11 +17,13 @@ def main():
     
     flow_of_interest = 0
 
-    best_delay = ecowcdb.delay(flow_of_interest)
-    worse_delay = ecowcdb.delay(flow_of_interest, max_depth=5)
+    best_delay = ecowcdb.best_delay(flow_of_interest)
+    delay = ecowcdb.delay(flow_of_interest, max_depth=5)
+    quick_delay = ecowcdb.quick_delay(flow_of_interest, max_depth=5)
 
     print(f'{best_delay=}s')
-    print(f'{worse_delay=}s')
+    print(f'{delay=}s')
+    print(f'{quick_delay=}s')
 
 
 if __name__ == '__main__':

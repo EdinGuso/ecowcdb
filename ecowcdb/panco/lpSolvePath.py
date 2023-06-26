@@ -12,5 +12,5 @@ __license__ = "BSD-3"
 
 
 import os.path
-# LPSOLVEPATH = ["wsl", "lp_solve", "-s5"]
+
 LPSOLVEPATH = [os.path.join(os.path.dirname(__file__), 'lp_solve')]

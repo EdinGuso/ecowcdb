@@ -257,7 +257,7 @@ def __edges_to_reverse_adj_list(edges: List[Tuple[int, int]], N: int) -> List[Li
     return reverse_adj_list
 
 def flow_preserving_min_depth_max_forest(edges: List[Tuple[int, int]], N: int, flow_path: List[int],
-                                         max_depth: int = -1) -> List[Tuple[int, int]]:
+                                         max_depth: int = -1, connected: bool = False) -> List[Tuple[int, int]]:
     """
      Computes the maximal forest with minimum depth while preserving (not cutting) the flow.
      
@@ -268,6 +268,10 @@ def flow_preserving_min_depth_max_forest(edges: List[Tuple[int, int]], N: int, f
      	 max_depth (int, optional): Maximum allowed depth of the forest. Negative values correspond to unlimited depth.
          If it is a non-negative value, flow preservation is not guaranteed. Defaults is -1 which means unlimited
          depth.
+         connected (bool, optional): Indicates whether the resulting forest should be connected or not. If it is true,
+         once max depth is reached, no other deeper edge is considered. If it is false, once max depth is reached, one
+         edge will be skipped and deeper edges will be considered as if starting from depth 0. This value is irrelevant
+         if max_depth is negative. Default is False.
      
      Returns: 
      	 List[Tuple[int, int]]: The maximal forest.
@@ -284,6 +288,8 @@ def flow_preserving_min_depth_max_forest(edges: List[Tuple[int, int]], N: int, f
     for edge in flow_edges[::-1]:
         visited.add(edge[0])
         if node_depth_list[-1][1] == max_depth:
+            if connected:
+                break
             node_depth_list.append((edge[0], 0))
         else:
             node_depth_list.append((edge[0], node_depth_list[-1][1]+1))
@@ -298,7 +304,10 @@ def flow_preserving_min_depth_max_forest(edges: List[Tuple[int, int]], N: int, f
                 continue
             visited.add(neighbour)
             if node_depth[1] == max_depth:
-                node_depth_list.append((neighbour, 0))
+                if connected:
+                    node_depth_list.append((neighbour, max_depth))
+                else:
+                    node_depth_list.append((neighbour, 0))
             else:
                 node_depth_list.append((neighbour, node_depth[1]+1))
                 forest.append((neighbour, node_depth[0]))
