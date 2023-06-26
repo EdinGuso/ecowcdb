@@ -1,1 +1,1 @@
-This directory is intended for storing result files. All `.txt` abd `.pickle` files will be stored in this directory if the user provides the path to this folder as `results_folder` argument in the relevant library functions.
+This directory is intended for storing result files. All `.txt` and `.pickle` files will be stored in this directory if the user provides the path to this folder as `results_folder` argument in the relevant library functions.
