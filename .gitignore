@@ -9,7 +9,6 @@ __pycache__/
 # Results files
 *.pickle
 *.txt
-*.png
 
 # Visual Studio Code folder
 .vscode/
