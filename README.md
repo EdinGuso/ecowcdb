@@ -1,5 +1,4 @@
-ECOWCDB: Efficient Computation of Worst-Case Delay-Bounds for Time-Sensitive Networks
-=======================
+# ECOWCDB: Efficient Computation of Worst-Case Delay-Bounds for Time-Sensitive Networks
 Author: Edin Guso
 
 Advisors: Seyed Mohammadhossein Tabatabaee, Stéphan Plassart, Jean-Yves Le Boudec
@@ -35,7 +34,7 @@ The readme consists of 2 main parts: Report and Project. Report section includes
 # Report
 
 ## Introduction
-The first goal of this project was to analyze the trade-off between accuracy and tractability of worst-case delay-bounds in time-sensitive networks with FIFO scheduling. Then, using the results of this analysis, we designed efficient heuristics that find the sweet spot of the trade-off.
+The first goal of this project was to analyze the trade-off between accuracy and tractability of Network Calculus in FIFO networks. Then, using the results of this analysis, we designed efficient heuristics that find the sweet spot of this trade-off.
 
 ### Background
 **Time-Sensitive Networking (TSN)** is a collection of standards and technologies that enables precise and time-critical communication in Ethernet networks. It provides mechanisms for deterministic data transmission, synchronization, and quality of service (QoS) enhancements, allowing for real-time and reliable delivery of time-sensitive data.
@@ -46,39 +45,65 @@ In the context of TSN, network calculus aids in analyzing and designing networks
 
 There has been recent work focusing on the trade-off between accuracy and computational tractability when applying Network Calculus techniques to First-In-First-Out (FIFO) networks [[2]](#references). FIFO networks follow a simple queuing discipline where packets are served in the order of arrival.
 
-[[2]](#references) explores how different assumptions and approaches can affect the accuracy and tractability of Network Calculus analysis in FIFO networks. It delves into various techniques proposed in the literature, which aim to overcome the challenges posed by FIFO scheduling. Additionally, the authors propose a new algorithm based on linear programming that presents a trade-off between accuracy and tractability. Striking a balance between accurate performance bounds and manageable computational complexity becomes a crucial objective.
+[[2]](#references) explores how different assumptions and approaches can affect the accuracy and tractability of Network Calculus analysis in FIFO networks. It delves into various techniques proposed in the literature, which aim to overcome the challenges posed by FIFO scheduling. Additionally, the authors propose a new algorithm (PLP) based on linear programming that presents a trade-off between accuracy and tractability. Striking a balance between accurate performance bounds and manageable computational complexity becomes a crucial objective.
 
 ### Challenges
-The main challenge we are aiming to solve in this project is finding the balance between accuracy and tractability.
+The PLP algorithm is first presented for tree networks. Then, the authors present the cutting procedure which allows an arbitrary network to be cut into a forest. Both the obtained delay and the runtime heavily depends on the cut.
+
+In the original implementation of the PLP algorithm, the cut is selected in a very simple manner: for each node, keep only the successor that has the smaller number among the successors with a larger number than this node. This approach always constructs a valid forest. However, the resulting forest heavily depends on the indexing of the nodes (servers) within the network. Even if indexing is performed in a favorable manner, this simple cut selection often results in sub-optimal forests depending on the network topology. 
+
+The two main challenges that we are aiming to solve are as follows:
+
+1. Understanding the relationship betwewn the cuts (size and shape) and the resulting delay bound and the runtime.
+2. Designing efficient and accurate heuristics for picking good cuts for any network size and topology.
+
+Another challenge that we faced was the complicated nature of defining network objects in the original project. Therefore, we want to streamline the process of generating common network topologies.
 
 ## Contribution
-...
+Summary
 
 ### Solution
-...
+Our solution can be divided into 4 main sections:
+
+1. **Network Generation:** We simplified the generation of common network topologies such as Tandem (interleaved, source-sink, sink-tree), Mesh, and Ring (full, semi, complete-full, complete-semi) networks. Instead of defining arrival curves and paths for each flow, and service curves and shapers for each server, the users can call a single function and pass a few parameters (rate, latency, burst, number of servers, and maximum load) to generate these common network topologies. This saves time as well as avoiding typos that can happen when defining all servers and flows individually.
+
+2. **Cut Analysis:** We created an Analysis class which is used to analyze the effects of cuts on the delay and runtime. The user can compute a delay for any cut, perform exhaustive search on all the valid cuts, and perform partial search on a random subset of valid cuts.    
+
+    Exhaustive search provides more information, however, it is infeasable to perform exhaustive search on medium to large size networks as the number of valid cuts increases exponentially in the number of connections (edges) between servers. Partial search is therefore a valuable tool which can be used to get some ideas about the cut behaviour in large networks.
+
+    Additionally, the Analysis class provides several helpful function used to display, save and load the obtained results. User can also pick the unit of time in which the results should be displayed, a timeout value which limits the time spent solving an individual linear program, and several verbosity options which indicate how much or how little feedback will the user receive regarding the progress/errors/details of computations.
+
+3. **Cut Statistics:** We created a relatively smaller Stats class which is used to compute correlation statistics regarding the results obtained in the Analysis class. This class takes the output of the Analysis class as its input, and can compute the correlation for delay vs. runtime, forest-size vs. delay, and forest-size vs. runtime.
+
+    The results obtained in this class were used in designing our heuristic algorithm which is explained next.
+
+4. **Heuristic Algorithm:** Using all the observations from the Analysis and Stats classes, we created the ECOWCDB class. We designed a heuristic algorithm which attempts to generate the most optimal cut (forest) based on the input restrictions such as max-depth and connectedness.
+
+    The user can use one of three defined delay functions: best-delay, delay, and quick-delay. Depending on the function called, the heuristic algorithm will generate an appropriate cut (forest) and compute the delay for the given network and cut.
+
+    As observed in the analysis part of the project, not every network topology has the same behaviour when it comes to cuts. Therefore, the generic heuristic algorithm does not always provide the best result. Nevertheless, it can be observed in the next section that the algorithm provides satisfying results for most topologies.
 
 ### Achievments
-...
+*List your achievements, give their nature, quality and quantity. Distinguish your contribution from what others did before. For example: I designed an ns model of the VP-TFMCC protocol, 2500 lines of simple code, 300 lines of high value code. Debugging took 2 weeks.*
+
+*Numeric results & how much code is there etc.*
 
 ## Skills
-...
+What skills did you exercise
+
+What skills did you have to acquire for the project
 
 ## Major Events
-...
+Report on the major events of the project, including unexpected difficulties.
 
 ## Self-Assesment
-...
-
-
-
-
+Provide a self-assessment (where did you succeed most, where did you fail)
 
 
 
 
 
 # Project
-
 
 ## Project Structure
     .
@@ -104,13 +129,13 @@ The main challenge we are aiming to solve in this project is finding the balance
     |       └- lp_solve
     |       └- ...
     └- example/
-    |   └- example.md
+    |   └- README.md
     |   └- ...
     └- results/
-    |   └- results.md
+    |   └- README.md
     |   └- ...
     └- temp/
-        └- temp.md
+        └- README.md
 
 ### File Description
 ...

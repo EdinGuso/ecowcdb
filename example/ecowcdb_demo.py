@@ -9,7 +9,7 @@ def main():
     R = 10**7 # Kb/s
     L = 10**-5 # s
     S = 8 # Kb
-    N = 24 # servers
+    N = 12 # servers
     load = 0.5
     
     net = Networks.Ring().full(R, L, S, N, load, NetworkType.Symmetric)
