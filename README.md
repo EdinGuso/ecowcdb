@@ -30,7 +30,7 @@ The readme consists of 2 main parts: Report and Project. Report section includes
         - [File Description](#file-description)
     - [Installation](#installation)
         - [Requirements](#requirements)
-        - [Dependencies](#dependencies)
+        - [Detailed Guide](#detailed-guide)
     - [How to Use](#how-to-use)
     - [Extend This Project](#extend-this-project-future-work)
 - [Contact](#contact)
@@ -199,7 +199,7 @@ This project is an extension of the panco project [[3]](#references). *A bit mor
     - [`README.md`](https://github.com/EdinGuso/ecowcdb/blob/main/temp/README.md): Explains the purpose and usage of the `temp` folder.
 
 ## Installation
-Please install the following requirements.
+Please install the [Requirements](#requirements).
 
 Quickly build the project using `setup.py` by running the following command at the root of the project:
 
@@ -238,5 +238,5 @@ Please follow the detailed [installation guide](https://github.com/EdinGuso/ecow
 # Contact
 Regarding any question/problem about this project, please contact me via e-mail:
 - [Academic](mailto:edin.guso@epfl.ch)
-- [Primary](edinguso@gmail.com)
-- [Secondary](edinguso@hotmail.com)
+- [Primary](mailto:edinguso@gmail.com)
+- [Secondary](mailto:edinguso@hotmail.com)
