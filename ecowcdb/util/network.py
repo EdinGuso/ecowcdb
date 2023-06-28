@@ -39,7 +39,7 @@ def __all_forests(net: Network, min_edges: int, verbose: bool) -> List[List[Tupl
         for i in range(min_edges, len(edges)+1):
             for subset_edges in combinations(edges, i):
                 if is_forest(net.decomposition(list(subset_edges))[0]):
-                    forests.append(list(subset_edges))
+                    forests.append(sorted(list(subset_edges), key=lambda x: x[0]))
                 if verbose:
                     pbar.update(1)
 
