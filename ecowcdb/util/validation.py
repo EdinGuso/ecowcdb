@@ -273,6 +273,7 @@ class Validation:
          Methods:
              constructor_arguments (public): Validates all the arguments passed to the constructor of the Stats class.
              foi (public): Validates the given foi.
+             max_depth (public): Validates the given max depth.
         """
         # __validation: Validation
 
@@ -304,6 +305,15 @@ class Validation:
             self.__validation._type(foi, 'foi', int)
             self.__validation._non_negative(foi, 'foi')
             self.__validation._exists_in_dict(foi, 'foi', results)
+
+        def max_depth(self, max_depth: int) -> None:
+            """
+             Validates the given max depth. Checks if it is an int.
+             
+             Args:
+                 max_depth (int, required): Max depth to be validated.
+            """
+            self.__validation._type(max_depth, 'max_depth', int)
             
 
     class Networks:

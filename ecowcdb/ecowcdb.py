@@ -155,4 +155,3 @@ class ECOWCDB:
         forest = flow_preserving_min_depth_max_forest(self.__edges, self.__net.num_servers, self.__net.flows[foi].path,
                                                       max_depth, True)
         return self.__delay(foi, forest)
-

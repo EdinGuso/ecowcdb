@@ -405,6 +405,7 @@ class Analysis:
              extension is added automatically within the function.
         """
         self.__validation.filename(filename)
+
         saved_object = {'net': self.__net, 'results': self.__results}
         filepath = self.__results_folder + filename + self.__RAW_FILE_FORMAT
         with open(filepath, 'wb') as file:
