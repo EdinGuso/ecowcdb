@@ -18,6 +18,7 @@ The readme consists of 2 main parts: Report and Project. Report section includes
         - [Solution](#solution)
         - [Achievments](#achievments)
         - [Results](#results)
+        - [Discussion](#discussion)
     - [Skills](#skills)
     - [Major Events](#major-events)
     - [Self-Assesment](#self-assesment)
@@ -86,12 +87,12 @@ Our solution can be divided into 4 main parts:
     As observed in the analysis part of the project, not every network topology has the same behavior when it comes to cuts. Therefore, the generic heuristic algorithm does not always provide the best result. Nevertheless, it can be observed in the next section that the algorithm provides satisfying results for most topologies.
 
 ### Achievments
-We designed four tools described in [Solution](#solution). This project, including the modifications done to the existing codebase as well as the ECOWCDB library, exceeds 2500 lines of code, out of which I would classify ~500 lines as high value code.
+We designed four tools described in [Solution](#solution). This project, including the modifications done to the existing codebase as well as the ECOWCDB library, exceeds 2500 lines of code, out of which ~500 lines are high value code.
 
 Our first main contribution is providing a tool for in-depth analysis of the trade-off between accuracy and tractability of Network Calculus in FIFO networks. The second main contribution is the heuristic algorithm. Results obtained with the heuristic algorithm can be seen in [Results](#results).
 
 ### Results
-In this section, we will display the quality of the cuts obtained by our heuristic algorithm. We will do so by comparing the results obtained with the heuristic algorithm to the results obtained during exhaustive and partial search in the analysis part.
+In this section, we will display the quality of the cuts obtained by our heuristic algorithm. We will do so by comparing the results obtained by the heuristic algorithm to the results obtained during exhaustive search in the analysis part.
 
 <style>
 table {
@@ -100,17 +101,20 @@ table {
 }
 </style>
 
-| Network Topology | # Servers | Heuristic Type | Delay Ranking | Runtime Ranking |
-|:-:|:-:|:-:|:-:|:-:|
-| Semi Ring | 12 | Best Delay<br>Delay<br>Quick Delay | XX%<br>XX%<br>XX% | XX%<br>XX%<br>XX% |
-| Full Ring | 12 | Best Delay<br>Delay<br>Quick Delay | XX%<br>XX%<br>XX% | XX%<br>XX%<br>XX% |
-| Compete Semi Ring | 11 | Best Delay<br>Delay<br>Quick Delay | XX%<br>XX%<br>XX% | XX%<br>XX%<br>XX% |
-| Complete Full Ring | 7 | Best Delay<br>Delay<br>Quick Delay | XX%<br>XX%<br>XX% | XX%<br>XX%<br>XX% |
-| Mesh | 9 | Best Delay<br>Delay<br>Quick Delay | XX%<br>XX%<br>XX% | XX%<br>XX%<br>XX% |
-| Interleaved Tandem | 12 | Best Delay<br>Delay<br>Quick Delay | XX%<br>XX%<br>XX% | XX%<br>XX%<br>XX% |
-| Sink-Tree Tandem | 12 | Best Delay<br>Delay<br>Quick Delay | XX%<br>XX%<br>XX% | XX%<br>XX%<br>XX% |
-| Source-Sink Tandem | 12 | Best Delay<br>Delay<br>Quick Delay | XX%<br>XX%<br>XX% | XX%<br>XX%<br>XX% |
+| Network Topology | # Servers | Max Depth | Heuristic Type | Delay Percentile | Runtime Comparison |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+| Semi Ring | XX | XX | Best Delay<br>Delay<br>Quick Delay | XX%<br>XX%<br>XX% | XX%<br>XX%<br>XX% |
+| Full Ring | 12 | 5 | Best Delay<br>Delay<br>Quick Delay | 0.02%<br>0.93%<br>27.11% | +780.32%<br>+170.43%<br>+30.21% |
+| Compete Semi Ring | 11 | 4 | Best Delay<br>Delay<br>Quick Delay | 0.05%<br>6.89%<br>19.00% | +802.09%<br>+121.00%<br>+3.45% |
+| Complete Full Ring | 7 | 3 | Best Delay<br>Delay<br>Quick Delay | 1.57%<br>7.09%<br>51.18% | +337.45%<br>+65.49%<br>+9.90% |
+| Mesh | 9 | 2 | Best Delay<br>Delay<br>Quick Delay | 58.85%<br>12.89%<br>72.29% | -30.30%<br>-13.04%<br>-11.27% |
+| Interleaved Tandem | 12 | 5 | Best Delay<br>Delay<br>Quick Delay | 1.51%<br>0.10%<br>36.82% | -68.63%<br>-51.63%<br>+27.79% |
+| Sink-Tree Tandem | 12 | 5 | Best Delay<br>Delay<br>Quick Delay | 0.05%<br>1.81%<br>3.81% | -85.64%<br>-65.09%<br>-28.85% |
+| Source-Sink Tandem | 12 | 5 | Best Delay<br>Delay<br>Quick Delay | 0.05%<br>0.68%<br>25.73% | -81.30%<br>-52.59%<br>-8.87% |
 
+*Table: First column of the table represents the network topology examined. Second column is the number of servers within the network. Third column is the max depth parameter used for generating the forests in delay and quick delay functions. Fourth delay displays which heuristic was used for generating the forest. Fifth column displays in which percentile the delay is placed compared to all the delays of all the cuts computed during the exhaustive search. Sixth column displays how higher or lower the runtime is compared to the median runtime of all the cuts computed during exhaustive search.*
+
+### Discussion
 *Based on the resutls above...*
 
 ## Skills
@@ -128,10 +132,10 @@ Skills I had to acquire for the project:
 - **Documentation:** To ensure the clarity and comprehensibility of the project, I developed skills in documentation. This involved creating detailed and organized documentation for various components, algorithms, and functionalities within the project. By honing these skills, I contributed to the overall usability and maintainability of the project, facilitating its future development and understanding.
 
 ## Major Events
-Report on the major events of the project, including unexpected difficulties.
+*Report on the major events of the project, including unexpected difficulties.*
 
 ## Self-Assesment
-Provide a self-assessment (where did you succeed most, where did you fail)
+*Provide a self-assessment (where did you succeed most, where did you fail)*
 
 
 
@@ -140,7 +144,7 @@ Provide a self-assessment (where did you succeed most, where did you fail)
 # Project
 
 ## Introduction
-This project is an extension of the panco project [[3]](#references).
+This project is an extension of the panco project [[3]](#references). *A bit more introduction.*
 
 ## Project Structure
     .
@@ -175,7 +179,8 @@ This project is an extension of the panco project [[3]](#references).
         └- README.md
 
 ### File Description
-...
+- [`README.md`](github.com/EdinGuso/ecowcdb/blob/main/README.md):
+- 
 
 
 
