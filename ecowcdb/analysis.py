@@ -310,7 +310,7 @@ class Analysis:
             self.__validation.foi(foi, self.__net.num_flows)
 
         # If it is a symmetric cycle, we can perform the efficient exhaustive search.
-        if self.__net.symmetric_cycle:
+        if self.__net.symmetric_cycle and self.__forest_generation == ForestGeneration.All:
             self.__exhaustive_search_symmetric_cycle()
             return
         
@@ -342,7 +342,7 @@ class Analysis:
         self.__validation.callable(self.__forest_generation, self.exhaustive_search_all_flows)
 
         # If it is a symmetric cycle, we can perform the efficient exhaustive search.
-        if self.__net.symmetric_cycle:
+        if self.__net.symmetric_cycle and self.__forest_generation == ForestGeneration.All:
             self.__exhaustive_search_symmetric_cycle()
             return
 
