@@ -14,8 +14,6 @@ The readme consists of 2 main parts: Report and Project. Report section includes
 - [Table of Contents](#table-of-contents)
 - [Report](#report)
     - [Introduction](#introduction)
-        - [Background](#background)
-        - [Challenges](#challenges)
     - [Contribution](#contribution)
         - [Solution](#solution)
         - [Achievments](#achievments)
@@ -41,30 +39,20 @@ The readme consists of 2 main parts: Report and Project. Report section includes
 # Report
 
 ## Introduction
-The first goal of this project was to analyze the trade-off between accuracy and tractability of Network Calculus in FIFO networks. Then, using the results of this analysis, we designed efficient heuristics that find the sweet spot of this trade-off.
+Time-Sensitive Networking (TSN) has emerged as a critical technology in various domains where real-time communication is paramount, such as industrial automation, autonomous vehicles, and multimedia streaming. TSN provides deterministic and bounded latency guarantees, ensuring the timely delivery of time-critical data in networked systems. To support the development and deployment of TSN, the TSN Working Group, comprised of industry experts and researchers, has been instrumental in defining standards that address the stringent requirements of these applications.
 
-### Background
-**Time-Sensitive Networking (TSN)** is a collection of standards and technologies that enables precise and time-critical communication in Ethernet networks. It provides mechanisms for deterministic data transmission, synchronization, and quality of service (QoS) enhancements, allowing for real-time and reliable delivery of time-sensitive data.
+Time-sensitive networks require performance guarantees under worst-case scenarios, where delays can be maximized due to factors like congestion, contention, and network topology. Unlike average-case analysis, worst-case analysis considers extreme situations to ensure the network's ability to handle critical communication within strict latency bounds. Computing the exact worst-case delays for time-sensitive networks is known to be an NP-hard problem, posing significant computational challenges.
 
-**Network calculus** provides mathematical tools to quantify and predict the behavior of network traffic, including delay, throughput, and packet loss. It helps in understanding the performance limits and guarantees of network systems [[1]](#references).
+In the quest to analyze and validate the performance of communication networks, Network Calculus has emerged as a powerful mathematical framework. It provides methods for computing upper bounds on worst-case performance parameters, such as end-to-end delay and backlog [[1]](#references). These upper bounds enable network designers to assess the predictability and performance guarantees of their designs and ensure compliance with real-time requirements.
 
-In the context of TSN, network calculus aids in analyzing and designing networks to meet the timing requirements of time-sensitive applications. By applying network calculus principles, network designers can determine the maximum delay and bounds on end-to-end latency for time-critical traffic flows. They can also evaluate network capacity and ensure that sufficient resources are allocated to meet the real-time demands of the applications.
+However, computing accurate upper bounds on worst-case performance in time-sensitive networks remains a complex and computationally intensive task. Existing approaches rely on heuristics to overcome the computational intractability of the problem. 
+One notable method is the PLP algorithm, proposed in [[2]](#references). The PLP algorithm leverages linear programming techniques to determine worst-case delay bounds.
 
-There has been recent work focusing on the trade-off between accuracy and computational tractability when applying Network Calculus techniques to First-In-First-Out (FIFO) networks [[2]](#references). FIFO networks follow a simple queuing discipline where packets are served in the order of arrival.
+PLP works by breaking cyclic dependencies within the network and this is achieved by cutting the network. The selection of cuts significantly impacts the accuracy of worst-case delay bounds. Despite the algorithm's effectiveness, selecting suitable cuts for the PLP algorithm poses a significant challenge due to the exponential number of potential cuts for each network.
 
-The paper mentioned above explores how different assumptions and approaches can affect the accuracy and tractability of Network Calculus analysis in FIFO networks. It delves into various techniques proposed in the literature, which aim to overcome the challenges posed by FIFO scheduling. Additionally, the authors propose a new algorithm (PLP) based on linear programming that presents a trade-off between accuracy and tractability. Striking a balance between accurate performance bounds and manageable computational complexity becomes a crucial objective.
+In the original implementation of the PLP algorithm, the cut selection process follows a simplistic approach. *For each node, the algorithm keeps only the successor that has the smaller number among the successors with a larger number than the current node.* While this approach ensures the construction of a valid forest, the resulting forest heavily relies on the indexing of the nodes (servers) within the network. Even with favorable indexing, this simple cut selection often leads to sub-optimal forests, depending on the network topology.
 
-### Challenges
-The PLP algorithm is first presented for tree networks. Then, the authors present the cutting procedure which allows an arbitrary network to be cut into a forest. Both the obtained delay and the runtime heavily depend on the cut.
-
-In the original implementation of the PLP algorithm, the cut is selected in a very simple manner: for each node, keep only the successor that has the smaller number among the successors with a larger number than this node. This approach always constructs a valid forest. However, the resulting forest heavily depends on the indexing of the nodes (servers) within the network. Even if indexing is performed in a favorable manner, this simple cut selection often results in sub-optimal forests depending on the network topology.
-
-The two main challenges that we are aiming to solve are as follows:
-
-1. Understanding the relationship between the cuts (size and shape) and the resulting delay bound and the runtime.
-2. Designing efficient and accurate heuristics for picking good cuts for any network size and topology.
-
-Another challenge that we faced was the complicated nature of defining network objects in the original project. Therefore, we want to streamline the process of generating common network topologies.
+In summary, our project focuses on addressing the challenges associated with the selection of cuts in the PLP algorithm for accurately estimating worst-case delay bounds. We aim to investigate and understand the intricate relationship between the size, shape, and composition of cuts, and their impact on the resulting delay bounds. By gaining insights into this relationship, we can develop more efficient and accurate heuristics for selecting good cuts for networks of varying sizes and topologies. Through these contributions, we strive to improve the reliability and efficiency of communication systems operating in time-critical environments.
 
 ## Contribution
 Our project makes several significant contributions to the field of Network Calculus in FIFO networks. Firstly, we developed a solution that simplifies the generation of common network topologies, saving time and reducing the likelihood of errors. Secondly, we introduced an `Analysis` class that allows users to analyze the effects of cuts on delay and runtime. Additionally, we created a `Stats` class to compute correlation statistics based on the analysis results. These insights were then utilized to design a heuristic algorithm, implemented in the `ECOWCDB` class. The details of our contributions can be found in the following sections.
