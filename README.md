@@ -14,11 +14,10 @@ The readme consists of 2 main parts: Report and Project. Report section includes
 - [Table of Contents](#table-of-contents)
 - [Report](#report)
     - [Introduction](#introduction)
-    - [Contribution](#contribution)
-        - [Solution](#solution)
-        - [Achievments](#achievments)
+    - [Solution](#solution)
+        - [Heuristic Algorithm](#heuristic-algorithm)
         - [Results](#results)
-        - [Discussion](#discussion)
+        - [Runtime](#runtime)
     - [Skills](#skills)
     - [Major Events](#major-events)
     - [Self-Assesment](#self-assesment)
@@ -30,9 +29,9 @@ The readme consists of 2 main parts: Report and Project. Report section includes
         - [Requirements](#requirements)
         - [Detailed Guide](#detailed-guide)
     - [How to Use](#how-to-use)
-    - [Extend This Project](#extend-this-project-future-work)
+    - [Future Work](#future-work)
+    - [References](#references)
 - [Contact](#contact)
-- [References](#references)
 
 
 
@@ -50,9 +49,99 @@ One notable method is the PLP algorithm, proposed in [[2]](#references). The PLP
 
 PLP works by breaking cyclic dependencies within the network and this is achieved by cutting the network. The selection of cuts significantly impacts the accuracy of worst-case delay bounds. Despite the algorithm's effectiveness, selecting suitable cuts for the PLP algorithm poses a significant challenge due to the exponential number of potential cuts for each network.
 
-In the original implementation of the PLP algorithm, the cut selection process follows a simplistic approach. *For each node, the algorithm keeps only the successor that has the smaller number among the successors with a larger number than the current node.* While this approach ensures the construction of a valid forest, the resulting forest heavily relies on the indexing of the nodes (servers) within the network. Even with favorable indexing, this simple cut selection often leads to sub-optimal forests, depending on the network topology.
+In the original implementation of the PLP algorithm, the cut selection process follows a simplistic approach. While their approach ensures the construction of a valid forest, the resulting forest heavily relies on the indexing of the nodes (servers) within the network. Even with favorable indexing, this simple cut selection often leads to sub-optimal delay bounds, depending on the network topology.
 
 In summary, our project focuses on addressing the challenges associated with the selection of cuts in the PLP algorithm for accurately estimating worst-case delay bounds. We aim to investigate and understand the intricate relationship between the size, shape, and composition of cuts, and their impact on the resulting delay bounds. By gaining insights into this relationship, we can develop more efficient and accurate heuristics for selecting good cuts for networks of varying sizes and topologies. Through these contributions, we strive to improve the reliability and efficiency of communication systems operating in time-critical environments.
+
+## Solution
+In this section, we present our solution to the challenge of selecting good cuts for the PLP algorithm in order to obtain good worst-case delay bounds in time-sensitive networks. Our solution encompasses a heuristic algorithm designed to address this non-trivial problem, aiming to enhance the efficiency and accuracy of performance analysis in such networks.
+
+Leveraging insights gained from an exhaustive search over all possible cuts for a diverse set of network topologies, we designed an algorithm that effectively selects cuts to achieve good worst-case delay bounds. Through meticulous examination of the results and comprehensive statistical analysis, we have made significant observations that form the basis of our heuristic approach.
+
+Our first key observation is that performing smaller cuts tends to yield better delay bounds. This finding suggests that by minimizing the extent of disruptions within the network, we can improve the overall performance in terms of worst-case delays. Consequently, our heuristic algorithm places emphasis on identifying and selecting cuts that have a smaller impact on the network, contributing to more favorable worst-case delay bounds.
+
+Furthermore, our second significant observation indicates that not cutting the flow of interest generally leads to improved delay bounds. By preserving the integrity of the flow of interest, which typically represents the critical communication path, we ensure that the latency guarantees for time-sensitive applications are maintained. This crucial insight guides our heuristic algorithm to prioritize cuts that avoid interrupting the flow of interest, further enhancing the accuracy of worst-case delay bound estimation.
+
+In addition to these main observations, we have also made a supporting observation related to avoiding cuts on flows that overlap with the flow of interest. Our analysis suggests that such overlapping flows should be preserved whenever possible, as cutting them could introduce additional dependencies and potentially compromise the worst-case delay bounds. However, if cutting is necessary to avoid cyclic dependencies, our heuristic algorithm seeks to place the cut after the overlap. If this is not feasible, the cut is positioned towards the start of the flow, farther away from the overlap. While this supporting observation adds complexity, it provides valuable guidance for achieving good delay bounds when selecting cuts.
+
+To evaluate the effectiveness of our heuristic algorithm, we compared its performance with the optimal cut obtained through exhaustive search. The results of our numerical experiments on various generic network topologies reveal that our heuristic algorithm often achieves comparable worst-case delay bounds to the optimal cut. It is important to acknowledge that finding the optimal delay bound is a highly challenging task due to the computational complexity of the problem. As a result, our heuristic algorithm, although effective, may not necessarily guarantee the identification of the absolute optimal cut. The complexity arises from the exponential number of potential cuts for each network and the intricate relationship between cuts and performance. Despite this limitation, our solution represents a significant step forward in addressing this challenging problem and provides practical and effective means to enhance the reliability and efficiency of communication systems operating in time-critical environments.
+
+In the following sections, we will delve into further details of our solution, describing the implementation of the heuristic algorithm and showcasing the numerical results obtained from our experimentation. Through this comprehensive analysis, we aim to establish the robustness and practical applicability of our solution in the realm of time-sensitive networking.
+
+### Heuristic Algorithm
+```
+Algorithm: Find the flow-preserving min-cut forest
+
+forest <- empty list
+node_depth <- empty list
+visited <- empty set
+
+for every edge in flow of interest:
+    forest.append(edge)
+
+for every node in flow of interest:
+    visited.add(node)
+    node_depth.append(node, depth)
+
+while node_depth is not empty:
+    node, depth <- node with the least depth
+    for every neighbour with an edge directed to node:
+        if neighbour is not visited:
+            visited.add(neighbour)
+            node_depth.append(neighbour, depth+1)
+            forest.append(edge)
+
+return forest
+```
+
+### Results
+In this section, we present the numerical results obtained from our experimentation to evaluate the performance of our heuristic algorithm for selecting cuts in the PLP algorithm. We conducted our experiments on a range of generic network topologies, which are shown in the [Network Topologies](#network-topologies) section. These topologies capture various network configurations and characteristics, enabling us to assess the effectiveness and applicability of our solution across different scenarios.
+
+For each network topology, we used the following parameters:
+```
+Service Rate (Server) = 10Gb/s
+Latency (Server) = 10µs
+Burst (Flow) = 8Kb
+Maximum load (Server) = 50%
+```
+
+| Network Topology | Number of Servers | Optimal Delay | Heuristic Delay |
+|:-:|:-:|:-:|:-:|
+| Semi Ring | 12 | 84.65µs | 84.65µs |
+| Full Ring | 12 | 149.13µs | 149.13µs |
+| Complete Semi Ring | 11 | 109.17µs | 109.17µs |
+| Complete Full Ring | 7 | 139.18µs | 139.27µs |
+| Mesh | 9 | 89.25µs | 98.39µs |
+
+The presented results demonstrate the effectiveness of our heuristic algorithm in approximating the optimal delay bounds in different network topologies. While the heuristic delay may not always match the optimal delay, it is often very close and achieves comparable performance.
+
+### Runtime
+
+
+
+
+\
+\
+\
+\
+\
+\
+\
+.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Contribution
 Our project makes several significant contributions to the field of Network Calculus in FIFO networks. Firstly, we developed a solution that simplifies the generation of common network topologies, saving time and reducing the likelihood of errors. Secondly, we introduced an `Analysis` class that allows users to analyze the effects of cuts on delay and runtime. Additionally, we created a `Stats` class to compute correlation statistics based on the analysis results. These insights were then utilized to design a heuristic algorithm, implemented in the `ECOWCDB` class. The details of our contributions can be found in the following sections.
@@ -86,16 +175,7 @@ Our first main contribution is providing a tool for in-depth analysis of the tra
 ### Results
 In this section, we will display the quality of the cuts obtained by our heuristic algorithm. We will do so by comparing the results obtained by the heuristic algorithm to the results obtained during exhaustive search in the analysis part.
 
-| Network Topology | # Servers | Max Depth | Heuristic Type | Delay Percentile | Runtime Comparison |
-|:-:|:-:|:-:|:-:|:-:|:-:|
-| Semi Ring | 12 | 5 | Best Delay<br>Delay<br>Quick Delay | 0.02%<br>2.69%<br>6.94% | +280.90%<br>+160.04%<br>+27.68% |
-| Full Ring | 12 | 5 | Best Delay<br>Delay<br>Quick Delay | 0.02%<br>0.93%<br>27.11% | +780.32%<br>+170.43%<br>+30.21% |
-| Compete Semi Ring | 11 | 4 | Best Delay<br>Delay<br>Quick Delay | 0.05%<br>6.89%<br>19.00% | +802.09%<br>+121.00%<br>+3.45% |
-| Complete Full Ring | 7 | 3 | Best Delay<br>Delay<br>Quick Delay | 1.57%<br>7.09%<br>51.18% | +337.45%<br>+65.49%<br>+9.90% |
-| Mesh | 9 | 2 | Best Delay<br>Delay<br>Quick Delay | 58.85%<br>12.89%<br>72.29% | -30.30%<br>-13.04%<br>-11.27% |
-| Interleaved Tandem | 12 | 5 | Best Delay<br>Delay<br>Quick Delay | 1.51%<br>0.10%<br>36.82% | -68.63%<br>-51.63%<br>+27.79% |
-| Sink-Tree Tandem | 12 | 5 | Best Delay<br>Delay<br>Quick Delay | 0.05%<br>1.81%<br>3.81% | -85.64%<br>-65.09%<br>-28.85% |
-| Source-Sink Tandem | 12 | 5 | Best Delay<br>Delay<br>Quick Delay | 0.05%<br>0.68%<br>25.73% | -81.30%<br>-52.59%<br>-8.87% |
+
 
 *Table: First column of the table represents the network topology examined. Second column is the number of servers within the network. Third column is the max depth parameter used for generating the forests in delay and quick delay functions. Fourth delay displays which heuristic was used for generating the forest. Fifth column displays in which percentile the delay is placed compared to all the delays of all the cuts computed during the exhaustive search. Sixth column displays how higher or lower the runtime is compared to the median runtime of all the cuts computed during exhaustive search.*
 
@@ -209,8 +289,13 @@ Please follow the detailed [installation guide](https://github.com/EdinGuso/ecow
 ## How to Use
 *how to use...*
 
-## Extend this Project (Future Work)
-*extend this project...*
+#### Network Topologies
+![Semi Ring Network Topology](images/ring_semi.png)
+![Full Ring Network Topology](images/ring_full.png)
+![Complete Semi Ring Network Topology](images/ring_completesemi.png)
+
+## Future Work
+*future work...*
 
 
 
