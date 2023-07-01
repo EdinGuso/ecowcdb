@@ -15,9 +15,20 @@ The readme consists of 2 main parts: Report and Project. Report section includes
 - [Report](#report)
     - [Introduction](#introduction)
     - [Solution](#solution)
-        - [Heuristic Algorithm](#heuristic-algorithm)
-        - [Results](#results)
+        - [Algorithm A](#algorithm-a)
+            - [Results](#results)
         - [Runtime](#runtime)
+        - [Algorithm B](#algorithm-b)
+            - [Results](#results-1)
+        - [Algorithm C](#algorithm-c)
+            - [Results](#results-2)
+        - [Results and Discussion](#results-and-discussion)
+        - [Other Contributions](#other-contributions)
+            - [Network Generation](#network-generation)
+            - [Cut Analysis](#cut-analysis)
+            - [Cut Statistics](#cut-statistics)
+            - [ECOWCDB](#ecowcdb)
+    - [Achievements](#achievements)
     - [Skills](#skills)
     - [Major Events](#major-events)
     - [Self-Assesment](#self-assesment)
@@ -69,28 +80,27 @@ To evaluate the effectiveness of our heuristic algorithm, we compared its perfor
 In the following sections, we will delve into further details of our solution, describing the implementation of the heuristic algorithm and showcasing the numerical results obtained from our experimentation. Through this comprehensive analysis, we aim to establish the robustness and practical applicability of our solution in the realm of time-sensitive networking.
 
 ### Algorithm A
-
-#### The Algorithm
 ```
 Algorithm: Flow-preserving min-cut forest
 
-forest <- empty list
-node_depth <- empty list
-visited <- empty set
+forest <- []
+node_depth <- []
+visited <- {}
 
-for every edge in flow of interest:
+node <- last node in foi
+visited.add(node)
+node_depth.append(node, 0)
+for every edge=(node1,node2) in reverse(foi):
+    visited.add(node1)
+    node_depth.append(node1, node2.depth+1)
     forest.append(edge)
 
-for every node in flow of interest:
-    visited.add(node)
-    node_depth.append(node, depth)
-
 while node_depth is not empty:
-    node, depth <- node with the least depth
+    node, depth <- node with the smallest depth
     for every neighbour with an edge directed to node:
         if neighbour is not visited:
             visited.add(neighbour)
-            node_depth.append(neighbour, depth+1)
+            node_depth.append(neighbour, node.depth+1)
             forest.append(edge)
 
 return forest
@@ -107,7 +117,7 @@ Burst (Flow) = 8Kb
 Maximum load (Server) = 50%
 ```
 
-| Network Topology | Number of Servers | Optimal Delay | Heuristic Delay |
+| Network Topology | Number of Servers | Exhaustive Search | Algorithm A |
 |:-:|:-:|:-:|:-:|
 | Semi Ring | 12 | 84.65µs | 84.65µs |
 | Full Ring | 12 | 149.13µs | 149.13µs |
@@ -136,80 +146,156 @@ Through these algorithmic enhancements, we aim to strike a balance between the q
 
 In the following sections, we will delve into further details of Algorithm B and Algorithm C, describing their implementation and providing a comparative analysis of their performance in terms of runtime and delay bounds. By examining the practical implications of these algorithms, we aim to provide valuable insights into the trade-offs involved in selecting cuts for worst-case delay analysis.
 
-### Algorithm B & C
+### Algorithm B
+```
+Algorithm: Flow-preserving max-depth min-cut forest
 
-#### The Algorithm
+forest <- []
+node_depth <- []
+visited <- {}
+
+node <- last node in foi
+visited.add(node)
+node_depth.append(node, 0)
+for every edge=(node1,node2) in reverse(foi):
+    visited.add(node1)
+    if node2.depth == maximum depth:
+        node_depth.append(node1, 0)
+    else:
+        node_depth.append(node1, node2.depth+1)
+        forest.append(edge)
+
+while node_depth is not empty:
+    node, depth <- node with the smallest depth
+    for every neighbour with an edge directed to node:
+        if neighbour is not visited:
+            visited.add(neighbour)
+            if node2.depth == maximum depth:
+                node_depth.append(neighbour, 0)
+            else:
+                node_depth.append(neighbour, node.depth+1)
+                forest.append(edge)
+
+return forest
+```
 
 #### Results
+In this section, we present the numerical results obtained from our experimentation to evaluate the performance of Algorithm B, a modified version of our heuristic algorithm for selecting cuts in the PLP algorithm. Algorithm B introduces a maximum depth parameter and cuts the network into smaller trees after reaching this depth, striking a balance between delay bounds and computational efficiency. While Algorithm B generally performs slightly worse than Algorithm A in terms of delay bounds, the significant runtime improvements it offers make it a valuable tool, particularly for larger networks. The runtime benefits achieved by Algorithm B will be examined in greater detail in the [Results and Discussion](#results-and-discussion) section. Our experiments were conducted on a range of generic network topologies, which are shown in the [Network Topologies](#network-topologies) section. These topologies encompass diverse network configurations, enabling us to assess the effectiveness and applicability of Algorithm B across different scenarios.
 
-### Results
+For each network topology, we used the following parameters:
+```
+Service Rate (Server) = 10Gb/s
+Latency (Server) = 10µs
+Burst (Flow) = 8Kb
+Maximum load (Server) = 50%
+```
 
+| Network Topology | Number of Servers | Max Depth | Exhaustive Search | Algorithm B |
+|:-:|:-:|:-:|:-:|:-:|
+| Semi Ring | 12 | 5 | 84.65µs | 87.44µs |
+| Full Ring | 12 | 5 | 149.13µs | 154.94µs |
+| Complete Semi Ring | 11 |  4 | 109.17µs | 111.71µs |
+| Complete Full Ring | 7 |  3 | 139.18µs | 142.19µs |
+| Mesh | 9 | 2 | 89.25µs | 94.30µs |
+| Sink-tree Tandem | 12 | 5 | 133.01µs | 136.19µs |
+| Interleaved Tandem | 12 | 5 | 145.92µs | 145.92µs |
+| Source-sink Tandem | 12 | 5 | 147.05µs | 151.77µs |
 
-\
-\
-\
-\
-\
-\
-\
-.
+### Algorithm C
+```
+Algorithm: Flow-preserving max-depth min-cut tree
 
+tree <- []
+node_depth <- []
+visited <- {}
 
+node <- last node in foi
+visited.add(node)
+node_depth.append(node, 0)
+for every edge=(node1,node2) in reverse(foi):
+    visited.add(node1)
+    if node2.depth == maximum depth:
+        break
+    else:
+        node_depth.append(node1, node2.depth+1)
+        tree.append(edge)
 
+while node_depth is not empty:
+    node, depth <- node with the smallest depth
+    for every neighbour with an edge directed to node:
+        if neighbour is not visited:
+            visited.add(neighbour)
+            if node.depth == maximum depth:
+                break
+            else:
+                node_depth.append(neighbour, node.depth+1)
+                tree.append(edge)
 
+return tree
+```
 
+#### Results
+In this section, we present the numerical results obtained from our experimentation to evaluate the performance of Algorithm C, another variant of our heuristic algorithm for selecting cuts in the PLP algorithm. Algorithm C incorporates a maximum depth parameter and, after reaching the maximum depth, outputs a single small tree without adding additional edges. While Algorithm C typically performs worse than Algorithm B and exhibits a less favorable delay-runtime trade-off, it remains a valuable algorithm for large networks where the depth of the flow of interest is considerably smaller than the depth of the network itself. The runtime benefits achieved by Algorithm C will be examined in greater detail in the [Results and Discussion](#results-and-discussion) section. Our experiments were conducted on a range of generic network topologies, which are shown in the [Network Topologies](#network-topologies) section. These topologies represent various network configurations, allowing us to assess the effectiveness and applicability of Algorithm C in different scenarios.
 
+For each network topology, we used the following parameters:
+```
+Service Rate (Server) = 10Gb/s
+Latency (Server) = 10µs
+Burst (Flow) = 8Kb
+Maximum load (Server) = 50%
+```
 
+| Network Topology | Number of Servers | Max Depth | Exhaustive Search | Algorithm C |
+|:-:|:-:|:-:|:-:|:-:|
+| Semi Ring | 12 | 5 | 84.65µs | 88.57µs |
+| Full Ring | 12 | 5 | 149.13µs | 164.56µs |
+| Complete Semi Ring | 11 |  4 | 109.17µs | 113.95µs |
+| Complete Full Ring | 7 |  3 | 139.18µs | 151.15µs |
+| Mesh | 9 | 2 | 89.25µs | 100.60µs |
+| Sink-tree Tandem | 12 | 5 | 133.01µs | 137.01µs |
+| Interleaved Tandem | 12 | 5 | 145.92µs | 153.64µs |
+| Source-sink Tandem | 12 | 5 | 147.05µs | 159.89µs |
 
+### Results and Discussion
+🚧🚧🚧 *discuss the comparisson of algorithms A,B,C among each other regarding accuracy and tractability. display results from partial search and ecowcdb. discuss the results.*
 
+### Other Contributions
+Our project encompasses several significant contributions that aim to improve the reliability and efficiency of communication systems operating in time-critical environments. We have developed innovative tools and algorithms that streamline network analysis and topology generation, ultimately leading to the design of effective heuristic algorithms. These tools have been instrumental in achieving our project's primary objective. Below, we outline the key contributions that have shaped our solution.
 
+#### Network Generation
+Simplifying the generation of common network topologies has been a pivotal aspect of our project. We have successfully developed a solution that significantly reduces the complexity and potential for errors in defining these topologies. By introducing a streamlined approach, users can now generate Tandem (sink-tree, interleaved, source-sink), Mesh, and Ring (full, semi, complete-full, complete-semi) networks with ease. Our method involves calling a single function and providing essential parameters such as rate, latency, burst, number of servers, and maximum load. This simplification not only saves time but also minimizes the likelihood of typographical errors during the topology definition process.
 
+The details of these network topologies can be found in the [Network Topologies](#network-topologies) section, where we provide comprehensive explanations and illustrations for each type.
 
+#### Cut Analysis
+To gain insights into the impact of cuts on delay and runtime within the network, we have developed an advanced `Analysis` class. This class empowers users to compute the delay for any cut, perform exhaustive or partial searches on valid cuts, and analyze the behavior of cuts in different network sizes.
 
+The `Analysis` class incorporates powerful functionalities that enable users to evaluate the effects of cuts comprehensively. Exhaustive search provides detailed information about the network's behavior, but its feasibility diminishes as the network size increases due to the exponential growth of valid cuts. To address this, our class includes a partial search feature that provides valuable insights into cut behavior in large networks.
 
+Furthermore, the `Analysis` class offers a range of functions to display, save, and load results, allowing users to customize the representation of results, set timeout values for individual linear program solving, and control the level of feedback provided.
 
-## Contribution
-Our project makes several significant contributions to the field of Network Calculus in FIFO networks. Firstly, we developed a solution that simplifies the generation of common network topologies, saving time and reducing the likelihood of errors. Secondly, we introduced an `Analysis` class that allows users to analyze the effects of cuts on delay and runtime. Additionally, we created a `Stats` class to compute correlation statistics based on the analysis results. These insights were then utilized to design a heuristic algorithm, implemented in the `ECOWCDB` class. The details of our contributions can be found in the following sections.
+#### Cut Statistics
+In addition to the `Analysis` class, we have developed the compact `Stats` class to compute correlation statistics based on the analysis results. This class takes the output of the `Analysis` class as input and facilitates the calculation of correlations between delay, runtime, and other relevant metrics. The insights derived from these correlations have played a crucial role in the design of our heuristic algorithm, which we discuss next.
 
-### Solution
-Our solution can be divided into 4 main parts:
+#### ECOWCDB
+The culmination of our project is the development of the heuristic algorithm implemented in the `ECOWCDB` class. This algorithm aims to generate the most optimal cut (forest) based on user-defined restrictions, such as maximum depth and connectedness.
 
-1. **Network Generation:** We simplified the generation of common network topologies such as Tandem (interleaved, source-sink, sink-tree), Mesh, and Ring (full, semi, complete-full, complete-semi) networks. Instead of defining arrival curves and paths for each flow, and service curves and shapers for each server, the users can call a single function and pass a few parameters (rate, latency, burst, number of servers, and maximum load) to generate these common network topologies. This saves time as well as avoiding typos that can happen when defining all servers and flows individually.
+For a more comprehensive understanding of the heuristic algorithm, we encourage you to refer to the previous sections where we have provided detailed explanations and insights. By reviewing these sections, you can gain a deeper appreciation of how the heuristic algorithm utilizes the information derived from our analysis.
 
-2. **Cut Analysis:** We created an `Analysis` class which is used to analyze the effects of cuts on the delay and runtime. The user can compute a delay for any cut, perform exhaustive search on all the valid cuts, and perform partial search on a random subset of valid cuts.    
+## Achievements
+1. **Development of a Heuristic Algorithm**: Our project has resulted in the development of a heuristic algorithm for selecting cuts in the PLP algorithm, which enables accurate computation of worst-case delay bounds in time-sensitive networks. The algorithm addresses the computational challenges associated with the selection of cuts and enhances the efficiency and accuracy of performance analysis in such networks.
+2. **Insights into Cut Selection**: Through extensive research and experimentation, we have gained valuable insights into the relationship between the size, shape, and composition of cuts and their impact on worst-case delay bounds. These insights form the foundation of our heuristic algorithm and guide the selection of cuts that minimize disruptions in the network and preserve the flow of interest, leading to improved worst-case delay bounds.
+3. **Improved Worst-Case Delay Bounds**: Our heuristic algorithm has demonstrated its effectiveness in approximating optimal worst-case delay bounds in different network topologies. In comparison to the existing approaches that rely on simplistic cut selection, our algorithm achieves comparable worst-case delay bounds to the optimal cut obtained through exhaustive search. This improvement contributes to enhancing the reliability and efficiency of communication systems operating in time-critical environments.
+4. **Runtime Considerations**: We have addressed the runtime challenges associated with the PLP algorithm by introducing two modified algorithms: Algorithm B and Algorithm C. These algorithms strike a balance between delay bounds and computational efficiency, reducing the runtime of the PLP algorithm for larger networks while achieving satisfactory delay bounds. Algorithm B and Algorithm C provide practical solutions to the runtime limitations of the PLP algorithm, making it more feasible for real-world time-sensitive networking environments.
+5. **Comprehensive Experimental Evaluation**: Our achievements are backed by a comprehensive experimental evaluation. We conducted numerical experiments on various network topologies, showcasing the performance of our heuristic algorithm and the modified algorithms. The experimental results demonstrate the effectiveness and practical applicability of our solution in different scenarios, further validating our contributions.
 
-    Exhaustive search provides more information; however, it is infeasible to perform exhaustive search on medium to large size networks as the number of valid cuts increases exponentially in the number of connections (edges) between servers. Partial search is therefore a valuable tool which can be used to get some ideas about the cut behavior in large networks.
+By successfully developing and validating our heuristic algorithm, gaining insights into cut selection, improving worst-case delay bounds, addressing runtime considerations, and conducting a thorough experimental evaluation, our project has significantly contributed to the field of time-sensitive networking and performance analysis in networked systems.
 
-    Additionally, the `Analysis` class provides several helpful functions used to display, save and load the obtained results. User can also pick the unit of time in which the results should be displayed, a timeout value which limits the time spent solving an individual linear program, and several verbosity options which indicate how much or how little feedback will the user receive regarding the progress/errors/details of computations.
-
-3. **Cut Statistics:** We created a relatively smaller `Stats` class which is used to compute correlation statistics regarding the results obtained in the Analysis class. This class takes the output of the Analysis class as its input, and can compute the correlation for delay vs. runtime, forest-size vs. delay, and forest-size vs. runtime.
-
-    The results obtained in this class were used in designing our heuristic algorithm which is explained next. Additionally, we use this class to compare how the heuristic algorithm performs relative to all the valid cuts.
-
-4. **Heuristic Algorithm:** Using all the observations from the `Analysis` and `Stats` classes, we created the `ECOWCDB` class. We designed a heuristic algorithm which attempts to generate the most optimal cut (forest) based on the input restrictions such as max-depth and connectedness.
-
-    The user can use one of three defined delay functions: best-delay, delay, and quick-delay. Depending on the function called, the heuristic algorithm will generate an appropriate cut (forest) and compute the delay for the given network and cut.
-
-    As observed in the analysis part of the project, not every network topology has the same behavior when it comes to cuts. Therefore, the generic heuristic algorithm does not always provide the best result. Nevertheless, it can be observed in the next section that the algorithm provides satisfying results for most topologies.
-
-### Achievments
-We designed four tools described in [Solution](#solution). This project, including the modifications done to the existing codebase as well as the ECOWCDB library, exceeds 2500 lines of code, out of which ~500 lines are high value code.
-
-Our first main contribution is providing a tool for in-depth analysis of the trade-off between accuracy and tractability of Network Calculus in FIFO networks. The second main contribution is the heuristic algorithm. Results obtained with the heuristic algorithm can be seen in [Results](#results).
-
-### Results
-In this section, we will display the quality of the cuts obtained by our heuristic algorithm. We will do so by comparing the results obtained by the heuristic algorithm to the results obtained during exhaustive search in the analysis part.
-
-
-
-*Table: First column of the table represents the network topology examined. Second column is the number of servers within the network. Third column is the max depth parameter used for generating the forests in delay and quick delay functions. Fourth delay displays which heuristic was used for generating the forest. Fifth column displays in which percentile the delay is placed compared to all the delays of all the cuts computed during the exhaustive search. Sixth column displays how higher or lower the runtime is compared to the median runtime of all the cuts computed during exhaustive search.*
-
-### Discussion
-*Based on the resutls above...*
+The tools described in [Other Contriburions](#other-contributions) have been implemented in Python. This project, including the modifications done to the existing codebase as well as the ECOWCDB library, exceeds 2500 lines of code, out of which ~500 lines are high value code.
 
 ## Skills
 Skills that I have exercised throughout the project:
-- **Research:**  I utilized research skills to explore the field of Network Calculus in FIFO networks. I identified existing challenges and gaps in the literature and used that knowledge to develop innovative solutions and contributions.
+- **Research:**  I utilized research skills to explore the field of Time Sensitive Network and Network Calculus. I identified existing challenges and gaps in the literature and used that knowledge to develop innovative solutions and contributions.
 - **Software Engineering:** I employed software engineering skills to design, develop, and maintain a comprehensive solution. This involved writing code, organizing the project structure, and implementing various modules and classes. I followed software engineering best practices to ensure the codebase's scalability, maintainability, and robustness.
 - **Graph Theory:** Graph theory played a crucial role in this project, specifically in the analysis of network topologies and cuts. I applied graph theory concepts to model and represent the network structures, connections between servers, and paths of flows. By leveraging graph theory algorithms and techniques, I was able to analyze the effects of cuts on delay and runtime.
 - **Algorithm Design:** Algorithm design was a fundamental skill demonstrated in this project. I formulated and implemented algorithms for various tasks, such as generating network topologies, performing cut analysis, and designing the heuristic algorithm. I leveraged algorithmic techniques to efficiently solve complex problems and make informed decisions based on the analysis results.
@@ -222,17 +308,17 @@ Skills I had to acquire for the project:
 - **Documentation:** To ensure the clarity and comprehensibility of the project, I developed skills in documentation. This involved creating detailed and organized documentation for various components, algorithms, and functionalities within the project. By honing these skills, I contributed to the overall usability and maintainability of the project, facilitating its future development and understanding.
 
 ## Major Events
-*Report on the major events of the project, including unexpected difficulties.*
+🚧🚧🚧 *Report on the major events of the project, including unexpected difficulties.*
 
 ## Self-Assesment
-*Provide a self-assessment (where did you succeed most, where did you fail)*
+🚧🚧🚧 *Provide a self-assessment (where did you succeed most, where did you fail)*
 
 
 
 # Project
 
 ## Introduction
-This project is an extension of the panco project [[3]](#references). *A bit more introduction.*
+🚧🚧🚧 This project is an extension of the panco project [[3]](#references). *A bit more introduction.*
 
 ## Project Structure
     .
@@ -292,7 +378,7 @@ This project is an extension of the panco project [[3]](#references). *A bit mor
     - [`README.md`](https://github.com/EdinGuso/ecowcdb/blob/main/temp/README.md): Explains the purpose and usage of the `temp` folder.
 
 ## Installation
-Please install the [Requirements](#requirements).
+🚧🚧🚧 Please install the [Requirements](#requirements).
 
 Quickly build the project using `setup.py` by running the following command at the root of the project:
 
@@ -312,15 +398,29 @@ pip install .
 Please follow the detailed [installation guide](https://github.com/EdinGuso/ecowcdb/blob/main/installation.md) if any issues arise during installation.
 
 ## How to Use
-*how to use...*
+🚧🚧🚧 *how to use...*
 
-#### Network Topologies
-![Semi Ring Network Topology](images/ring_semi.png)
-![Full Ring Network Topology](images/ring_full.png)
-![Complete Semi Ring Network Topology](images/ring_completesemi.png)
+### Network Topologies
+🚧🚧🚧\
+**Semi Ring Network:** ...
+![Semi Ring Network Topology](images/ring_semi.png)<br><br><br>
+**Full Ring Network:** ...
+![Full Ring Network Topology](images/ring_full.png)<br><br><br>
+**Complete Semi Ring Network:** ...
+![Complete Semi Ring Network Topology](images/ring_completesemi.png)<br><br><br>
+**Complete Full Ring Network:** ...
+![Complete Full Ring Network Topology](images/ring_completefull.png)<br><br><br>
+**Mesh Network:** ...
+![Mesh Network Topology](images/mesh.png)<br><br><br>
+**Sink-Tree Tandem Network:** ...
+![Sink-Tree Tandem Network Topology](images/tandem_sinktree.png)<br><br><br>
+**Interleaved Tandem Network:** ...
+![Interleaved Tandem Network Topology](images/tandem_interleaved.png)<br><br><br>
+**Source-Sink Tandem Network:** ...
+![Source-Sink Tandem Network Topology](images/tandem_sourcesink.png)<br><br><br>
 
 ## Future Work
-*future work...*
+🚧🚧🚧*future work...*
 
 
 
