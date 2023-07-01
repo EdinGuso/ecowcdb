@@ -1,5 +1,5 @@
 """
- File containing the network and forest related utility functions.
+ File containing the network and graph related utility functions.
 """
 
 # Standard Library Imports
@@ -305,7 +305,7 @@ def flow_preserving_min_depth_max_forest(edges: List[Tuple[int, int]], N: int, f
             visited.add(neighbour)
             if node_depth[1] == max_depth:
                 if connected:
-                    node_depth_list.append((neighbour, max_depth))
+                    break
                 else:
                     node_depth_list.append((neighbour, 0))
             else:
