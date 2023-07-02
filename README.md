@@ -23,6 +23,10 @@ The readme consists of 2 main parts: Report and Project. Report section includes
         - [Algorithm C](#algorithm-c)
             - [Results](#results-2)
         - [Results and Discussion](#results-and-discussion)
+            - [Network Specifications](#network-specifications)
+            - [System Specifications](#system-specifications)
+            - [Small-Medium Networks](#small-medium-networks)
+            - [Medium-Large Networks](#medium-large-networks)
         - [Other Contributions](#other-contributions)
             - [Network Generation](#network-generation)
             - [Cut Analysis](#cut-analysis)
@@ -125,7 +129,7 @@ Maximum load (Server) = 50%
 | Complete Full Ring | 7 | 139.18µs | 139.27µs |
 | Mesh | 9 | 89.25µs | 98.39µs |
 
-The presented results demonstrate the effectiveness of our heuristic algorithm in approximating the optimal delay bounds in different network topologies. While the heuristic delay may not always match the optimal delay, it is often very close and achieves comparable performance.
+The results presented in this study provide compelling evidence of the effectiveness of our heuristic algorithm in approximating optimal delay bounds across diverse network topologies. While the heuristic delay may not always precisely match the optimal delay, it consistently achieves a remarkably close approximation and delivers comparable performance. Moreover, upon closer examination in the dedicated [Results and Discussion](#results-and-discussion), we delve deeper into the performance of our algorithm in mesh networks, which initially appeared to pose a significant challenge. However, our thorough analysis reveals that the algorithm exhibits remarkable strength, particularly in larger mesh networks. This comprehensive investigation not only underscores the inherent robustness of our algorithm but also highlights its exceptional performance in overcoming the complexities inherent in a wide range of network topologies.
 
 ### Runtime
 The runtime of the PLP algorithm plays a crucial role in its practical applicability. In this subsection, we discuss the runtime considerations and tractability of the algorithm, highlighting the trade-off between the quality of obtained delay bounds and the computational efficiency.
@@ -257,7 +261,271 @@ Maximum load (Server) = 50%
 | Source-sink Tandem | 12 | 5 | 147.05µs | 159.89µs |
 
 ### Results and Discussion
-🚧🚧🚧 *discuss the comparisson of algorithms A,B,C among each other regarding accuracy and tractability. display results from partial search and ecowcdb. discuss the results.*
+Now, we present an extensive evaluation of the performance-runtime trade-off in computing delay bounds. We compare the effectiveness of three heuristic algorithms (Algorithm A, Algorithm B, and Algorithm C) with the best results obtained through exhaustive or partial search methods, depending on the size of the network.
+
+To ensure a comprehensive analysis, we separately evaluate each network topology type, taking into account the unique characteristics and complexities associated with different network structures. Furthermore, investigating different network sizes within each topology type allows us to assess how algorithmic efficiency scales with network complexity.
+
+By considering the performance-runtime trade-off, and the impact of network topology and size, we can derive meaningful insights regarding the suitability of the heuristic algorithms for practical applications. These insights guide informed decision-making when selecting algorithms, accounting for both computational efficiency and the accuracy of the computed delay bounds.
+
+#### Network Specifications
+Our experiments were conducted on a range of generic network topologies, which are shown in the [Network Topologies](#network-topologies) section. For each network topology, we used the following parameters:
+```
+Service Rate (Server) = 10Gb/s
+Latency (Server) = 10µs
+Burst (Flow) = 8Kb
+Maximum load (Server) = 50%
+```
+
+#### System Specifications
+In addition to network factors, it is crucial to consider the system specifications that influence runtime. In this project, the program was executed on a virtual machine hosted on a Dell XPS 15 9510 laptop (including an 11th Gen Intel(R) Core(TM) i9-11900H processor with 8 cores and 16 logical processors, 32GB of RAM, and an NVIDIA GeForce RTX 3050 Ti Laptop GPU). The virtual machine runs Ubuntu 22.04.2 LTS and is equipped with 8GB of dedicated RAM. The virtual machine also utilizes 4 processors to handle the computational workload effectively.
+
+#### Small-Medium Networks
+In this subsection, we focus on analyzing small to medium-sized networks. These networks offer the advantage of tractability, allowing us to apply exhaustive search methods for comparison. Although all algorithms, including exhaustive search, demonstrate manageable runtimes for these smaller networks, we perform this analysis to compare the performance of our algorithms with the best possible results. While the upcoming section will provide more meaningful insights into runtime performance, it will not allow us to determine the best possible result for comparison.
+
+- **Semi Ring Network (12 Servers, 12 Flows)**
+    | Method | Max Depth | Runtime | Delay Bound (▾) |
+    |:-:|:-:|:-:|:-:|
+    | Exhaustive Search | - | 14m 22s | 84.65µs |
+    | Algorithm A | - | 7.41s | 84.65µs |
+    | Algorithm B | 6 | 2.86s | 85.99µs |
+    | Algorithm C | 6 | 1.76s | 86.57µs |
+    | Algorithm B | 4 | 1.70s | 88.16µs |
+    | Algorithm C | 4 | 1.08s | 90.73µs |
+
+    Algorithm A demonstrated its capability by successfully identifying the optimal cut, achieving the best possible result. This highlights the effectiveness of Algorithm A in this network topology. 
+
+    Moving on, Algorithm B with a maximum depth of 6 showed promising results, producing a solution that was close to optimal while significantly reducing the runtime compared to Algorithm A. This indicates that Algorithm B strikes a good balance between accuracy and efficiency in this network.
+
+    Next, we compared Algorithm B with a maximum depth of 4 to Algorithm C with a maximum depth of 6. Surprisingly, Algorithm C outperformed Algorithm B in terms of delay bound even though their runtimes were comparable. This showcases its strength in networks where the depth of the flow of interest is less than the overall depth of the network. 
+
+    Lastly, when Algorithm C was executed with a maximum depth of 4, it exhibited a remarkably quick runtime. However, this came at the cost of a significantly worse delay bound. This trade-off highlights the importance of striking a balance between runtime and the quality of the delay bound when choosing the appropriate algorithm for a specific network scenario.
+
+- **Full Ring Network (12 Servers, 12 Flows)**
+    | Method | Max Depth | Runtime | Delay Bound (▾) |
+    |:-:|:-:|:-:|:-:|
+    | Exhaustive Search | - | 7h 31m 41s | 149.13µs |
+    | Algorithm A | - | 51.98s | 149.13µs |
+    | Algorithm B | 6 | 16.02s | 154.85µs |
+    | Algorithm B | 4 | 10.96s | 159.15µs |
+    | Algorithm C | 6 | 11.25s | 161.91µs |
+    | Algorithm C | 4 | 5.87s | 167.16µs |
+
+    Algorithm A once again demonstrated its capability by successfully identifying the optimal cut, achieving the best possible result. This highlights Algorithm A's effectiveness in this network topology.
+
+    Moving on, Algorithm B with a maximum depth of 6 achieved a result that was considered mediocre, falling short of the optimal cut. However, it showcased a significant reduction in runtime compared to Algorithm A. This indicates that Algorithm B offers a trade-off between accuracy and efficiency, making it a viable option in scenarios where runtime is a critical factor.
+
+    On the other hand, Algorithm C with a maximum depth of 6 did not perform as well as Algorithm B with a maximum depth of 4 in terms of both delay and runtime. This reveals the shortcomings of Algorithm C in the context of the networks where the flow of interest goes through a large portion of the network.
+
+- **Complete Semi Ring Network (11 Servers, 66 Flows)**
+    | Method | Max Depth | Runtime | Delay Bound (▾) |
+    |:-:|:-:|:-:|:-:|
+    | Exhaustive Search | - | 15h 11m 48s | 109.17µs |
+    | Algorithm A | - | 3m 27s | 109.17µs |
+    | Algorithm B | 6 | 1m 10s | 109.65µs |
+    | Algorithm C | 6 | 53.46s | 110.11µs |
+    | Algorithm B | 4 | 49.08s | 111.71µs |
+    | Algorithm C | 4 | 25.78s | 113.95µs |
+
+    Once again, Algorithm A showcased its effectiveness by successfully identifying the optimal cut, achieving the best possible result.
+
+    Furthermore, Algorithm B with a maximum depth of 6 demonstrated a commendable performance, achieving a result that was relatively close to the optimal cut while significantly reducing the runtime compared to Algorithm A. This highlights Algorithm B as a promising choice when considering a balance between accuracy and efficiency in networks with complete semi ring topologies.
+
+    Algorithm C with a maximum depth of 6 outperformed Algorithm B with a maximum depth of 4, showcasing its strength in networks where the depth of the flow of interest is less than the depth of the network. Despite a slight increase in runtime, Algorithm C achieved a better delay bound, indicating its capability to effectively analyze cuts in such network configurations.
+
+    Lastly, Algorithm C with a maximum depth of 4 exhibited a quick runtime, but it fell short in terms of the delay bound achieved. While it may be suitable for scenarios where runtime is a critical factor, its compromise in terms of accuracy should be considered when making algorithm selections for similar network topologies.
+
+- **Complete Full Ring Network (7 Servers, 49 Flows)**
+    | Method | Max Depth | Runtime | Delay Bound (▾) |
+    |:-:|:-:|:-:|:-:|
+    | Exhaustive Search | - | 1h 18m 7s | 139.18µs |
+    | Algorithm A | - | 2m 4s | 139.27µs |
+    | Algorithm B | 4 | 56.24s | 142.63µs |
+    | Algorithm C | 4 | 50.84s | 146.65µs |
+    | Algorithm B | 2 | 31.82s | 146.99µs |
+    | Algorithm C | 2 | 20.82s | 156.12µs |
+
+    Algorithm A once again demonstrated its effectiveness by achieving a result that was extremely close to the optimal cut, showcasing its accuracy.
+
+    Algorithm B, with a maximum depth of 4, achieved a commendable result while reducing the runtime compared to Algorithm A. This highlights Algorithm B as a viable choice when considering a balance between accuracy and efficiency in networks with complete full ring topologies.
+
+    However, Algorithm C with a maximum depth of 4 did not perform as well as Algorithm B with a maximum depth of 2. Despite achieving a comparable delay bound, Algorithm C had a worse runtime, indicating its limitations in this particular network configuration. These results suggest that Algorithm C may not be the optimal choice for networks with complete full ring topologies.
+
+- **Mesh Network (9 Servers, 16 Flows)**
+    | Method | Max Depth | Runtime | Delay Bound (▾) |
+    |:-:|:-:|:-:|:-:|
+    | Exhaustive Search | - | 1h 41m 20s | 89.25µs |
+    | Algorithm B | 2 | 1.62s | 94.30µs |
+    | Algorithm B | 1 | 1.96s | 97.50µs |
+    | Algorithm A | - | 1.13s | 98.39µs |
+    | Algorithm C | 2 | 1.83s | 100.60µs |
+    | Algorithm C | 1 | 2.31s | 104.09µs |
+
+    It is worth noting that Algorithm A did not perform as strongly in terms of obtaining a desirable delay bound. However, it is important to highlight that this behavior might not be indicative of Algorithm A's overall performance, as the large version of this network, which will be discussed in [Medium-Large Networks](#medium-large-networks), yields different outcomes.
+
+    Algorithm B, with a maximum depth of 2, achieved the closest result to the optimal cut. While the performance was relatively better compared to the other algorithms, it is evident that there is still room for improvement in terms of the achieved delay bound.
+
+    On the other hand, Algorithm C exhibited subpar performance across the board, indicating its limitations in accurately analyzing cuts within the mesh network.
+
+- **Sink-Tree Tandem Network (12 Servers, 12 Flows)**
+    | Method | Max Depth | Runtime | Delay Bound (▾) |
+    |:-:|:-:|:-:|:-:|
+    | Exhaustive Search | - | 1h 46s | 133.01µs |
+    | Algorithm A | - | 0.20s | 133.01µs |
+    | Algorithm B | 6 | 0.59s | 135.52s |
+    | Algorithm C | 6 | 0.73s | 135.97µs |
+    | Algorithm B | 4 | 1.13s | 137.05µs |
+    | Algorithm C | 4 | 1.46s | 138.11µs |
+
+    Once again, Algorithm A demonstrated its effectiveness by finding the optimal cut, surprising with its superior runtime performance. This can be attributed to the smaller size of the network and the overhead of cutting networks, as discussed in [Runtime](#runtime). It is important to note that this runtime advantage is not observed in larger versions of this network, which will be discussed in [Medium-Large Networks](#medium-large-networks).
+
+    Algorithm B, with a maximum depth of 6, achieved a result that was reasonably close to the optimal cut. This indicates the reliability of Algorithm B in providing accurate solutions in the context of the sink-tree tandem network.
+
+    Interestingly, Algorithm C with a maximum depth of 6 outperformed Algorithm B with a maximum depth of 4. This can be attributed to the significance of the closest cut to the sink in sink-tree tandems. Algorithm C's ability to consider a greater depth of flow of interest played a key role in achieving this result.
+
+    However, Algorithm C with a maximum depth of 4 obtained the worst delay bound among the three algorithms. Despite this, the delay bound was still within an acceptable range, demonstrating the algorithm's capability to provide reasonable results even with a shallower analysis.
+
+    These observations highlight the strengths and limitations of the heuristic algorithms in analyzing cuts in the Small Sink-Tree Tandem Network. They contribute to a better understanding of the algorithmic performance in this specific network topology, enabling informed decision-making when selecting the most suitable algorithm for similar sink-tree tandem configurations.
+
+- **Interleaved Tandem Network (12 Servers, 12 Flows)**
+    | Method | Max Depth | Runtime | Delay Bound (▾) |
+    |:-:|:-:|:-:|:-:|
+    | Exhaustive Search | - | 35m 36s | 145.92µs |
+    | Algorithm B | 6 | 0.42s | 146.05µs |
+    | Algorithm B | 4 | 0.46s | 147.07µs |
+    | Algorithm A | - | 0.16s | 147.38µs |
+    | Algorithm C | 6 | 0.90s | 151.93µs |
+    | Algorithm C | 4 | 1.04s | 155.90µs |
+
+    Notably, Algorithm A did not achieve the optimal delay bound, which raises concerns about its effectiveness. However, it is important to acknowledge that the performance of Algorithm A in this network might not be indicative of its overall capabilities, as in [Medium-Large Networks](#medium-large-networks) we examine the large version of this network, displaying different outcomes.
+
+    In contrast, Algorithm B, with a maximum depth of 6, exhibited impressive performance by closely approaching the optimal cut. This highlights the effectiveness of Algorithm B in accurately analyzing cuts within the interleaved tandem networks.
+
+    Conversely, Algorithm C demonstrated mediocre performance overall, displaying its limitations within this particular network configuration.
+
+- **Source-Sink Tandem Network (12 Servers, 23 Flows)**
+    | Method | Max Depth | Runtime | Delay Bound (▾) |
+    |:-:|:-:|:-:|:-:|
+    | Exhaustive Search | - | 2h 3m 59s | 147.05µs |
+    | Algorithm A | - | 0.46s | 147.05µs |
+    | Algorithm B | 6 | 0.97s | 151.64µs |
+    | Algorithm B | 4 | 1.26s | 155.42µs |
+    | Algorithm C | 6 | 1.95s | 157.73µs |
+    | Algorithm C | 4 | 2.51s | 162.01µs |
+
+    Once again, Algorithm A exhibited its exceptional capability by finding the optimal cut. This impressive result was accompanied by the best runtime, which can be attributed to the smaller size of the network and the overhead caused by cutting networks, just like in the Sink-Tree Tandem Network previously discussed. However, it is important to note that this runtime advantage is not observed in larger versions of this network, as will be discussed in [Medium-Large Networks](#medium-large-networks).
+
+    Algorithm B, with a maximum depth of 6, achieved a satisfactory result, although it was not as close to the optimal cut as Algorithm A. This indicates the reliable performance of Algorithm B in providing reasonably accurate solutions for the source-sink tandem network.
+
+    However, Algorithm C with a maximum depth of 6 performed worse than Algorithm B with a maximum depth of 4 in terms of both delay and runtime. This highlights the limitations of Algorithm C in this specific network configuration.
+
+#### Medium-Large Networks
+In this subsection, we shift our focus to medium to large-sized networks where exhaustive search becomes intractable due to increased complexity. Consequently, we are unable to determine the best possible result for comparison. However, the substantial runtimes required in these networks allow us to observe the performance-runtime trade-off more prominently. Moreover, we can gain insights into how the behavior of the algorithms changes as the number of servers and flows increases.
+
+- **Semi Ring Network (24 Servers, 24 Flows)**
+    | Method | Max Depth | Runtime | Delay Bound (▾) |
+    |:-:|:-:|:-:|:-:|
+    | Algorithm A | - | 19m 43s | 158.98µs |
+    | Partial Search (50) | - | 1h 48m 3s | 159.02µs |
+    | Algorithm B | 12 | 4m 8s | 161.91µs |
+    | Algorithm C | 12 | 1m 53s | 163.61µs |
+    | Algorithm B | 6 | 1m 25s | 167.46µs |
+    | Algorithm C | 6 | 26.67s | 178.73µs |
+
+    Algorithm A demonstrated its prowess by achieving the best delay bound, surpassing even partial search which tried 50 cuts. Although we believe Algorithm A's result to be the optimal delay bound, the intractability of exhaustive search prevents us from confirming it. However, it is important to note that Algorithm A incurred a significantly longer runtime compared to other algorithms, indicating a trade-off between quality and computational efficiency.
+
+    Algorithm B, with a maximum depth of 12, delivered a commendable performance with a good delay bound and notably lower runtime than Algorithm A. This highlights the effectiveness of Algorithm B in achieving satisfactory results within a reasonable computational timeframe.
+
+    Impressively, Algorithm C, also with a maximum depth of 12, outperformed Algorithm B with a maximum depth of 6. Despite similar runtimes, Algorithm C demonstrated a significantly improved delay bound. This emphasizes the strength of Algorithm C in networks where the depth of the flow of interest is less than the depth of the network, extending its effectiveness to large-scale networks as well.
+
+    Additionally, Algorithm C with a maximum depth of 4 demonstrated a remarkably fast runtime, albeit at the expense of a significantly poorer delay bound. This trade-off between runtime efficiency and delay performance underscores the importance of selecting the appropriate algorithm depth based on the specific requirements and constraints of the network.
+
+- **Full Ring Network (24 Servers, 24 Flows)**
+    | Method | Max Depth | Runtime | Delay Bound (▾) |
+    |:-:|:-:|:-:|:-:|
+    | Partial Search (50) | - | 26h 55m 14s | 318.27µs |
+    | Algorithm A | - | 🚧 | 🚧µs |
+    | Algorithm B | 🚧 | 🚧 | 🚧µs |
+    | Algorithm B | 🚧 | 🚧 | 🚧µs |
+    | Algorithm C | 🚧 | 🚧 | 🚧µs |
+    | Algorithm C | 🚧 | 🚧 | 🚧µs |
+
+    🚧 *discuss results...*
+
+- **Complete Semi Ring Network (15 Servers, 120 Flows)**
+    | Method | Max Depth | Runtime | Delay Bound (▾) |
+    |:-:|:-:|:-:|:-:|
+    | Partial Search (50)  | - | 21h 14m 41s | 169.51µs |
+    | Algorithm A | - | 🚧 | 🚧µs |
+    | Algorithm B | 🚧 | 🚧 | 🚧µs |
+    | Algorithm B | 🚧 | 🚧 | 🚧µs |
+    | Algorithm C | 🚧 | 🚧 | 🚧µs |
+    | Algorithm C | 🚧 | 🚧 | 🚧µs |
+
+    🚧 *discuss results...*
+
+- **Complete Full Ring Network (🚧 Servers, 🚧 Flows)**
+    | Method | Max Depth | Runtime | Delay Bound (▾) |
+    |:-:|:-:|:-:|:-:|
+    | Partial Search (🚧)  | - | 🚧 | 🚧µs |
+    | Algorithm A | - | 🚧 | 🚧µs |
+    | Algorithm B | 🚧 | 🚧 | 🚧µs |
+    | Algorithm B | 🚧 | 🚧 | 🚧µs |
+    | Algorithm C | 🚧 | 🚧 | 🚧µs |
+    | Algorithm C | 🚧 | 🚧 | 🚧µs |
+
+    🚧 *discuss results...*
+
+- **Mesh Network (19 Servers, 512 Flows)**
+    | Method | Max Depth | Runtime | Delay Bound (▾) |
+    |:-:|:-:|:-:|:-:|
+    | Partial Search (20) | - | 7h 38m 25s | 4784.6µs |
+    | Algorithm A | - | 🚧 | 🚧µs |
+    | Algorithm B | 5 | 🚧 | 🚧µs |
+    | Algorithm B | 3 | 🚧 | 🚧µs |
+    | Algorithm C | 5 | 🚧 | 🚧µs |
+    | Algorithm C | 3 | 🚧 | 🚧µs |
+
+    🚧 *discuss results...*
+
+- **Sink-Tree Tandem Network (128 Servers, 128 Flows)**
+    | Method | Max Depth | Runtime | Delay Bound (▾) |
+    |:-:|:-:|:-:|:-:|
+    | Partial Search (100) | - | 22h 24m 46s | 1519.92µs |
+    | Algorithm A | - | 🚧 | 🚧µs |
+    | Algorithm B | 🚧 | 🚧 | 🚧µs |
+    | Algorithm B | 🚧 | 🚧 | 🚧µs |
+    | Algorithm C | 🚧 | 🚧 | 🚧µs |
+    | Algorithm C | 🚧 | 🚧 | 🚧µs |
+
+    🚧 *discuss results...*
+
+- **Interleaved Tandem Network (128 Servers, 128 Flows)**
+    | Method | Max Depth | Runtime | Delay Bound (▾) |
+    |:-:|:-:|:-:|:-:|
+    | Algorithm A | - | 34m 13s | 2025.24µs |
+    | Algorithm B | 64 | 3m 54s | 2117.89µs |
+    | Partial Search (100) | - | 2h 29m 34s | 2195.35µs |
+    | Algorithm B | 24 | 16.64s | 2404.89µs |
+    | Algorithm C | 64 | 1m 24s | 2857.80µs |
+    | Algorithm C | 24 | 9.40s | 4497.40µs |
+
+    Algorithm A once again achieved the best delay bound, surpassing even partial search. While we believe it represents the optimal delay bound, the intractability of exhaustive search prevents us from proving it definitively. It is worth noting, however, that Algorithm A exhibited significantly longer runtime compared to the other algorithms.
+
+    Algorithm B with a maximum depth of 64, despite yielding a lower delay bound than Algorithm A, delivered impressive results thanks to a substantial improvement in runtime. In fact, it even outperformed the partial search which tried 100 cuts.
+
+    On the other hand, Algorithm C exhibited poor performance overall, highlighting its limitations in this particular network configuration.
+
+- **Source-Sink Tandem Network (32 Servers, 63 Flows)**
+    | Method | Max Depth | Runtime | Delay Bound (▾) |
+    |:-:|:-:|:-:|:-:|
+    | Partial Search (100) | - | 2h 35m 5s | 397.97µs |
+    | Algorithm A | - | 🚧 | 🚧µs |
+    | Algorithm B | 🚧 | 🚧 | 🚧µs |
+    | Algorithm B | 🚧 | 🚧 | 🚧µs |
+    | Algorithm C | 🚧 | 🚧 | 🚧µs |
+    | Algorithm C | 🚧 | 🚧 | 🚧µs |
+
+    🚧 *discuss results...*
 
 ### Other Contributions
 Our project encompasses several significant contributions that aim to improve the reliability and efficiency of communication systems operating in time-critical environments. We have developed innovative tools and algorithms that streamline network analysis and topology generation, ultimately leading to the design of effective heuristic algorithms. These tools have been instrumental in achieving our project's primary objective. Below, we outline the key contributions that have shaped our solution.
@@ -291,7 +559,7 @@ For a more comprehensive understanding of the heuristic algorithm, we encourage 
 
 By successfully developing and validating our heuristic algorithm, gaining insights into cut selection, improving worst-case delay bounds, addressing runtime considerations, and conducting a thorough experimental evaluation, our project has significantly contributed to the field of time-sensitive networking and performance analysis in networked systems.
 
-The tools described in [Other Contriburions](#other-contributions) have been implemented in Python. This project, including the modifications done to the existing codebase as well as the ECOWCDB library, exceeds 2500 lines of code, out of which ~500 lines are high value code.
+The heuristic algorithms and the tools described in [Other Contriburions](#other-contributions) have been implemented in Python. This project, including the modifications done to the existing codebase as well as the ECOWCDB library, exceeds 2500 lines of code, out of which ~500 lines are high value code.
 
 ## Skills
 Skills that I have exercised throughout the project:
@@ -308,23 +576,42 @@ Skills I had to acquire for the project:
 - **Documentation:** To ensure the clarity and comprehensibility of the project, I developed skills in documentation. This involved creating detailed and organized documentation for various components, algorithms, and functionalities within the project. By honing these skills, I contributed to the overall usability and maintainability of the project, facilitating its future development and understanding.
 
 ## Major Events
-🚧🚧🚧 *Report on the major events of the project, including unexpected difficulties.*
+1. Overcoming Initial Technical Challenges (Weeks 2-5)
+   - During Weeks 2, 3, and 4, significant time was lost while attempting to run the project on my local PC without success.
+   - However, in Week 5, a breakthrough occurred when we decided to switch to a virtual machine, enabling successful project setup and execution.
+   - This transition proved crucial in overcoming the technical hurdles and laid the foundation for subsequent progress.
+2. Integrating PLP Algorithm and Initiating Exhaustive Search (Weeks 6-8)
+   - Weeks 6, 7, and 8 were dedicated to comprehending the intricacies of providing cuts to the PLP algorithm, integrating it into my project, and implementing the initial iteration of the exhaustive search.
+   - This step was crucial in gaining insights into the problem domain, enabling experimentation, and paving the way for further progress in subsequent stages.
+3. Efficient Generation of Generic Network Topologies (Week 9)
+   - In Week 9, I successfully completed the implementation of the generic network topology generation.
+   - This enhancement significantly increased the speed at which networks could be generated and tested, facilitating more comprehensive analysis and evaluation.
+4. Enabling Insights with Partial Search (Week 14)
+   - In Week 14, I successfully implemented the partial search feature, which allowed for gaining insights into larger-sized networks.
+   - Previously, the intractability of the exhaustive search limited the analysis to only small networks, but the partial search expanded the scope of experimentation.
+5. Overcoming Challenges with lp_solve (Weeks 9-15)
+   - Weeks 9 through 15 presented challenges related to errors thrown by the lp_solve, causing setbacks in the project.
+   - Eventually, in Week 15, I understood all the intricacies of lp_solve, including errors and scaling effects.
+   - As a result, I developed a generic solution for effectively capturing and handling all types of errors, greatly improving the reliability of the library.
+6. Finalizing Heuristic Algorithm (Week 16)
+   - The most significant milestone of the project was reached in Week 16 with the implementation of the final version of the heuristic algorithm.
+   - This contribution stands as the main highlight of the project, underscoring its importance and impact on solving the problem at hand.
 
 ## Self-Assesment
-🚧🚧🚧 *Provide a self-assessment (where did you succeed most, where did you fail)*
+🚧 *Provide a self-assessment (where did you succeed most, where did you fail)*
 
 
 
 # Project
 
 ## Introduction
-🚧🚧🚧 This project is an extension of the panco project [[3]](#references). *A bit more introduction.*
+🚧 This project is an extension of the panco project [[3]](#references). *A bit more introduction.*
 
 ## Project Structure
     .
     └- README.md
-    └- installation.md
     └- LICENSE
+    └- setup.py
     └- ecowcdb/
     |   └- __init__.py
     |   └- analysis.py
@@ -346,6 +633,8 @@ Skills I had to acquire for the project:
     └- example/
     |   └- README.md
     |   └- ...
+    └- images/
+    |   └- ...
     └- results/
     |   └- README.md
     |   └- ...
@@ -354,31 +643,31 @@ Skills I had to acquire for the project:
 
 ### File Description
 - [`README.md`](https://github.com/EdinGuso/ecowcdb/blob/main/README.md): This `README`.
-- [`installation.md`](https://github.com/EdinGuso/ecowcdb/blob/main/installation.md): In-depth installation guide.
 - [`LICENSE`](https://github.com/EdinGuso/ecowcdb/blob/main/LICENSE): License of this project.
-- [`ecowcdb/`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/)
+- [`setup.py`](https://github.com/EdinGuso/ecowcdb/blob/main/setup.py): Handles the installation of the library.
+- [`ecowcdb/`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/): The main `ECOWCDB` library.
     - [`analysis.py`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/analysis.py): Contains the analysis tool.
     - [`ecowcdb.py`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/ecowcdb.py): Access the heuristic algorithm.
     - [`networks.py`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/networks.py): Contains the network generation tool.
     - [`options.py`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/options.py): Contains all the option enums. These are used as types of constructor arguments in other tools.
     - [`stats.py`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/stats.py): Contains the statistical analysis tool.
-    - [`util/`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/util/)
+    - [`util/`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/util/): Utility functions, not intended to be imported by the user.
         - [`errors.py`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/util/errors.py): Contains the custom error class and its utility functions. Used to catch and communicate lp_solve related errors.
         - [`network.py`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/util/network.py): Contains the network and graph related utility functions.
         - [`units.py`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/util/units.py): Contains the unit related utility functions. Streamlines displaying results in different units.
         - [`validation.py`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/util/validation.py): Contains the validation tool. This tool strict user input validation to ensure a controlled environment within other classes.
-    - [`panco/`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/panco/)
+    - [`panco/`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/panco/): Panco library, not intended to be imported by the user.
         - [`lpsolve`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/panco/lpsolve): The `lp_solve` executable.
         - [`lpSolvePath.py`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/panco/lpSolvePath.py): You need to change `LPSOLVEPATH` in this file if you change the location of `lpsolve`.
-- [`example/`](https://github.com/EdinGuso/ecowcdb/blob/main/example/)
-    - [`README.md`](https://github.com/EdinGuso/ecowcdb/blob/main/example/README.md): Explains the purpose and usage of the `example` folder.
-- [`results/`](https://github.com/EdinGuso/ecowcdb/blob/main/results/)
-    - [`README.md`](https://github.com/EdinGuso/ecowcdb/blob/main/results/README.md): Explains the purpose and usage of the `results` folder.
-- [`temp/`](https://github.com/EdinGuso/ecowcdb/blob/main/temp/)
-    - [`README.md`](https://github.com/EdinGuso/ecowcdb/blob/main/temp/README.md): Explains the purpose and usage of the `temp` folder.
+- [`example/`](https://github.com/EdinGuso/ecowcdb/blob/main/example/): Example programs that display wide range of functionalities of the ecowcdb library.
+- [`images/`](https://github.com/EdinGuso/ecowcdb/blob/main/images/): Images used in this `README`.
+- [`results/`](https://github.com/EdinGuso/ecowcdb/blob/main/results/): Used to save the results obtained during the analysis.
+- [`temp/`](https://github.com/EdinGuso/ecowcdb/blob/main/temp/): Temporary folders generated during runtime.
 
 ## Installation
-🚧🚧🚧 Please install the [Requirements](#requirements).
+🚧 *to be updated. `installation.md` will be merged here*
+
+Please install the [Requirements](#requirements).
 
 Quickly build the project using `setup.py` by running the following command at the root of the project:
 
@@ -398,29 +687,28 @@ pip install .
 Please follow the detailed [installation guide](https://github.com/EdinGuso/ecowcdb/blob/main/installation.md) if any issues arise during installation.
 
 ## How to Use
-🚧🚧🚧 *how to use...*
+🚧 *how to use...*
 
 ### Network Topologies
-🚧🚧🚧\
-**Semi Ring Network:** ...
+**Semi Ring Network:** 🚧 *short topology explanation*
 ![Semi Ring Network Topology](images/ring_semi.png)<br><br><br>
-**Full Ring Network:** ...
+**Full Ring Network:** 🚧 *short topology explanation*
 ![Full Ring Network Topology](images/ring_full.png)<br><br><br>
-**Complete Semi Ring Network:** ...
+**Complete Semi Ring Network:** 🚧 *short topology explanation*
 ![Complete Semi Ring Network Topology](images/ring_completesemi.png)<br><br><br>
-**Complete Full Ring Network:** ...
+**Complete Full Ring Network:** 🚧 *short topology explanation*
 ![Complete Full Ring Network Topology](images/ring_completefull.png)<br><br><br>
-**Mesh Network:** ...
+**Mesh Network:** 🚧 *short topology explanation*
 ![Mesh Network Topology](images/mesh.png)<br><br><br>
-**Sink-Tree Tandem Network:** ...
+**Sink-Tree Tandem Network:** 🚧 *short topology explanation*
 ![Sink-Tree Tandem Network Topology](images/tandem_sinktree.png)<br><br><br>
-**Interleaved Tandem Network:** ...
+**Interleaved Tandem Network:** 🚧 *short topology explanation*
 ![Interleaved Tandem Network Topology](images/tandem_interleaved.png)<br><br><br>
-**Source-Sink Tandem Network:** ...
+**Source-Sink Tandem Network:** 🚧 *short topology explanation*
 ![Source-Sink Tandem Network Topology](images/tandem_sourcesink.png)<br><br><br>
 
 ## Future Work
-🚧🚧🚧*future work...*
+🚧*future work...*
 
 
 

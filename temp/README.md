@@ -1,1 +1,0 @@
-This directory is intended for storing temporary `.lp` files. All `.lp` files will be stored in this directory if the user provides the path to this folder as `temp_folder` argument in the relevant library functions. `.lp` files are ignored by git.
