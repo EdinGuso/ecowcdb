@@ -1,19 +1,6 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#
-# This file is part of the panco project.
-# https://github.com/Huawei-Paris-Research-Center/Panco
-
-from __future__ import annotations
-
-__author__ = "Anne Bouillard"
-__maintainer__ = "Anne Bouillard"
-__email__ = "anne.bouillard@huawei.com"
-__copyright__ = "Copyright (C) 2022, Huawei Technologies France"
-__license__ = "BSD-3"
-
-
+# Local Imports - panco libraries
 from ecowcdb.panco.descriptor.network import Network
+
 
 
 def times(num_servers, depth):
@@ -260,59 +247,6 @@ class PLPConstraints:
                 for k in range(self.network.depth[h] + 2):
                     f.write('t{0}e{3} - t{1}e{3} <= d{2};\n'.format(self.t_min[h] + k, self.t_min[j] + k, j, e))
 
-    # def delay_objective(self, foi, file):
-    #     if self.path[foi][-1] == self.num_servers - 1:
-    #         file.write('max: t0 - t{};\n'.format(self.t_min[self.path[foi][0]]))
-    #     else:
-    #         file.write('flow do not stop at last server\n')
-    #
-    # def backlog_objective(self, foi_set, file):
-    #     file.write('max:')
-    #     for foi in foi_set:
-    #         if self.path[foi][-1] == self.num_servers - 1:
-    #             file.write(' + f{0}s{1}t0 - f{0}s{2}t0'.format(foi, self.path[foi][0], self.path[foi][-1]))
-    #         else:
-    #             file.write('flow do not stop at last server\n')
-    #     file.write(';\n')
-    #     for foi in foi_set:
-    #         j = self.path[foi][0]
-    #         for k in range(self.t_min[j], self.t_max[j] + 1):
-    #             file.write('f{0}s{1}t0 - f{0}s{1}t{2} <= {3} + {4}t0 - {4}t{2}'.format(foi,
-    #                                                                                    j, k,
-    #                                                                                    self.sigma[foi],
-    #                                                                                    self.rho[foi]))
-    #
-    # def delay(self, foi, filename="LinearPrograms/fifo.lp"):
-    #     file = open(filename, 'w')
-    #     self.delay_objective(foi, file)
-    #     self.time_constraints(file)
-    #     self.arrival_constraints(file)
-    #     self.fifo_constraints(file)
-    #     self.service_constraints(file)
-    #     self.monotony_constraints(file)
-    #     self.shaping_constraints(file)
-    #     # self.sfa_arrival_constraints(file)
-    #     self.sfa_delay_constraints(file)
-    #     self.tfa_delay_constraints(file)
-    #     self.arrival_shaping_constraints(file)
-    #     file.close()
-    #     s = sp.run(["wsl", "lp_solve", "-presolve", "-S1", filename], stdout=sp.PIPE, encoding='utf-8').stdout
-    #     return float(s.split()[-1])
-    #
-    # def backlog(self, foi, filename="LinearPrograms/fifo.lp"):
-    #     file = open(filename, 'w')
-    #     self.backlog_objective(foi, file)
-    #     self.time_constraints(file)
-    #     self.arrival_constraints(file)
-    #     self.fifo_constraints(file)
-    #     self.service_constraints(file)
-    #     self.monotony_constraints(file)
-    #     self.sfa_arrival_constraints(file)
-    #     self.sfa_delay_constraints(file)
-    #     file.close()
-    #     s = sp.run(["wsl", "lp_solve", "-S1", filename], stdout=sp.PIPE, encoding='utf-8').stdout
-    #     return float(s.split()[-1])
-    #
     def write_constraints(self, file):
         file.write('\n/* flow {} */\n'.format(self.list_flows[self.foi]))
         self.time_constraints(file)

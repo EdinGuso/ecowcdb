@@ -256,10 +256,11 @@ def __edges_to_reverse_adj_list(edges: List[Tuple[int, int]], N: int) -> List[Li
         reverse_adj_list[edge[1]].append(edge[0])
     return reverse_adj_list
 
-def flow_preserving_min_depth_max_forest(edges: List[Tuple[int, int]], N: int, flow_path: List[int],
-                                         max_depth: int = -1, connected: bool = False) -> List[Tuple[int, int]]:
+def heuristic_algorithm(edges: List[Tuple[int, int]], N: int, flow_path: List[int], max_depth: int = -1,
+                        connected: bool = False) -> List[Tuple[int, int]]:
     """
-     Computes the maximal forest with minimum depth while preserving (not cutting) the flow.
+     Highlight of the library: The heuristic algorithm for picking cuts. Computes the maximal forest with minimum depth
+     while preserving (not cutting) the flow.
      
      Args:
      	 edges (List[Tuple[int, int]], required): List of edges.

@@ -4,6 +4,7 @@
 """
 
 # Standard Library Imports
+from __future__ import annotations
 from typing import Any, Callable, Dict, List, Tuple
 
 # Local Imports - ecowcdb libraries
@@ -151,7 +152,7 @@ class Validation:
              forest (public): Validates the given forest.
              filename (public): Validates the given filename.
         """
-        # __validation: Validation
+        __validation: Validation
 
         def __init__(self) -> None:
             """
@@ -275,7 +276,7 @@ class Validation:
              foi (public): Validates the given foi.
              max_depth (public): Validates the given max depth.
         """
-        # __validation: Validation
+        __validation: Validation
 
         def __init__(self) -> None:
             """
@@ -329,7 +330,7 @@ class Validation:
              custom_network_arguments (public): Validates all the arguments passed to the custom function of the
              Networks class.
         """
-        # __validation: Validation
+        __validation: Validation
         
         def __init__(self) -> None:
             """
@@ -426,7 +427,7 @@ class Validation:
              foi (public): Validates the given foi.
              max_depth (public): Validates the given max depth.
         """
-        # __validation: Validation
+        __validation: Validation
 
         def __init__(self) -> None:
             """

@@ -17,9 +17,9 @@ def main():
     
     flow_of_interest = 0
 
-    delay_a, _ = ecowcdb.algorithm_a(flow_of_interest)
-    delay_b, _ = ecowcdb.algorithm_b(flow_of_interest, max_depth=5)
-    delay_c, _ = ecowcdb.algorithm_c(flow_of_interest, max_depth=5)
+    delay_a, _ = ecowcdb.min_cut_forest(flow_of_interest)
+    delay_b, _ = ecowcdb.min_cut_forest_with_restricted_depth(flow_of_interest, max_depth=5)
+    delay_c, _ = ecowcdb.min_cut_tree_with_restricted_depth(flow_of_interest, max_depth=5)
 
     print(f'{delay_a=}s')
     print(f'{delay_b=}s')

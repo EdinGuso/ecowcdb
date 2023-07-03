@@ -1,21 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#
-# This file is part of the panco project.
-# https://github.com/Huawei-Paris-Research-Center/Panco
-
+# Standard Library Imports
 from __future__ import annotations
+from typing import List
 
-__author__ = "Anne Bouillard"
-__maintainer__ = "Anne Bouillard"
-__email__ = "anne.bouillard@huawei.com"
-__copyright__ = "Copyright (C) 2022, Huawei Technologies France"
-__license__ = "BSD-3"
-
-
-import numpy as np
-from typing import List, Tuple
+# Local Imports - panco libraries
 from ecowcdb.panco.descriptor.curves import TokenBucket
+
 
 
 class Flow:

@@ -1,27 +1,17 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#
-
-# This file is part of the panco project.
-# https://github.com/Huawei-Paris-Research-Center/Panco
-
+# Standard Library Imports
 from __future__ import annotations
-
-__author__ = "Anne Bouillard"
-__maintainer__ = "Anne Bouillard"
-__email__ = "anne.bouillard@huawei.com"
-__copyright__ = "Copyright (C) 2022, Huawei Technologies France"
-__license__ = "BSD-3"
-
-
-import numpy as np
 from collections import defaultdict
 from copy import deepcopy
 from typing import List, Tuple, Dict
 
+# Third-Party Library Imports
+import numpy as np
+
+# Local Imports - panco libraries
 from ecowcdb.panco.descriptor.flow import Flow
 from ecowcdb.panco.descriptor.server import Server
-from ecowcdb.panco.descriptor.curves import tb_sum, residual_blind, RateLatency, TokenBucket
+from ecowcdb.panco.descriptor.curves import tb_sum, residual_blind
+
 
 
 def _sort_lists_of_lists(lol: List[List[int]]):
@@ -119,7 +109,7 @@ def backward_search(sink: int, predecessors: List[List[int]]) -> List[int]:
     return sorted(list(servers))
 
 
-def trunc_path(path: List[List[int]], list_servers: [List[int]]) -> List[List[int]]:
+def trunc_path(path: List[List[int]], list_servers: List[int]) -> List[List[int]]:
     """
     Computes the sub-path of servers in list_servers for each path in path
 
@@ -620,7 +610,7 @@ class Network:
                                     self.servers[j].max_service_curve)]
         return list_servers
 
-    def sub_network(self, foi: int) -> (Network, int, List[int], List[int]):
+    def sub_network(self, foi: int) -> Tuple[Network, int, List[int], List[int]]:
         """
         Builds a sub-network with sink the last server crossed by the flow foi
         This methods applies only to well-numbered feed-forward networks
@@ -671,7 +661,7 @@ class Network:
         sub_net = Network(servers, flows, arrival_shaping)
         return sub_net, ind_f[foi], list_flows, list_servers
 
-    def decomposition(self, keep_edges: List[(int, int)]) -> (Network, List[int], List[(int, int)]):
+    def decomposition(self, keep_edges: List[(int, int)]) -> Tuple[Network, List[int], List[(int, int)]]:
         """
         Decomposition of the network by keeping edges in keep_edges, and cutting the flows.
         returns a new network with arrival curve[0] for all flows obtained from one flow
@@ -835,7 +825,7 @@ class Network:
                                self.path[dict_path[k][0]])]
         return new_flows
 
-    def aggregate_network(self, foi: int) -> (Network, int):
+    def aggregate_network(self, foi: int) -> Tuple[Network, int]:
         """
         Builds a new network where flows following the same path and having the same shaping / absence of shaping are
         aggretated together. The flow of interest is never aggregated to others.

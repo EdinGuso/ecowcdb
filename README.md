@@ -15,12 +15,12 @@ The readme consists of 2 main parts: Report and Project. Report section includes
 - [Report](#report)
     - [Introduction](#introduction)
     - [Solution](#solution)
-        - [Algorithm A](#algorithm-a)
+        - [Algorithm A: Min-Cut Forest](#algorithm-a-min-cut-forest)
             - [Results](#results)
         - [Runtime](#runtime)
-        - [Algorithm B](#algorithm-b)
+        - [Algorithm B: Min-Cut Forest with Restricted Depth](#algorithm-b-min-cut-forest-with-restricted-depth)
             - [Results](#results-1)
-        - [Algorithm C](#algorithm-c)
+        - [Algorithm C: Min-Cut Tree with Restricted Depth](#algorithm-c-min-cut-tree-with-restricted-depth)
             - [Results](#results-2)
         - [Results and Discussion](#results-and-discussion)
             - [Network Specifications](#network-specifications)
@@ -87,10 +87,8 @@ To evaluate the effectiveness of our heuristic algorithm, we compared its perfor
 
 In the following sections, we will delve into further details of our solution, describing the implementation of the heuristic algorithm and showcasing the numerical results obtained from our experimentation. Through this comprehensive analysis, we aim to establish the robustness and practical applicability of our solution in the realm of time-sensitive networking.
 
-### Algorithm A
+### Algorithm A: Min-Cut Forest
 ```
-Algorithm: Flow-preserving min-cut forest
-
 forest <- []
 node_depth <- []
 visited <- {}
@@ -144,20 +142,18 @@ To understand the reason behind this trade-off, we delve into the inner workings
 
 Additionally, the cutting of the network is not only valuable for networks with cyclic dependencies but also for networks which are originally trees, such as tandem networks. Although tandem networks do not exhibit cyclic dependencies, they can still benefit from the decreased runtime achieved by cutting the networks into smaller components. Therefore, in this section, we examine both Tandem networks alongside Ring and Mesh networks to assess the performance trade-offs.
 
-Upon realizing the significant increase in runtime for minimal cuts in large networks, we developed two new algorithms, namely Algorithm B and Algorithm C, to mitigate this issue and strike a balance between delay bounds and computational efficiency.
+Upon realizing the significant increase in runtime for minimal cuts in large networks, we developed two new algorithms, namely Algorithm B: Min-Cut Forest with Restricted Depth and Algorithm C: Min-Cut Tree with Restricted Depth, to mitigate this issue and strike a balance between delay bounds and computational efficiency.
 
-Algorithm B introduces a maximum depth parameter and cuts the network into smaller trees after reaching this depth. While this approach reduces the quality of the delay bounds obtained, it greatly improves the performance of the algorithm. By limiting the depth of the network, Algorithm B ensures that the PLP algorithm solves smaller linear programs, leading to shorter runtimes. The trade-off, however, is that the resulting delay bounds may be slightly looser compared to the optimal cut obtained through exhaustive search.
+Algorithm B introduces a maximum depth parameter and cuts the network into smaller trees after reaching this depth. While this approach usually reduces the quality of the delay bounds obtained, it greatly improves the performance of the algorithm. By limiting the depth of the network, Algorithm B ensures that the PLP algorithm solves smaller linear programs, leading to shorter runtimes. The trade-off, however, is that the resulting delay bounds may be slightly looser compared to the optimal cut obtained through exhaustive search.
 
-Building on Algorithm B, we developed Algorithm C, which also incorporates a maximum depth parameter. However, once the maximum depth is reached, Algorithm C does not add any additional edges and outputs a single small tree. This approach outperforms Algorithm B in scenarios where the depth of the flow of interest is much smaller than the depth of the network itself. By reducing the number of trees, Algorithm C achieves improved runtime without cutting the flow of interest.
+Building on Algorithm B, we developed Algorithm C, which also incorporates a maximum depth parameter. However, once the maximum depth is reached, Algorithm C does not add any additional edges and outputs a single tree. This approach outperforms Algorithm B in scenarios where the depth of the flow of interest is much smaller than the depth of the network itself. By reducing the number of trees, Algorithm C achieves improved runtime without cutting the flow of interest.
 
 Through these algorithmic enhancements, we aim to strike a balance between the quality of worst-case delay bounds and the computational efficiency of the PLP algorithm. By leveraging these modified algorithms, we can address the runtime challenges associated with large network topologies, enhancing the feasibility of worst case delay bound computation for time-sensitive networking environments.
 
 In the following sections, we will delve into further details of Algorithm B and Algorithm C, describing their implementation and providing a comparative analysis of their performance in terms of runtime and delay bounds. By examining the practical implications of these algorithms, we aim to provide valuable insights into the trade-offs involved in selecting cuts for worst-case delay analysis.
 
-### Algorithm B
+### Algorithm B: Min-Cut Forest with Restricted Depth
 ```
-Algorithm: Flow-preserving max-depth min-cut forest
-
 forest <- []
 node_depth <- []
 visited <- {}
@@ -209,10 +205,8 @@ Maximum load (Server) = 50%
 | Interleaved Tandem | 12 | 5 | 145.92µs | 145.92µs |
 | Source-sink Tandem | 12 | 5 | 147.05µs | 151.77µs |
 
-### Algorithm C
+### Algorithm C: Min-Cut Tree with Restricted Depth
 ```
-Algorithm: Flow-preserving max-depth min-cut tree
-
 tree <- []
 node_depth <- []
 visited <- {}
@@ -495,7 +489,7 @@ In this subsection, we shift our focus to medium to large-sized networks where e
 
     In contrast, Algorithm C exhibited poor performance, indicating its limitations in this particular network configuration. Although it boasted a quick runtime, its delay bound fell short compared to the other algorithms.
 
-- **Sink-Tree Tandem Network (128 Servers, 128 Flows)**
+- **Sink-Tree Tandem Network (128 Servers, 128 Flows)** *MAYBE MAX 96*
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
     | Partial Search (100) | - | 22h 24m 46s | 1519.92µs |

@@ -1,5 +1,5 @@
 """
- File containing the unit related utility functions. Streamlines displaying resutls in different units.
+ File containing the unit related utility functions. Streamlines displaying results in different units.
 """
 
 # Standard Library Imports

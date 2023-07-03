@@ -4,6 +4,7 @@
 """
 
 # Standard Library Imports
+from __future__ import annotations
 from itertools import product
 from typing import List, Tuple
 
@@ -28,6 +29,9 @@ class Networks:
      satisfied for the units. However, it is recommended to use kb/s for rate and kb for burst to ensure lp_solve
      has a higher chance of solving the generated lp files during the delay computations in Analysis.
 
+     Attributes:
+         __validation (Validation.Networks, private): Validation object used to validate user inputs.
+
      Methods:
          _generic (protected): Creates a generic network based on the provided parameters. Used by child classes.
          custom (public): Creates a custom network based on the provided parameters.
@@ -43,8 +47,8 @@ class Networks:
     def _generic(self, R: float, L: float, S: float, N: int, load: float, max_flows: int, paths: List[List[int]],
                  network_type: NetworkType, symmetric_cycle: bool = False) -> Network:
         """
-         Creates a generic network according to given parameters. This is the function that does the heavy lifting of the
-         network creation.
+         Creates a generic network according to given parameters. This is the function that does the heavy lifting of
+         the network creation.
         
          Args:
              R (float, required): Rate of the servers.
@@ -137,15 +141,16 @@ class Networks:
          an object of the class, one can use that object to generate different types of tandem networks.
 
          Attributes:
-             __validation (Validation, private): Validation object used to validate user inputs.
+             __validation (Validation.Networks, private): Validation object used to validate user inputs.
+             __networks (Networks, private): Networks object used to call the generic network generation function.
 
          Methods:
              sink_tree (public): Creates a sink-tree tandem network.
              interleaved (public): Creates an interleaved tandem network.
              source_sink (public): Creates a source-sink tandem network.
         """
-        __validation = Validation.Networks
-        # __networks = Networks
+        __validation: Validation.Networks
+        __networks: Networks
 
         def __init__(self) -> None:
             """
@@ -241,12 +246,12 @@ class Networks:
          object of the class, one can use that object to generate different types of mesh networks.
 
          Attributes:
-             __validation (Validation, private): Validation object used to validate user inputs.
+             __validation (Validation.Networks, private): Validation object used to validate user inputs.
 
          Methods:
              simple (public): Creates a simple mesh network.
         """
-        __validation = Validation.Networks
+        __validation: Validation.Networks
 
         def __init__(self) -> None:
             """
@@ -269,7 +274,7 @@ class Networks:
                  network_type (NetworkType, required): Type of network to create.
 
              Raises:
-                 NotImplementedError: If network type is not Symmetric.
+                 ValueError: If network type is not Symmetric.
             
              Returns:
                  Network: A simple mesh network.
@@ -277,7 +282,7 @@ class Networks:
             self.__validation.generic_arguments(R, L, S, N, load, network_type)
 
             if network_type != NetworkType.Symmetric:
-                raise NotImplementedError('Asymmetric mesh networks not supported yet')
+                raise ValueError('Asymmetric mesh networks not supported')
 
             paths = [list(path) + [2*N] for path in list(product(*[(2*i,2*i+1) for i in range(N)]))]
 
@@ -302,7 +307,8 @@ class Networks:
          networks.
 
          Attributes:
-             __validation (Validation, private): Validation object used to validate user inputs.
+             __validation (Validation.Networks, private): Validation object used to validate user inputs.
+             __networks (Networks, private): Networks object used to call the generic network generation function.
 
          Methods:
              full (public): desc.
@@ -310,8 +316,8 @@ class Networks:
              complete_full (public): desc.
              complete_semi (public): desc.
         """
-        __validation = Validation.Networks
-        # __networks = Networks
+        __validation: Validation.Networks
+        __networks: Networks
 
         def __init__(self) -> None:
             """

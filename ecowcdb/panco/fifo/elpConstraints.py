@@ -1,19 +1,9 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#
-# This file is part of the panco project.
-# https://github.com/Huawei-Paris-Research-Center/Panco
-
-from __future__ import annotations
-
-__author__ = "Anne Bouillard"
-__maintainer__ = "Anne Bouillard"
-__email__ = "anne.bouillard@huawei.com"
-__copyright__ = "Copyright (C) 2022, Huawei Technologies France"
-__license__ = "BSD-3"
-
+# Third-Party Library Imports
 import numpy as np
+
+# Local Imports - panco libraries
 from ecowcdb.panco.descriptor.network import Network
+
 
 
 def times(num_servers, depth):

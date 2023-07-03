@@ -14,7 +14,6 @@ from scipy.stats import pearsonr
 from ecowcdb.panco.descriptor.network import Network
 
 # Local Imports - utility libraries
-from ecowcdb.util.network import flow_preserving_min_depth_max_forest
 from ecowcdb.util.validation import Validation
 
 
@@ -34,11 +33,6 @@ class Stats:
          delay_runtime_correlation (public): Print the correlation between delays and runtimes.
          forestsize_delay_correlation (public): Print the correlation between forest sizes and delays.
          forestsize_runtime_correlation (public): Print the correlation between forest sizes and runtimes.
-         __forest_ranking (private): Computes and prints the forest's ranking among all other forests.
-         best_forest_ranking (public): Computes and prints the best forest's ranking among all other forests.
-         forest_ranking (public): Computes and prints the forest's ranking among all other forests.
-         quick_forest_ranking (public): Computes and prints the quick forest's ranking among all other forests.
-
     """
     __validation: Validation.Stats
     __RAW_FILE_FORMAT: str
@@ -138,68 +132,3 @@ class Stats:
 
         correlation, p_value = pearsonr(forest_sizes, runtimes)
         print(f'The correlation between forest sizes and runtimes:\n{correlation=}\n{p_value=}')
-
-    def __forest_ranking(self, foi: int, forest: List[Tuple[int, int]]) -> None:
-        """
-         Computes and prints the forest's ranking among all other forests. Helper function for *forest_ranking.
-         
-         Args:
-         	 foi (int, required): Flow of interest.
-         	 forest (List[Tuple[int, int]], required): Forest to rank. This is a list of edges.
-        """
-        results = self.__results[foi]
-        delay_ordered_forests = [result[0] for result in results]
-        forest_index = delay_ordered_forests.index(forest)
-        median_runtime = median([result[2] for result in results])
-
-        top = (forest_index+1)/len(results)
-        print(f'The forest is in the top {100*top:.2f}% in delay.')
-
-        comp_median = results[forest_index][2] / median_runtime
-        if comp_median > 1:
-            print(f'The forest\'s runtime is {100*(comp_median-1):.2f}% higher than the median runtime.')
-        else:
-            print(f'The forest\'s runtime is {100*(1-comp_median):.2f}% lower than the median runtime.')
-
-    def best_forest_ranking(self, foi: int) -> None:
-        """
-         Computes and prints the best forest's ranking among all other forests.
-         
-         Args:
-         	 foi (int, required): Flow of interest.
-        """
-        self.__validation.foi(foi, self.__results)
-        
-        best_forest = flow_preserving_min_depth_max_forest(list(self.__net.edges.keys()), self.__net.num_servers,
-                                                           self.__net.flows[foi].path)
-        self.__forest_ranking(foi, best_forest)
-
-    def forest_ranking(self, foi: int, max_depth: int) -> None:
-        """
-         Computes and prints the forest's ranking among all other forests.
-         
-         Args:
-         	 foi (int, required): Flow of interest.
-             max_depth (int, required): Max depth used in heuristic forest generation.
-        """
-        self.__validation.foi(foi, self.__results)
-        self.__validation.max_depth(max_depth)
-
-        forest = flow_preserving_min_depth_max_forest(list(self.__net.edges.keys()), self.__net.num_servers,
-                                                      self.__net.flows[foi].path, max_depth)
-        self.__forest_ranking(foi, forest)
-
-    def quick_forest_ranking(self, foi: int, max_depth: int) -> None:
-        """
-         Computes and prints the quick forest's ranking among all other forests.
-         
-         Args:
-         	 foi (int, required): Flow of interest.
-             max_depth (int, required): Max depth used in heuristic forest generation.
-        """
-        self.__validation.foi(foi, self.__results)
-        self.__validation.max_depth(max_depth)
-
-        quick_forest = flow_preserving_min_depth_max_forest(list(self.__net.edges.keys()), self.__net.num_servers,
-                                                            self.__net.flows[foi].path, max_depth, True)
-        self.__forest_ranking(foi, quick_forest)

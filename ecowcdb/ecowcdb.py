@@ -12,7 +12,7 @@ from ecowcdb.panco.fifo.fifoLP import FifoLP
 
 # Local Imports - utility libraries
 from ecowcdb.util.errors import LPError, LPErrorType
-from ecowcdb.util.network import flow_preserving_min_depth_max_forest, scale_network
+from ecowcdb.util.network import heuristic_algorithm, scale_network
 from ecowcdb.util.validation import Validation
 
 
@@ -31,9 +31,10 @@ class ECOWCDB:
 
      Methods:
          __delay (private): Computes the delay of the flow of interest for a given forest.
-         algorithm_a (public): Computes the best ecowcdb delay of the flow of interest.
-         algorithm_b (public): Computes the best ecowcdb delay of the flow of interest for the given max_depth.
-         algorithm_c (public): Computes a quick delay of the flow of interest for the given max_depth.
+         min_cut_forest (public): Computes the best ecowcdb delay of the flow of interest.
+         min_cut_forest_with_restricted_depth (public): Computes the best ecowcdb delay of the flow of interest for the
+         given max_depth.
+         min_cut_tree_with_restricted_depth (public): Computes a quick delay of the flow of interest for the given max_depth.
     """
     __validation: Validation.ECOWCDB
     __net: Network
@@ -79,6 +80,7 @@ class ECOWCDB:
             try:
                 return PLP.delay(foi)
             except LPError as lperror:
+                print(lperror, scale_factor, timeout)
                 if lperror.error_type() in [LPErrorType.AccuracyError, LPErrorType.TimeoutError,
                                             LPErrorType.LPSolveFailure]:
                     if scale_factor < 10**-2:
@@ -96,7 +98,7 @@ class ECOWCDB:
                 else:
                     raise ValueError(f'Unhandled error type: {lperror}.')
                 
-    def algorithm_a(self, foi: int) -> Tuple[float, float]:
+    def min_cut_forest(self, foi: int) -> Tuple[float, float]:
         """
          Computes the best ecowcdb delay of the flow of interest. (Disclaimer: The obtained delay is not necessarily
          the best delay for this network. It is likely a very good delay, and it will likely take longer time to
@@ -112,14 +114,14 @@ class ECOWCDB:
         self.__validation.foi(foi, self.__net.num_flows)
 
         start = time()
-        forest = flow_preserving_min_depth_max_forest(self.__edges, self.__net.num_servers, self.__net.flows[foi].path)
+        forest = heuristic_algorithm(self.__edges, self.__net.num_servers, self.__net.flows[foi].path)
         delay = self.__delay(foi, forest)
         end = time()
         runtime = end - start
         return (delay, runtime)
 
 
-    def algorithm_b(self, foi: int, max_depth: int) -> Tuple[float, float]:
+    def min_cut_forest_with_restricted_depth(self, foi: int, max_depth: int) -> Tuple[float, float]:
         """
          Computes the best ecowcdb delay of the flow of interest for the given max_depth. The resulting forest can have
          multiple components which are not connected. (Disclaimer: The obtained delay is not necessarily the best delay
@@ -140,14 +142,13 @@ class ECOWCDB:
         self.__validation.max_depth(max_depth)
 
         start = time()
-        forest = flow_preserving_min_depth_max_forest(self.__edges, self.__net.num_servers, self.__net.flows[foi].path,
-                                                      max_depth)
+        forest = heuristic_algorithm(self.__edges, self.__net.num_servers, self.__net.flows[foi].path, max_depth)
         delay = self.__delay(foi, forest)
         end = time()
         runtime = end - start
         return (delay, runtime)
     
-    def algorithm_c(self, foi: int, max_depth: int) -> Tuple[float, float]:
+    def min_cut_tree_with_restricted_depth(self, foi: int, max_depth: int) -> Tuple[float, float]:
         """
          Computes a quick delay of the flow of interest for the given max_depth. The resulting forest has a single
          component. After an edge is cut, no further edges along that path are considered. (Disclaimer: The obtained
@@ -168,8 +169,7 @@ class ECOWCDB:
         self.__validation.max_depth(max_depth)
 
         start = time()
-        forest = flow_preserving_min_depth_max_forest(self.__edges, self.__net.num_servers, self.__net.flows[foi].path,
-                                                      max_depth, True)
+        forest = heuristic_algorithm(self.__edges, self.__net.num_servers, self.__net.flows[foi].path, max_depth, True)
         delay = self.__delay(foi, forest)
         end = time()
         runtime = end - start
