@@ -27,11 +27,11 @@ The readme consists of 2 main parts: Report and Project. Report section includes
             - [System Specifications](#system-specifications)
             - [Small-Medium Networks](#small-medium-networks)
             - [Medium-Large Networks](#medium-large-networks)
-        - [Other Contributions](#other-contributions)
+        - [Contributions](#contributions)
             - [Network Generation](#network-generation)
             - [Cut Analysis](#cut-analysis)
             - [Cut Statistics](#cut-statistics)
-            - [ECOWCDB](#ecowcdb)
+            - [Heuristic Algorithm](#heuristic-algorithm)
     - [Achievements](#achievements)
     - [Skills](#skills)
     - [Major Events](#major-events)
@@ -41,11 +41,17 @@ The readme consists of 2 main parts: Report and Project. Report section includes
     - [Project Structure](#project-structure)
         - [File Description](#file-description)
     - [Installation](#installation)
-        - [Requirements](#requirements)
-        - [Detailed Guide](#detailed-guide)
+        - [Manual](#manual)
+            - [Requirements](#requirements)
+        - [Virtual Machine](#virtual-machine)
     - [How to Use](#how-to-use)
-    - [Future Work](#future-work)
-    - [References](#references)
+        - [Options](#options)
+        - [Networks](#networks)
+            - [Network Topologies](#network-topologies)
+        - [Analysis](#analysis)
+        - [Stats](#stats)
+        - [ECOWCDB](#ecowcdb)
+- [References](#references)
 - [Contact](#contact)
 
 
@@ -53,9 +59,7 @@ The readme consists of 2 main parts: Report and Project. Report section includes
 # Report
 
 ## Introduction
-Time-Sensitive Networking (TSN) has emerged as a critical technology in various domains where real-time communication is paramount, such as industrial automation, autonomous vehicles, and multimedia streaming. TSN provides deterministic and bounded latency guarantees, ensuring the timely delivery of time-critical data in networked systems. To support the development and deployment of TSN, the TSN Working Group, comprised of industry experts and researchers, has been instrumental in defining standards that address the stringent requirements of these applications.
-
-Time-sensitive networks require performance guarantees under worst-case scenarios, where delays can be maximized due to factors like congestion, contention, and network topology. Unlike average-case analysis, worst-case analysis considers extreme situations to ensure the network's ability to handle critical communication within strict latency bounds. Computing the exact worst-case delays for time-sensitive networks is known to be an NP-hard problem, posing significant computational challenges.
+Time-sensitive networks, as in the context of IEEE Time-Sensitive Networking (TSN) and IETF Deterministic Networking (DetNet), require bounds on the worst-case delays as they support safety-critical applications and offer deterministic services with guaranteed, bounded latency. Finding the exact worst-case delays is known to be an NP-hard problem; hence we are interested in bounds on the worst-case delays.
 
 In the quest to analyze and validate the performance of communication networks, Network Calculus has emerged as a powerful mathematical framework. It provides methods for computing upper bounds on worst-case performance parameters, such as end-to-end delay and backlog [[1]](#references). These upper bounds enable network designers to assess the predictability and performance guarantees of their designs and ensure compliance with real-time requirements.
 
@@ -475,17 +479,21 @@ In this subsection, we shift our focus to medium to large-sized networks where e
 
     🚧 *discuss results...*
 
-- **Mesh Network (19 Servers, 512 Flows)**
+- **Mesh Network (17 Servers, 256 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
-    | Partial Search (20) | - | 7h 38m 25s | 4784.6µs |
-    | Algorithm A | - | 🚧 | 🚧µs |
-    | Algorithm B | 5 | 🚧 | 🚧µs |
-    | Algorithm B | 3 | 🚧 | 🚧µs |
-    | Algorithm C | 5 | 🚧 | 🚧µs |
-    | Algorithm C | 3 | 🚧 | 🚧µs |
+    | Algorithm B | 2 | 6m 22s | 1740.09µs |
+    | Algorithm B | 4 | 10m 32s | 1750.63µs |
+    | Algorithm A | - | 52m 6s | 1798.46µs |
+    | Partial Search (50) | - | 5h 22m 56s | 1869.83µs |
+    | Algorithm C | 4 | 2m 55s | 2013.69µs |
+    | Algorithm C | 2 | 1m 34s | 2159.36µs |
 
-    🚧 *discuss results...*
+    Algorithm A, while not achieving the best delay, still surpassed the partial search algorithm which tried 50 cuts. It is important to note that Algorithm A's delay is relatively close to the best bound we obtained. However, its runtime remains considerably higher compared to other algorithms.
+
+    Surprisingly, Algorithm B with a maximum depth of 2 achieved exceptional results. It obtained the strongest delay bound, surpassing both Algorithm A and Algorithm B with a depth of 4. Furthermore, it showcased a relatively quick runtime. These outcomes further reinforce Algorithm B's effectiveness in mesh networks, and the importance of introducing cuts to mesh networks.
+
+    In contrast, Algorithm C exhibited poor performance, indicating its limitations in this particular network configuration. Although it boasted a quick runtime, its delay bound fell short compared to the other algorithms.
 
 - **Sink-Tree Tandem Network (128 Servers, 128 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
@@ -527,7 +535,7 @@ In this subsection, we shift our focus to medium to large-sized networks where e
 
     🚧 *discuss results...*
 
-### Other Contributions
+### Contributions
 Our project encompasses several significant contributions that aim to improve the reliability and efficiency of communication systems operating in time-critical environments. We have developed innovative tools and algorithms that streamline network analysis and topology generation, ultimately leading to the design of effective heuristic algorithms. These tools have been instrumental in achieving our project's primary objective. Below, we outline the key contributions that have shaped our solution.
 
 #### Network Generation
@@ -545,7 +553,7 @@ Furthermore, the `Analysis` class offers a range of functions to display, save, 
 #### Cut Statistics
 In addition to the `Analysis` class, we have developed the compact `Stats` class to compute correlation statistics based on the analysis results. This class takes the output of the `Analysis` class as input and facilitates the calculation of correlations between delay, runtime, and other relevant metrics. The insights derived from these correlations have played a crucial role in the design of our heuristic algorithm, which we discuss next.
 
-#### ECOWCDB
+#### Heuristic Algorithm
 The culmination of our project is the development of the heuristic algorithm implemented in the `ECOWCDB` class. This algorithm aims to generate the most optimal cut (forest) based on user-defined restrictions, such as maximum depth and connectedness.
 
 For a more comprehensive understanding of the heuristic algorithm, we encourage you to refer to the previous sections where we have provided detailed explanations and insights. By reviewing these sections, you can gain a deeper appreciation of how the heuristic algorithm utilizes the information derived from our analysis.
@@ -559,7 +567,7 @@ For a more comprehensive understanding of the heuristic algorithm, we encourage 
 
 By successfully developing and validating our heuristic algorithm, gaining insights into cut selection, improving worst-case delay bounds, addressing runtime considerations, and conducting a thorough experimental evaluation, our project has significantly contributed to the field of time-sensitive networking and performance analysis in networked systems.
 
-The heuristic algorithms and the tools described in [Other Contriburions](#other-contributions) have been implemented in Python. This project, including the modifications done to the existing codebase as well as the ECOWCDB library, exceeds 2500 lines of code, out of which ~500 lines are high value code.
+The heuristic algorithms and the tools described in [Contriburions](contributions) have been implemented in Python. This project, including the modifications done to the existing codebase as well as the ECOWCDB library, exceeds 2500 lines of code, out of which ~500 lines are high value code.
 
 ## Skills
 Skills that I have exercised throughout the project:
@@ -605,7 +613,7 @@ Skills I had to acquire for the project:
 # Project
 
 ## Introduction
-🚧 This project is an extension of the panco project [[3]](#references). *A bit more introduction.*
+This project is an extension of the Panco project [[3]](#references), aiming to enhance its functionality and provide a comprehensive solution for network delay analysis. In this section, we will delve into the details of the project, including its structure, file explanations, installation instructions, and a comprehensive guide on how to use the project effectively.
 
 ## Project Structure
     .
@@ -631,15 +639,13 @@ Skills I had to acquire for the project:
     |       └- lpSolvePath.py
     |       └- ...
     └- example/
-    |   └- README.md
     |   └- ...
     └- images/
     |   └- ...
     └- results/
-    |   └- README.md
     |   └- ...
     └- temp/
-        └- README.md
+        └- ...
 
 ### File Description
 - [`README.md`](https://github.com/EdinGuso/ecowcdb/blob/main/README.md): This `README`.
@@ -655,7 +661,7 @@ Skills I had to acquire for the project:
         - [`errors.py`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/util/errors.py): Contains the custom error class and its utility functions. Used to catch and communicate lp_solve related errors.
         - [`network.py`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/util/network.py): Contains the network and graph related utility functions.
         - [`units.py`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/util/units.py): Contains the unit related utility functions. Streamlines displaying results in different units.
-        - [`validation.py`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/util/validation.py): Contains the validation tool. This tool strict user input validation to ensure a controlled environment within other classes.
+        - [`validation.py`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/util/validation.py): Contains the validation tool. This tool performs strict user input validation to ensure a controlled environment within other classes.
     - [`panco/`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/panco/): Panco library, not intended to be imported by the user.
         - [`lpsolve`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/panco/lpsolve): The `lp_solve` executable.
         - [`lpSolvePath.py`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/panco/lpSolvePath.py): You need to change `LPSOLVEPATH` in this file if you change the location of `lpsolve`.
@@ -665,9 +671,10 @@ Skills I had to acquire for the project:
 - [`temp/`](https://github.com/EdinGuso/ecowcdb/blob/main/temp/): Temporary folders generated during runtime.
 
 ## Installation
-🚧 *to be updated. `installation.md` will be merged here*
+This section provides two installation options for the project: manual installation and a ready-to-use virtual machine. For manual installation, you need to manually set up the project on your system, including configuring dependencies and the environment. This option offers more flexibility but requires additional setup steps. Alternatively, you can use the provided virtual machine image, which is pre-configured and ready to use. This option eliminates the need for manual setup and provides a hassle-free installation process. Choose the option that suits your requirements and follow the corresponding instructions to get started with the project.
 
-Please install the [Requirements](#requirements).
+### Manual
+Please install the [Requirements](#requirements) before starting the installation.
 
 Quickly build the project using `setup.py` by running the following command at the root of the project:
 
@@ -675,42 +682,138 @@ Quickly build the project using `setup.py` by running the following command at t
 pip install .
 ```
 
-### Requirements
+#### Requirements
 - `Python>=3.10`
     - `numpy`
     - `scipy`
     - `tqdm`
     - `tabulate`
-- `lp_solve==5.5.2.11`: Download and install from [`lpsolve`](https://sourceforge.net/projects/lpsolve/). The [`lp_solve`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/panco/lpsolve) in this project was built on `Ubuntu 22.04.2 LTS`.
+- `lp_solve==5.5.2.11`: Download and install from [`lpsolve`](https://sourceforge.net/projects/lpsolve/). The [`lp_solve`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/panco/lpsolve) in this project was built on `Ubuntu 22.04.2 LTS`. You may need to download and build another version. Also, if you change the location of `lpsolve`, go into [`lpSolvePath.py`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/panco/lpSolvePath.py) and update `LPSOLVEPATH`.
 
-### Detailed Guide
-Please follow the detailed [installation guide](https://github.com/EdinGuso/ecowcdb/blob/main/installation.md) if any issues arise during installation.
+### Virtual Machine
+This section presents the plug-and-play installation. Please follow the steps in the given order to avoid any unexpected issues.
+
+1. Download the latest version of VirtualBox from this [webpage](https://www.virtualbox.org/wiki/Downloads). The link to the version we used: [VirtualBox 7.0.6](https://download.virtualbox.org/virtualbox/7.0.6/VirtualBox-7.0.6-155176-Win.exe) (Windows installer).
+2. Download `ecowcdbVM.ova` from this [link](🚧🚧🚧).
+3. Create a new Virtual Machine using VirtualBox.
+    - Start Virtual Box.
+    - Press "Import".
+    - For the "File" option, browse your file system and select `ecowcdbVM.ova`.
+    - Press "Next".
+    - Press "Finish".
+4. Select the newly created Virtual Machine and press "Start".
+5. The project is fully installed and ready to use within the Virtual Machine.
 
 ## How to Use
-🚧 *how to use...*
+This section provides an overview of how to use the project, including the available classes, functions and options. The project offers several features and functionalities that can be utilized for analyzing network delay bounds. 
 
-### Network Topologies
-**Semi Ring Network:** 🚧 *short topology explanation*
+Please refer to the extensive documentation within the code and the provided code [examples](https://github.com/EdinGuso/ecowcdb/blob/main/example/) for more detailed instructions on how to utilize each component of the project.
+
+In the following sections, we will provide a general overview of each class.
+
+### Options
+The project includes four enum classes that serve as input arguments for other classes. These enum classes provide configuration options for customizing the analysis process:
+
+- `DisplayUnit`: Input for the `Analysis` class. This enum class is used to specify the unit in which the analysis results (delay & runtime) are displayed. The available options are MicroSecond, MilliSecond, Second, Minute, and Hour.
+- `VerboseKW`: Input for the `Analysis` class. This enum class offers verbosity keywords to control the level of output during the analysis. The options include the follwing:
+    - `Network`: Prints the network during the construction of Analysis object.
+    - `Forest`: Prints each forest for which the delay is being computed.
+    - `ES_ProgressBar`: Displays a progressbar for exhaustive/partial search.
+    - `FG_ProgressBar`: Displays a progressbar for forest generation.
+    - `LP_Details`: Prints the names of lp files as they are being solved.
+    - `LP_Errors`: Prints the thrown LPError exceptions and their outcomes.
+- `NetworkType`: Input for the `Networks` class. This can be used for all generic network topologies apart from Mesh networks. This enum class defines the type of network to be generated. The options are:
+    - `Symmetric`: Network will be symmetric.
+    - `AsymmetricFlow`: First flow will have a higher arrival rate.
+    - `AsymmetricServer`: First server will have a lower service rate.
+- `ForestGeneration`: Input for the `Analysis` class. This enum class determines the mode of forest generation during the analysis. The options include the follwing:
+    - `Empty`: Do not generate any forests.
+    - `Partial`: Generate a subset of forests at random.
+    - `All`: Generate all valid forests.
+
+### Networks
+The `Networks` class provides functionality for automatically generating common network topologies. It includes eight generic topologies, which are described in the [Network Topologies](#network-topologies). Additionally, this class offers a custom network function that allows for creating customized network topologies using the full functionality of the panco network class. Below, you can find code examples for generating a generic network (Semi Ring) and a custom network.
+
+**Generic Networks:**
+```py
+R = 10**7 # Kb/s
+L = 10**-5 # s
+S = 8 # Kb
+N = 12 # servers
+load = 0.5
+
+net = Networks.Ring().semi(R, L, S, N, load, NetworkType.Symmetric)
+```
+
+**Custom Networks:**
+```py
+R = 10**7 # Kb/s
+L = 10**-5 # s
+S = 8 # Kb
+
+service_curve1 = (R*2, L/2)
+shaper1 = (S/2, R*3)
+server1 = ([service_curve1], [shaper1])
+
+service_curve2 = (R*3, L*5)
+shaper2 = (S/5, R*4)
+server2 = ([service_curve2], [shaper2])
+
+service_curve3 = (R/2, L)
+shaper3 = (S/3, R)
+server3 = ([service_curve3], [shaper3])
+
+service_curve4 = (R*3, L*2)
+shaper4 = (S*4, R*5)
+server4 = ([service_curve4], [shaper4])
+
+servers = [server1, server2, server3, server4]
+
+arrival_curve1 = (S/2, R/4)
+path1 = [0, 1, 3]
+flow1 = ([arrival_curve1], path1)
+
+arrival_curve2 = (S*3, R/8)
+path2 = [0, 2, 3]
+flow2 = ([arrival_curve2], path2)
+
+flows = [flow1, flow2]
+
+net = Networks().custom(servers, flows)
+```
+
+#### Network Topologies
+**Semi Ring Network (N=4):** A ring network with N servers and N flows. There is one flow starting at each server, and the flows travel half the length of the ring.
 ![Semi Ring Network Topology](images/ring_semi.png)<br><br><br>
-**Full Ring Network:** 🚧 *short topology explanation*
+**Full Ring Network (N=4):** A ring network with N servers and N flows. There is one flow starting at each server, and the flows travel the full length of the ring, stopping at the server before the starting server.
 ![Full Ring Network Topology](images/ring_full.png)<br><br><br>
-**Complete Semi Ring Network:** 🚧 *short topology explanation*
+**Complete Semi Ring Network (N=4):** A ring network with N servers and Nx(N//2+1) flows. There are N//2+1 flows starting at each server, and the longest flows travel half the length of the ring, while the shortest flows end at the starting server.
 ![Complete Semi Ring Network Topology](images/ring_completesemi.png)<br><br><br>
-**Complete Full Ring Network:** 🚧 *short topology explanation*
+**Complete Full Ring Network (N=4):** A ring network with N servers and NxN flows. There are N flows starting at each server, and the longest flows travel the full length of the ring, stopping at the server before the starting server, while the shortest flows end at the starting server.
 ![Complete Full Ring Network Topology](images/ring_completefull.png)<br><br><br>
-**Mesh Network:** 🚧 *short topology explanation*
+**Mesh Network (N=3):** Mesh networks have 2N+1 servers and 2^N flows. There are N columns of servers and each column contains 2 servers. Flows can go from any server in a column to any server in the next column. All the flows start in the first column and end at the single sink server. Since each flow has 2 server decisions in each column, there are 2^N flows.
 ![Mesh Network Topology](images/mesh.png)<br><br><br>
-**Sink-Tree Tandem Network:** 🚧 *short topology explanation*
+**Sink-Tree Tandem Network (N=5):** A tandem network with N servers and N flows. There is one flow starting at each server, and each flow follows the tandem until the sink server.
 ![Sink-Tree Tandem Network Topology](images/tandem_sinktree.png)<br><br><br>
-**Interleaved Tandem Network:** 🚧 *short topology explanation*
+**Interleaved Tandem Network (N=5):** A tandem network with N servers and N flows. There is a single flow going through the whole tandem. Also, there are N-1 2-length flows placed on each consecutive pair of servers.
 ![Interleaved Tandem Network Topology](images/tandem_interleaved.png)<br><br><br>
-**Source-Sink Tandem Network:** 🚧 *short topology explanation*
+**Source-Sink Tandem Network (N=5):** A tandem network with N servers and 2xN-1 flows. There is a single flow going through the whole tandem. Also, there are N-1 pairs of flows where each pair's first flow starts at the source server, second flow starts where the first flow ends, and second flow ends at the sink server. Each pair has a unique point where they start/end.
 ![Source-Sink Tandem Network Topology](images/tandem_sourcesink.png)<br><br><br>
 
-## Future Work
-🚧*future work...*
+### Analysis
+🚧 *analysis class explanation...*
 
+The `Analysis` class is responsible for performing the delay analysis on the network models. It takes various input arguments, including the network topology, forest generation mode, display unit, and verbosity options. This class performs the computation of delay bounds and provides valuable insights into the worst-case delay behavior of the network.
 
+### Stats
+🚧 *stats class explanation...*
+
+The `Stats` class provides statistical analysis and visualization capabilities for the computed delay bounds. It allows for generating summary statistics and visual representations of the delay results, enabling users to gain a deeper understanding of the network's performance.
+
+### ECOWCDB
+🚧 *ecowcdb class explanation...*
+
+The `ECOWCDB` class serves as the main interface for running the project. It orchestrates the workflow by combining the functionalities of the other classes and provides a convenient way to analyze network delay bounds using the implemented algorithms and models.
 
 # References
 [1] Boudec, J.-Y. L. and Thiran, P. (2001). Network calculus: A theory of deterministic queuing systems for the internet. Springer. 
