@@ -80,7 +80,6 @@ class ECOWCDB:
             try:
                 return PLP.delay(foi)
             except LPError as lperror:
-                print(lperror, scale_factor, timeout)
                 if lperror.error_type() in [LPErrorType.AccuracyError, LPErrorType.TimeoutError,
                                             LPErrorType.LPSolveFailure]:
                     if scale_factor < 10**-2:
