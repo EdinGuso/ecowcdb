@@ -9,10 +9,10 @@ def main():
     R = 10**7 # Kb/s
     L = 10**-5 # s
     S = 8 # Kb
-    N = 12 # servers
+    N = 5 # servers
     load = 0.5
     
-    net = Networks.Ring().full(R, L, S, N, load, NetworkType.Symmetric)
+    net = Networks.Ring().complete_semi(R, L, S, N, load, NetworkType.Symmetric)
     analysis = Analysis(
         net,
         forest_generation=ForestGeneration.All,
@@ -33,7 +33,7 @@ def main():
 
     analysis.exhaustive_search(flow_of_interest)
 
-    filename = f'exhaustive_full_ring_{N}'
+    filename = 'demo1'
     analysis.save_results(flow_of_interest, filename)
     analysis.save_raw_results(filename)
 

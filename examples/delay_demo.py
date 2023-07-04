@@ -9,10 +9,10 @@ def main():
     R = 10**7 # Kb/s
     L = 10**-5 # s
     S = 8 # Kb
-    N = 12 # servers
+    N = 5 # servers
     load = 0.5
     
-    net = Networks.Ring().full(R, L, S, N, load, NetworkType.Symmetric)
+    net = Networks.Ring().complete_semi(R, L, S, N, load, NetworkType.Symmetric)
     analysis = Analysis(
         net,
         forest_generation=ForestGeneration.Empty,
@@ -25,7 +25,7 @@ def main():
         )
     
     flow_of_interest = 0
-    forest = [(0, 1), (1, 2), (2, 3), (10, 11), (11, 0)]
+    forest = [(0, 1), (1, 2), (4, 0)]
 
     delay = analysis.delay(flow_of_interest, forest)
     print(f'{delay=}s')

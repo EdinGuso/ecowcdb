@@ -9,18 +9,18 @@ def main():
     R = 10**7 # Kb/s
     L = 10**-5 # s
     S = 8 # Kb
-    N = 24 # servers
+    N = 5 # servers
     load = 0.5
     
-    net = Networks.Ring().full(R, L, S, N, load, NetworkType.Symmetric)
+    net = Networks.Ring().complete_semi(R, L, S, N, load, NetworkType.Symmetric)
     analysis = Analysis(
         net,
         forest_generation=ForestGeneration.Partial,
-        num_forests=100,
+        num_forests=10,
         min_edges=0,
         timeout=1800,
         delay_unit=DisplayUnit.MicroSecond,
-        runtime_unit=DisplayUnit.Minute,
+        runtime_unit=DisplayUnit.Second,
         temp_folder='temp/',
         results_folder='results/',
         verbose=[
@@ -34,7 +34,7 @@ def main():
 
     analysis.exhaustive_search(flow_of_interest)
 
-    filename = f'partial_full_ring_{N}'
+    filename = 'demo2'
     analysis.save_results(flow_of_interest, filename)
     analysis.save_raw_results(filename)
 

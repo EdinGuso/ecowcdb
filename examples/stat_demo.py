@@ -4,7 +4,7 @@ from ecowcdb.stats import Stats
 
 
 def main():
-    filename = 'exhaustive_full_ring_12'
+    filename = 'demo1'
     stats = Stats('results/', filename)
     
     flow_of_interest = 0
