@@ -600,24 +600,24 @@ Skills I had to acquire for the project:
 - **Documentation:** To ensure the clarity and comprehensibility of the project, I developed skills in documentation. This involved creating detailed and organized documentation for various components, algorithms, and functionalities within the project. By honing these skills, I contributed to the overall usability and maintainability of the project, facilitating its future development and understanding.
 
 ## Major Events
-1. Overcoming Initial Technical Challenges (Weeks 2-5)
+1. **Overcoming Initial Technical Challenges** (Weeks 2-5)
    - During Weeks 2, 3, and 4, significant time was lost while attempting to run the project on my local PC without success.
    - However, in Week 5, a breakthrough occurred when we decided to switch to a virtual machine, enabling successful project setup and execution.
    - This transition proved crucial in overcoming the technical hurdles and laid the foundation for subsequent progress.
-2. Integrating PLP Algorithm and Initiating Exhaustive Search (Weeks 6-8)
+2. **Integrating PLP Algorithm and Initiating Exhaustive Search** (Weeks 6-8)
    - Weeks 6, 7, and 8 were dedicated to comprehending the intricacies of providing cuts to the PLP algorithm, integrating it into my project, and implementing the initial iteration of the exhaustive search.
    - This step was crucial in gaining insights into the problem domain, enabling experimentation, and paving the way for further progress in subsequent stages.
-3. Efficient Generation of Generic Network Topologies (Week 9)
+3. **Efficient Generation of Generic Network Topologies** (Week 9)
    - In Week 9, I successfully completed the implementation of the generic network topology generation.
    - This enhancement significantly increased the speed at which networks could be generated and tested, facilitating more comprehensive analysis and evaluation.
-4. Enabling Insights with Partial Search (Week 14)
+4. **Enabling Insights with Partial Search** (Week 14)
    - In Week 14, I successfully implemented the partial search feature, which allowed for gaining insights into larger-sized networks.
    - Previously, the intractability of the exhaustive search limited the analysis to only small networks, but the partial search expanded the scope of experimentation.
-5. Overcoming Challenges with lp_solve (Weeks 9-15)
-   - Weeks 9 through 15 presented challenges related to errors thrown by the lp_solve, causing setbacks in the project.
-   - Eventually, in Week 15, I understood all the intricacies of lp_solve, including errors and scaling effects.
+5. **Overcoming Challenges with `lp_solve`** (Weeks 9-15)
+   - Weeks 9 through 15 presented challenges related to errors thrown by the `lp_solve`, causing setbacks in the project.
+   - Eventually, in Week 15, I understood all the intricacies of `lp_solve`, including errors and scaling effects.
    - As a result, I developed a generic solution for effectively capturing and handling all types of errors, greatly improving the reliability of the library.
-6. Finalizing Heuristic Algorithm (Week 16)
+6. **Finalizing Heuristic Algorithm** (Week 16)
    - The most significant milestone of the project was reached in Week 16 with the implementation of the final version of the heuristic algorithm.
    - This contribution stands as the main highlight of the project, underscoring its importance and impact on solving the problem at hand.
 
