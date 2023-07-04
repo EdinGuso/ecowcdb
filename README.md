@@ -15,12 +15,12 @@ The readme consists of 2 main parts: Report and Project. Report section includes
 - [Report](#report)
     - [Introduction](#introduction)
     - [Solution](#solution)
-        - [Algorithm A: Min-Cut Forest](#algorithm-a-min-cut-forest)
+        - [Min-Cut Tree (MCT)](#min-cut-tree-mct)
             - [Results](#results)
         - [Runtime](#runtime)
-        - [Algorithm B: Min-Cut Forest with Restricted Depth](#algorithm-b-min-cut-forest-with-restricted-depth)
+        - [Min-Cut Forest with Restricted Depth (MCFr)](#min-cut-forest-with-restricted-depth-mcfr)
             - [Results](#results-1)
-        - [Algorithm C: Min-Cut Tree with Restricted Depth](#algorithm-c-min-cut-tree-with-restricted-depth)
+        - [Min-Cut Tree with Restricted Depth (MCTr)](#min-cut-tree-with-restricted-depth-mctr)
             - [Results](#results-2)
         - [Results and Discussion](#results-and-discussion)
             - [Network Specifications](#network-specifications)
@@ -61,10 +61,10 @@ The readme consists of 2 main parts: Report and Project. Report section includes
 ## Introduction
 Time-sensitive networks, as in the context of IEEE Time-Sensitive Networking (TSN) and IETF Deterministic Networking (DetNet), require bounds on the worst-case delays as they support safety-critical applications and offer deterministic services with guaranteed, bounded latency. Finding the exact worst-case delays is known to be an NP-hard problem; hence we are interested in bounds on the worst-case delays.
 
-In the quest to analyze and validate the performance of communication networks, Network Calculus has emerged as a powerful mathematical framework. It provides methods for computing upper bounds on worst-case performance parameters, such as end-to-end delay and backlog [[1]](#references). These upper bounds enable network designers to assess the predictability and performance guarantees of their designs and ensure compliance with real-time requirements.
+In the quest to analyze and validate the performance of communication networks, Network Calculus has emerged as a powerful mathematical framework. It provides methods for computing upper bounds on worst-case performance parameters, such as end-to-end delay and backlog [[1][2]](#references). These upper bounds enable network designers to assess the predictability and performance guarantees of their designs and ensure compliance with real-time requirements.
 
 However, computing accurate upper bounds on worst-case performance in time-sensitive networks remains a complex and computationally intensive task. Existing approaches rely on heuristics to overcome the computational intractability of the problem. 
-One notable method is the PLP algorithm, proposed in [[2]](#references). The PLP algorithm leverages linear programming techniques to determine worst-case delay bounds.
+One notable method is the PLP algorithm, proposed in [[3]](#references). The PLP algorithm leverages linear programming techniques to determine worst-case delay bounds.
 
 PLP works by breaking cyclic dependencies within the network and this is achieved by cutting the network. The selection of cuts significantly impacts the accuracy of worst-case delay bounds. Despite the algorithm's effectiveness, selecting suitable cuts for the PLP algorithm poses a significant challenge due to the exponential number of potential cuts for each network.
 
@@ -87,9 +87,9 @@ To evaluate the effectiveness of our heuristic algorithm, we compared its perfor
 
 In the following sections, we will delve into further details of our solution, describing the implementation of the heuristic algorithm and showcasing the numerical results obtained from our experimentation. Through this comprehensive analysis, we aim to establish the robustness and practical applicability of our solution in the realm of time-sensitive networking.
 
-### Algorithm A: Min-Cut Forest
+### Min-Cut Tree (MCT)
 ```
-forest <- []
+tree <- []
 node_depth <- []
 visited <- {}
 
@@ -99,7 +99,7 @@ node_depth.append(node, 0)
 for every edge=(node1,node2) in reverse(foi):
     visited.add(node1)
     node_depth.append(node1, node2.depth+1)
-    forest.append(edge)
+    tree.append(edge)
 
 while node_depth is not empty:
     node, depth <- node with the smallest depth
@@ -107,9 +107,9 @@ while node_depth is not empty:
         if neighbour is not visited:
             visited.add(neighbour)
             node_depth.append(neighbour, node.depth+1)
-            forest.append(edge)
+            tree.append(edge)
 
-return forest
+return tree
 ```
 
 #### Results
@@ -123,7 +123,7 @@ Burst (Flow) = 8Kb
 Maximum load (Server) = 50%
 ```
 
-| Network Topology | Number of Servers | Exhaustive Search | Algorithm A |
+| Network Topology | Number of Servers | Exhaustive Search | MCT |
 |:-:|:-:|:-:|:-:|
 | Semi Ring | 12 | 84.65µs | 84.65µs |
 | Full Ring | 12 | 149.13µs | 149.13µs |
@@ -142,17 +142,17 @@ To understand the reason behind this trade-off, we delve into the inner workings
 
 Additionally, the cutting of the network is not only valuable for networks with cyclic dependencies but also for networks which are originally trees, such as tandem networks. Although tandem networks do not exhibit cyclic dependencies, they can still benefit from the decreased runtime achieved by cutting the networks into smaller components. Therefore, in this section, we examine both Tandem networks alongside Ring and Mesh networks to assess the performance trade-offs.
 
-Upon realizing the significant increase in runtime for minimal cuts in large networks, we developed two new algorithms, namely Algorithm B: Min-Cut Forest with Restricted Depth and Algorithm C: Min-Cut Tree with Restricted Depth, to mitigate this issue and strike a balance between delay bounds and computational efficiency.
+Upon realizing the significant increase in runtime for minimal cuts in large networks, we developed two new algorithms, namely Min-Cut Forest with Restricted Depth (MCFr) and Min-Cut Tree with Restricted Depth (MCTr), to mitigate this issue and strike a balance between delay bounds and computational efficiency.
 
-Algorithm B introduces a maximum depth parameter and cuts the network into smaller trees after reaching this depth. While this approach usually reduces the quality of the delay bounds obtained, it greatly improves the performance of the algorithm. By limiting the depth of the network, Algorithm B ensures that the PLP algorithm solves smaller linear programs, leading to shorter runtimes. The trade-off, however, is that the resulting delay bounds may be slightly looser compared to the optimal cut obtained through exhaustive search.
+MCFr introduces a maximum depth parameter and cuts the network into smaller trees after reaching this depth. While this approach usually reduces the quality of the delay bounds obtained, it greatly improves the performance of the algorithm. By limiting the depth of the network, MCFr ensures that the PLP algorithm solves smaller linear programs, leading to shorter runtimes. The trade-off, however, is that the resulting delay bounds may be slightly looser compared to the optimal cut obtained through exhaustive search.
 
-Building on Algorithm B, we developed Algorithm C, which also incorporates a maximum depth parameter. However, once the maximum depth is reached, Algorithm C does not add any additional edges and outputs a single tree. This approach outperforms Algorithm B in scenarios where the depth of the flow of interest is much smaller than the depth of the network itself. By reducing the number of trees, Algorithm C achieves improved runtime without cutting the flow of interest.
+Building on MCFr, we developed MCTr, which also incorporates a maximum depth parameter. However, once the maximum depth is reached, MCTr does not add any additional edges and outputs a single tree. This approach outperforms MCFr in scenarios where the depth of the flow of interest is much smaller than the depth of the network itself. By reducing the number of trees, MCTr achieves improved runtime without cutting the flow of interest.
 
 Through these algorithmic enhancements, we aim to strike a balance between the quality of worst-case delay bounds and the computational efficiency of the PLP algorithm. By leveraging these modified algorithms, we can address the runtime challenges associated with large network topologies, enhancing the feasibility of worst case delay bound computation for time-sensitive networking environments.
 
-In the following sections, we will delve into further details of Algorithm B and Algorithm C, describing their implementation and providing a comparative analysis of their performance in terms of runtime and delay bounds. By examining the practical implications of these algorithms, we aim to provide valuable insights into the trade-offs involved in selecting cuts for worst-case delay analysis.
+In the following sections, we will delve into further details of MCFr and MCTr, describing their implementation and providing a comparative analysis of their performance in terms of runtime and delay bounds. By examining the practical implications of these algorithms, we aim to provide valuable insights into the trade-offs involved in selecting cuts for worst-case delay analysis.
 
-### Algorithm B: Min-Cut Forest with Restricted Depth
+### Min-Cut Forest with Restricted Depth (MCFr)
 ```
 forest <- []
 node_depth <- []
@@ -184,7 +184,7 @@ return forest
 ```
 
 #### Results
-In this section, we present the numerical results obtained from our experimentation to evaluate the performance of Algorithm B, a modified version of our heuristic algorithm for selecting cuts in the PLP algorithm. Algorithm B introduces a maximum depth parameter and cuts the network into smaller trees after reaching this depth, striking a balance between delay bounds and computational efficiency. While Algorithm B generally performs slightly worse than Algorithm A in terms of delay bounds, the significant runtime improvements it offers make it a valuable tool, particularly for larger networks. The runtime benefits achieved by Algorithm B will be examined in greater detail in the [Results and Discussion](#results-and-discussion) section. Our experiments were conducted on a range of generic network topologies, which are shown in the [Network Topologies](#network-topologies) section. These topologies encompass diverse network configurations, enabling us to assess the effectiveness and applicability of Algorithm B across different scenarios.
+In this section, we present the numerical results obtained from our experimentation to evaluate the performance of MCFr, a modified version of our heuristic algorithm for selecting cuts in the PLP algorithm. MCFr introduces a maximum depth parameter and cuts the network into smaller trees after reaching this depth, striking a balance between delay bounds and computational efficiency. While MCFr generally performs slightly worse than MCT in terms of delay bounds, the significant runtime improvements it offers make it a valuable tool, particularly for larger networks. The runtime benefits achieved by MCFr will be examined in greater detail in the [Results and Discussion](#results-and-discussion) section. Our experiments were conducted on a range of generic network topologies, which are shown in the [Network Topologies](#network-topologies) section. These topologies encompass diverse network configurations, enabling us to assess the effectiveness and applicability of MCFr across different scenarios.
 
 For each network topology, we used the following parameters:
 ```
@@ -194,7 +194,7 @@ Burst (Flow) = 8Kb
 Maximum load (Server) = 50%
 ```
 
-| Network Topology | Number of Servers | Max Depth | Exhaustive Search | Algorithm B |
+| Network Topology | Number of Servers | Max Depth | Exhaustive Search | MCFr |
 |:-:|:-:|:-:|:-:|:-:|
 | Semi Ring | 12 | 5 | 84.65µs | 87.44µs |
 | Full Ring | 12 | 5 | 149.13µs | 154.94µs |
@@ -205,7 +205,7 @@ Maximum load (Server) = 50%
 | Interleaved Tandem | 12 | 5 | 145.92µs | 145.92µs |
 | Source-sink Tandem | 12 | 5 | 147.05µs | 151.77µs |
 
-### Algorithm C: Min-Cut Tree with Restricted Depth
+### Min-Cut Tree with Restricted Depth (MCTr)
 ```
 tree <- []
 node_depth <- []
@@ -237,7 +237,7 @@ return tree
 ```
 
 #### Results
-In this section, we present the numerical results obtained from our experimentation to evaluate the performance of Algorithm C, another variant of our heuristic algorithm for selecting cuts in the PLP algorithm. Algorithm C incorporates a maximum depth parameter and, after reaching the maximum depth, outputs a single small tree without adding additional edges. While Algorithm C typically performs worse than Algorithm B and exhibits a less favorable delay-runtime trade-off, it remains a valuable algorithm for large networks where the depth of the flow of interest is considerably smaller than the depth of the network itself. The runtime benefits achieved by Algorithm C will be examined in greater detail in the [Results and Discussion](#results-and-discussion) section. Our experiments were conducted on a range of generic network topologies, which are shown in the [Network Topologies](#network-topologies) section. These topologies represent various network configurations, allowing us to assess the effectiveness and applicability of Algorithm C in different scenarios.
+In this section, we present the numerical results obtained from our experimentation to evaluate the performance of MCTr, another variant of our heuristic algorithm for selecting cuts in the PLP algorithm. MCTr incorporates a maximum depth parameter and, after reaching the maximum depth, outputs a single small tree without adding additional edges. While MCTr typically performs worse than MCFr and exhibits a less favorable delay-runtime trade-off, it remains a valuable algorithm for large networks where the depth of the flow of interest is considerably smaller than the depth of the network itself. The runtime benefits achieved by MCTr will be examined in greater detail in the [Results and Discussion](#results-and-discussion) section. Our experiments were conducted on a range of generic network topologies, which are shown in the [Network Topologies](#network-topologies) section. These topologies represent various network configurations, allowing us to assess the effectiveness and applicability of MCTr in different scenarios.
 
 For each network topology, we used the following parameters:
 ```
@@ -247,7 +247,7 @@ Burst (Flow) = 8Kb
 Maximum load (Server) = 50%
 ```
 
-| Network Topology | Number of Servers | Max Depth | Exhaustive Search | Algorithm C |
+| Network Topology | Number of Servers | Max Depth | Exhaustive Search | MCTr |
 |:-:|:-:|:-:|:-:|:-:|
 | Semi Ring | 12 | 5 | 84.65µs | 88.57µs |
 | Full Ring | 12 | 5 | 149.13µs | 164.56µs |
@@ -259,7 +259,7 @@ Maximum load (Server) = 50%
 | Source-sink Tandem | 12 | 5 | 147.05µs | 159.89µs |
 
 ### Results and Discussion
-Now, we present an extensive evaluation of the performance-runtime trade-off in computing delay bounds. We compare the effectiveness of three heuristic algorithms (Algorithm A, Algorithm B, and Algorithm C) with the best results obtained through exhaustive or partial search methods, depending on the size of the network.
+Now, we present an extensive evaluation of the performance-runtime trade-off in computing delay bounds. We compare the effectiveness of three heuristic algorithms (MCT, MCFr, and MCTr) with the best results obtained through exhaustive or partial search methods, depending on the size of the network.
 
 To ensure a comprehensive analysis, we separately evaluate each network topology type, taking into account the unique characteristics and complexities associated with different network structures. Furthermore, investigating different network sizes within each topology type allows us to assess how algorithmic efficiency scales with network complexity.
 
@@ -284,103 +284,103 @@ In this subsection, we focus on analyzing small to medium-sized networks. These 
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
     | Exhaustive Search | - | 14m 22s | 84.65µs |
-    | Algorithm A | - | 7.41s | 84.65µs |
-    | Algorithm B | 6 | 2.86s | 85.99µs |
-    | Algorithm C | 6 | 1.76s | 86.57µs |
-    | Algorithm B | 4 | 1.70s | 88.16µs |
-    | Algorithm C | 4 | 1.08s | 90.73µs |
+    | MCT | - | 7.41s | 84.65µs |
+    | MCFr | 6 | 2.86s | 85.99µs |
+    | MCTr | 6 | 1.76s | 86.57µs |
+    | MCFr | 4 | 1.70s | 88.16µs |
+    | MCTr | 4 | 1.08s | 90.73µs |
 
-    Algorithm A demonstrated its capability by successfully identifying the optimal cut, achieving the best possible result. This highlights the effectiveness of Algorithm A in this network topology. 
+    MCT demonstrated its capability by successfully identifying the optimal cut, achieving the best possible result. This highlights the effectiveness of MCT in this network topology. 
 
-    Moving on, Algorithm B with a maximum depth of 6 showed promising results, producing a solution that was close to optimal while significantly reducing the runtime compared to Algorithm A. This indicates that Algorithm B strikes a good balance between accuracy and efficiency in this network.
+    Moving on, MCFr with a maximum depth of 6 showed promising results, producing a solution that was close to optimal while significantly reducing the runtime compared to MCT. This indicates that MCFr strikes a good balance between accuracy and efficiency in this network.
 
-    Next, we compared Algorithm B with a maximum depth of 4 to Algorithm C with a maximum depth of 6. Surprisingly, Algorithm C outperformed Algorithm B in terms of delay bound even though their runtimes were comparable. This showcases its strength in networks where the depth of the flow of interest is less than the overall depth of the network. 
+    Next, we compared MCFr with a maximum depth of 4 to MCTr with a maximum depth of 6. Surprisingly, MCTr outperformed MCFr in terms of delay bound even though their runtimes were comparable. This showcases its strength in networks where the depth of the flow of interest is less than the overall depth of the network. 
 
-    Lastly, when Algorithm C was executed with a maximum depth of 4, it exhibited a remarkably quick runtime. However, this came at the cost of a significantly worse delay bound. This trade-off highlights the importance of striking a balance between runtime and the quality of the delay bound when choosing the appropriate algorithm for a specific network scenario.
+    Lastly, when MCTr was executed with a maximum depth of 4, it exhibited a remarkably quick runtime. However, this came at the cost of a significantly worse delay bound. This trade-off highlights the importance of striking a balance between runtime and the quality of the delay bound when choosing the appropriate algorithm for a specific network scenario.
 
 - **Full Ring Network (12 Servers, 12 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
     | Exhaustive Search | - | 7h 31m 41s | 149.13µs |
-    | Algorithm A | - | 51.98s | 149.13µs |
-    | Algorithm B | 6 | 16.02s | 154.85µs |
-    | Algorithm B | 4 | 10.96s | 159.15µs |
-    | Algorithm C | 6 | 11.25s | 161.91µs |
-    | Algorithm C | 4 | 5.87s | 167.16µs |
+    | MCT | - | 51.98s | 149.13µs |
+    | MCFr | 6 | 16.02s | 154.85µs |
+    | MCFr | 4 | 10.96s | 159.15µs |
+    | MCTr | 6 | 11.25s | 161.91µs |
+    | MCTr | 4 | 5.87s | 167.16µs |
 
-    Algorithm A once again demonstrated its capability by successfully identifying the optimal cut, achieving the best possible result. This highlights Algorithm A's effectiveness in this network topology.
+    MCT once again demonstrated its capability by successfully identifying the optimal cut, achieving the best possible result. This highlights MCT's effectiveness in this network topology.
 
-    Moving on, Algorithm B with a maximum depth of 6 achieved a result that was considered mediocre, falling short of the optimal cut. However, it showcased a significant reduction in runtime compared to Algorithm A. This indicates that Algorithm B offers a trade-off between accuracy and efficiency, making it a viable option in scenarios where runtime is a critical factor.
+    Moving on, MCFr with a maximum depth of 6 achieved a result that was considered mediocre, falling short of the optimal cut. However, it showcased a significant reduction in runtime compared to MCT. This indicates that MCFr offers a trade-off between accuracy and efficiency, making it a viable option in scenarios where runtime is a critical factor.
 
-    On the other hand, Algorithm C with a maximum depth of 6 did not perform as well as Algorithm B with a maximum depth of 4 in terms of both delay and runtime. This reveals the shortcomings of Algorithm C in the context of the networks where the flow of interest goes through a large portion of the network.
+    On the other hand, MCTr with a maximum depth of 6 did not perform as well as MCFr with a maximum depth of 4 in terms of both delay and runtime. This reveals the shortcomings of MCTr in the context of the networks where the flow of interest goes through a large portion of the network.
 
 - **Complete Semi Ring Network (11 Servers, 66 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
     | Exhaustive Search | - | 15h 11m 48s | 109.17µs |
-    | Algorithm A | - | 3m 27s | 109.17µs |
-    | Algorithm B | 6 | 1m 10s | 109.65µs |
-    | Algorithm C | 6 | 53.46s | 110.11µs |
-    | Algorithm B | 4 | 49.08s | 111.71µs |
-    | Algorithm C | 4 | 25.78s | 113.95µs |
+    | MCT | - | 3m 27s | 109.17µs |
+    | MCFr | 6 | 1m 10s | 109.65µs |
+    | MCTr | 6 | 53.46s | 110.11µs |
+    | MCFr | 4 | 49.08s | 111.71µs |
+    | MCTr | 4 | 25.78s | 113.95µs |
 
-    Once again, Algorithm A showcased its effectiveness by successfully identifying the optimal cut, achieving the best possible result.
+    Once again, MCT showcased its effectiveness by successfully identifying the optimal cut, achieving the best possible result.
 
-    Furthermore, Algorithm B with a maximum depth of 6 demonstrated a commendable performance, achieving a result that was relatively close to the optimal cut while significantly reducing the runtime compared to Algorithm A. This highlights Algorithm B as a promising choice when considering a balance between accuracy and efficiency in networks with complete semi ring topologies.
+    Furthermore, MCFr with a maximum depth of 6 demonstrated a commendable performance, achieving a result that was relatively close to the optimal cut while significantly reducing the runtime compared to MCT. This highlights MCFr as a promising choice when considering a balance between accuracy and efficiency in networks with complete semi ring topologies.
 
-    Algorithm C with a maximum depth of 6 outperformed Algorithm B with a maximum depth of 4, showcasing its strength in networks where the depth of the flow of interest is less than the depth of the network. Despite a slight increase in runtime, Algorithm C achieved a better delay bound, indicating its capability to effectively analyze cuts in such network configurations.
+    MCTr with a maximum depth of 6 outperformed MCFr with a maximum depth of 4, showcasing its strength in networks where the depth of the flow of interest is less than the depth of the network. Despite a slight increase in runtime, MCTr achieved a better delay bound, indicating its capability to effectively analyze cuts in such network configurations.
 
-    Lastly, Algorithm C with a maximum depth of 4 exhibited a quick runtime, but it fell short in terms of the delay bound achieved. While it may be suitable for scenarios where runtime is a critical factor, its compromise in terms of accuracy should be considered when making algorithm selections for similar network topologies.
+    Lastly, MCTr with a maximum depth of 4 exhibited a quick runtime, but it fell short in terms of the delay bound achieved. While it may be suitable for scenarios where runtime is a critical factor, its compromise in terms of accuracy should be considered when making algorithm selections for similar network topologies.
 
 - **Complete Full Ring Network (7 Servers, 49 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
     | Exhaustive Search | - | 1h 18m 7s | 139.18µs |
-    | Algorithm A | - | 2m 4s | 139.27µs |
-    | Algorithm B | 4 | 56.24s | 142.63µs |
-    | Algorithm C | 4 | 50.84s | 146.65µs |
-    | Algorithm B | 2 | 31.82s | 146.99µs |
-    | Algorithm C | 2 | 20.82s | 156.12µs |
+    | MCT | - | 2m 4s | 139.27µs |
+    | MCFr | 4 | 56.24s | 142.63µs |
+    | MCTr | 4 | 50.84s | 146.65µs |
+    | MCFr | 2 | 31.82s | 146.99µs |
+    | MCTr | 2 | 20.82s | 156.12µs |
 
-    Algorithm A once again demonstrated its effectiveness by achieving a result that was extremely close to the optimal cut, showcasing its accuracy.
+    MCT once again demonstrated its effectiveness by achieving a result that was extremely close to the optimal cut, showcasing its accuracy.
 
-    Algorithm B, with a maximum depth of 4, achieved a commendable result while reducing the runtime compared to Algorithm A. This highlights Algorithm B as a viable choice when considering a balance between accuracy and efficiency in networks with complete full ring topologies.
+    MCFr, with a maximum depth of 4, achieved a commendable result while reducing the runtime compared to MCT. This highlights MCFr as a viable choice when considering a balance between accuracy and efficiency in networks with complete full ring topologies.
 
-    However, Algorithm C with a maximum depth of 4 did not perform as well as Algorithm B with a maximum depth of 2. Despite achieving a comparable delay bound, Algorithm C had a worse runtime, indicating its limitations in this particular network configuration. These results suggest that Algorithm C may not be the optimal choice for networks with complete full ring topologies.
+    However, MCTr with a maximum depth of 4 did not perform as well as MCFr with a maximum depth of 2. Despite achieving a comparable delay bound, MCTr had a worse runtime, indicating its limitations in this particular network configuration. These results suggest that MCTr may not be the optimal choice for networks with complete full ring topologies.
 
 - **Mesh Network (9 Servers, 16 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
     | Exhaustive Search | - | 1h 41m 20s | 89.25µs |
-    | Algorithm B | 2 | 1.62s | 94.30µs |
-    | Algorithm B | 1 | 1.96s | 97.50µs |
-    | Algorithm A | - | 1.13s | 98.39µs |
-    | Algorithm C | 2 | 1.83s | 100.60µs |
-    | Algorithm C | 1 | 2.31s | 104.09µs |
+    | MCFr | 2 | 1.62s | 94.30µs |
+    | MCFr | 1 | 1.96s | 97.50µs |
+    | MCT | - | 1.13s | 98.39µs |
+    | MCTr | 2 | 1.83s | 100.60µs |
+    | MCTr | 1 | 2.31s | 104.09µs |
 
-    It is worth noting that Algorithm A did not perform as strongly in terms of obtaining a desirable delay bound. However, it is important to highlight that this behavior might not be indicative of Algorithm A's overall performance, as the large version of this network, which will be discussed in [Medium-Large Networks](#medium-large-networks), yields different outcomes.
+    It is worth noting that MCT did not perform as strongly in terms of obtaining a desirable delay bound. However, it is important to highlight that this behavior might not be indicative of MCT's overall performance, as the large version of this network, which will be discussed in [Medium-Large Networks](#medium-large-networks), yields different outcomes.
 
-    Algorithm B, with a maximum depth of 2, achieved the closest result to the optimal cut. While the performance was relatively better compared to the other algorithms, it is evident that there is still room for improvement in terms of the achieved delay bound.
+    MCFr, with a maximum depth of 2, achieved the closest result to the optimal cut. While the performance was relatively better compared to the other algorithms, it is evident that there is still room for improvement in terms of the achieved delay bound.
 
-    On the other hand, Algorithm C exhibited subpar performance across the board, indicating its limitations in accurately analyzing cuts within the mesh network.
+    On the other hand, MCTr exhibited subpar performance across the board, indicating its limitations in accurately analyzing cuts within the mesh network.
 
 - **Sink-Tree Tandem Network (12 Servers, 12 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
     | Exhaustive Search | - | 1h 46s | 133.01µs |
-    | Algorithm A | - | 0.20s | 133.01µs |
-    | Algorithm B | 6 | 0.59s | 135.52s |
-    | Algorithm C | 6 | 0.73s | 135.97µs |
-    | Algorithm B | 4 | 1.13s | 137.05µs |
-    | Algorithm C | 4 | 1.46s | 138.11µs |
+    | MCT | - | 0.20s | 133.01µs |
+    | MCFr | 6 | 0.59s | 135.52s |
+    | MCTr | 6 | 0.73s | 135.97µs |
+    | MCFr | 4 | 1.13s | 137.05µs |
+    | MCTr | 4 | 1.46s | 138.11µs |
 
-    Once again, Algorithm A demonstrated its effectiveness by finding the optimal cut, surprising with its superior runtime performance. This can be attributed to the smaller size of the network and the overhead of cutting networks, as discussed in [Runtime](#runtime). It is important to note that this runtime advantage is not observed in larger versions of this network, which will be discussed in [Medium-Large Networks](#medium-large-networks).
+    Once again, MCT demonstrated its effectiveness by finding the optimal cut, surprising with its superior runtime performance. This can be attributed to the smaller size of the network and the overhead of cutting networks, as discussed in [Runtime](#runtime). It is important to note that this runtime advantage is not observed in larger versions of this network, which will be discussed in [Medium-Large Networks](#medium-large-networks).
 
-    Algorithm B, with a maximum depth of 6, achieved a result that was reasonably close to the optimal cut. This indicates the reliability of Algorithm B in providing accurate solutions in the context of the sink-tree tandem network.
+    MCFr, with a maximum depth of 6, achieved a result that was reasonably close to the optimal cut. This indicates the reliability of MCFr in providing accurate solutions in the context of the sink-tree tandem network.
 
-    Interestingly, Algorithm C with a maximum depth of 6 outperformed Algorithm B with a maximum depth of 4. This can be attributed to the significance of the closest cut to the sink in sink-tree tandems. Algorithm C's ability to consider a greater depth of flow of interest played a key role in achieving this result.
+    Interestingly, MCTr with a maximum depth of 6 outperformed MCFr with a maximum depth of 4. This can be attributed to the significance of the closest cut to the sink in sink-tree tandems. MCTr's ability to consider a greater depth of flow of interest played a key role in achieving this result.
 
-    However, Algorithm C with a maximum depth of 4 obtained the worst delay bound among the three algorithms. Despite this, the delay bound was still within an acceptable range, demonstrating the algorithm's capability to provide reasonable results even with a shallower analysis.
+    However, MCTr with a maximum depth of 4 obtained the worst delay bound among the three algorithms. Despite this, the delay bound was still within an acceptable range, demonstrating the algorithm's capability to provide reasonable results even with a shallower analysis.
 
     These observations highlight the strengths and limitations of the heuristic algorithms in analyzing cuts in the Small Sink-Tree Tandem Network. They contribute to a better understanding of the algorithmic performance in this specific network topology, enabling informed decision-making when selecting the most suitable algorithm for similar sink-tree tandem configurations.
 
@@ -388,33 +388,33 @@ In this subsection, we focus on analyzing small to medium-sized networks. These 
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
     | Exhaustive Search | - | 35m 36s | 145.92µs |
-    | Algorithm B | 6 | 0.42s | 146.05µs |
-    | Algorithm B | 4 | 0.46s | 147.07µs |
-    | Algorithm A | - | 0.16s | 147.38µs |
-    | Algorithm C | 6 | 0.90s | 151.93µs |
-    | Algorithm C | 4 | 1.04s | 155.90µs |
+    | MCFr | 6 | 0.42s | 146.05µs |
+    | MCFr | 4 | 0.46s | 147.07µs |
+    | MCT | - | 0.16s | 147.38µs |
+    | MCTr | 6 | 0.90s | 151.93µs |
+    | MCTr | 4 | 1.04s | 155.90µs |
 
-    Notably, Algorithm A did not achieve the optimal delay bound, which raises concerns about its effectiveness. However, it is important to acknowledge that the performance of Algorithm A in this network might not be indicative of its overall capabilities, as in [Medium-Large Networks](#medium-large-networks) we examine the large version of this network, displaying different outcomes.
+    Notably, MCT did not achieve the optimal delay bound, which raises concerns about its effectiveness. However, it is important to acknowledge that the performance of MCT in this network might not be indicative of its overall capabilities, as in [Medium-Large Networks](#medium-large-networks) we examine the large version of this network, displaying different outcomes.
 
-    In contrast, Algorithm B, with a maximum depth of 6, exhibited impressive performance by closely approaching the optimal cut. This highlights the effectiveness of Algorithm B in accurately analyzing cuts within the interleaved tandem networks.
+    In contrast, MCFr, with a maximum depth of 6, exhibited impressive performance by closely approaching the optimal cut. This highlights the effectiveness of MCFr in accurately analyzing cuts within the interleaved tandem networks.
 
-    Conversely, Algorithm C demonstrated mediocre performance overall, displaying its limitations within this particular network configuration.
+    Conversely, MCTr demonstrated mediocre performance overall, displaying its limitations within this particular network configuration.
 
 - **Source-Sink Tandem Network (12 Servers, 23 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
     | Exhaustive Search | - | 2h 3m 59s | 147.05µs |
-    | Algorithm A | - | 0.46s | 147.05µs |
-    | Algorithm B | 6 | 0.97s | 151.64µs |
-    | Algorithm B | 4 | 1.26s | 155.42µs |
-    | Algorithm C | 6 | 1.95s | 157.73µs |
-    | Algorithm C | 4 | 2.51s | 162.01µs |
+    | MCT | - | 0.46s | 147.05µs |
+    | MCFr | 6 | 0.97s | 151.64µs |
+    | MCFr | 4 | 1.26s | 155.42µs |
+    | MCTr | 6 | 1.95s | 157.73µs |
+    | MCTr | 4 | 2.51s | 162.01µs |
 
-    Once again, Algorithm A exhibited its exceptional capability by finding the optimal cut. This impressive result was accompanied by the best runtime, which can be attributed to the smaller size of the network and the overhead caused by cutting networks, just like in the Sink-Tree Tandem Network previously discussed. However, it is important to note that this runtime advantage is not observed in larger versions of this network, as will be discussed in [Medium-Large Networks](#medium-large-networks).
+    Once again, MCT exhibited its exceptional capability by finding the optimal cut. This impressive result was accompanied by the best runtime, which can be attributed to the smaller size of the network and the overhead caused by cutting networks, just like in the Sink-Tree Tandem Network previously discussed. However, it is important to note that this runtime advantage is not observed in larger versions of this network, as will be discussed in [Medium-Large Networks](#medium-large-networks).
 
-    Algorithm B, with a maximum depth of 6, achieved a satisfactory result, although it was not as close to the optimal cut as Algorithm A. This indicates the reliable performance of Algorithm B in providing reasonably accurate solutions for the source-sink tandem network.
+    MCFr, with a maximum depth of 6, achieved a satisfactory result, although it was not as close to the optimal cut as MCT. This indicates the reliable performance of MCFr in providing reasonably accurate solutions for the source-sink tandem network.
 
-    However, Algorithm C with a maximum depth of 6 performed worse than Algorithm B with a maximum depth of 4 in terms of both delay and runtime. This highlights the limitations of Algorithm C in this specific network configuration.
+    However, MCTr with a maximum depth of 6 performed worse than MCFr with a maximum depth of 4 in terms of both delay and runtime. This highlights the limitations of MCTr in this specific network configuration.
 
 #### Medium-Large Networks
 In this subsection, we shift our focus to medium to large-sized networks where exhaustive search becomes intractable due to increased complexity. Consequently, we are unable to determine the best possible result for comparison. However, the substantial runtimes required in these networks allow us to observe the performance-runtime trade-off more prominently. Moreover, we can gain insights into how the behavior of the algorithms changes as the number of servers and flows increases.
@@ -422,112 +422,134 @@ In this subsection, we shift our focus to medium to large-sized networks where e
 - **Semi Ring Network (24 Servers, 24 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
-    | Algorithm A | - | 19m 43s | 158.98µs |
+    | MCT | - | 19m 43s | 158.98µs |
     | Partial Search (50) | - | 1h 48m 3s | 159.02µs |
-    | Algorithm B | 12 | 4m 8s | 161.91µs |
-    | Algorithm C | 12 | 1m 53s | 163.61µs |
-    | Algorithm B | 6 | 1m 25s | 167.46µs |
-    | Algorithm C | 6 | 26.67s | 178.73µs |
+    | MCFr | 12 | 4m 8s | 161.91µs |
+    | MCTr | 12 | 1m 53s | 163.61µs |
+    | MCFr | 6 | 1m 25s | 167.46µs |
+    | MCTr | 6 | 26.67s | 178.73µs |
 
-    Algorithm A demonstrated its prowess by achieving the best delay bound, surpassing even partial search which tried 50 cuts. Although we believe Algorithm A's result to be the optimal delay bound, the intractability of exhaustive search prevents us from confirming it. However, it is important to note that Algorithm A incurred a significantly longer runtime compared to other algorithms, indicating a trade-off between quality and computational efficiency.
+    MCT demonstrated its prowess by achieving the best delay bound, surpassing even partial search which tried 50 cuts. Although we believe MCT's result to be the optimal delay bound, the intractability of exhaustive search prevents us from confirming it. However, it is important to note that MCT incurred a significantly longer runtime compared to other algorithms, indicating a trade-off between quality and computational efficiency.
 
-    Algorithm B, with a maximum depth of 12, delivered a commendable performance with a good delay bound and notably lower runtime than Algorithm A. This highlights the effectiveness of Algorithm B in achieving satisfactory results within a reasonable computational timeframe.
+    MCFr, with a maximum depth of 12, delivered a commendable performance with a good delay bound and notably lower runtime than MCT. This highlights the effectiveness of MCFr in achieving satisfactory results within a reasonable computational timeframe.
 
-    Impressively, Algorithm C, also with a maximum depth of 12, outperformed Algorithm B with a maximum depth of 6. Despite similar runtimes, Algorithm C demonstrated a significantly improved delay bound. This emphasizes the strength of Algorithm C in networks where the depth of the flow of interest is less than the depth of the network, extending its effectiveness to large-scale networks as well.
+    Impressively, MCTr, also with a maximum depth of 12, outperformed MCFr with a maximum depth of 6. Despite similar runtimes, MCTr demonstrated a significantly improved delay bound. This emphasizes the strength of MCTr in networks where the depth of the flow of interest is less than the depth of the network, extending its effectiveness to large-scale networks as well.
 
-    Additionally, Algorithm C with a maximum depth of 4 demonstrated a remarkably fast runtime, albeit at the expense of a significantly poorer delay bound. This trade-off between runtime efficiency and delay performance underscores the importance of selecting the appropriate algorithm depth based on the specific requirements and constraints of the network.
+    Additionally, MCTr with a maximum depth of 4 demonstrated a remarkably fast runtime, albeit at the expense of a significantly poorer delay bound. This trade-off between runtime efficiency and delay performance underscores the importance of selecting the appropriate algorithm depth based on the specific requirements and constraints of the network.
 
 - **Full Ring Network (24 Servers, 24 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
+    | MCT | - | 2h 38m 19s | 301.11µs |
+    | MCFr | 12 | 40m 35s | 312.40µs |
     | Partial Search (50) | - | 26h 55m 14s | 318.27µs |
-    | Algorithm A | - | 🚧 | 🚧µs |
-    | Algorithm B | 🚧 | 🚧 | 🚧µs |
-    | Algorithm B | 🚧 | 🚧 | 🚧µs |
-    | Algorithm C | 🚧 | 🚧 | 🚧µs |
-    | Algorithm C | 🚧 | 🚧 | 🚧µs |
+    | MCFr | 6 | 14m 17s | 329.00µs |
+    | MCTr | 12 | 17m 33s | 332.64µs |
+    | MCTr | 6 | 3m 58s | 349.65µs |
 
-    🚧 *discuss results...*
+    MCT once again achieved the best delay bound, surpassing the performance of the partial search which tried 50 cuts. While we believe it is equal to the optimal delay bound, the intractability of exhaustive search prevents us from providing definitive proof. However, it is important to note that MCT exhibited a significantly longer runtime compared to other algorithms.
+
+    MCFr, with a maximum depth of 12, obtained an inferior result compared to MCT, but its remarkable runtime improvement is noteworthy. It even outperformed the partial search which tried 50 cuts.
+
+    On the other hand, MCTr performed poorly overall, highlighting its limitations in delivering satisfactory outcomes in this network topology.
 
 - **Complete Semi Ring Network (15 Servers, 120 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
+    | MCT | - | 1h 39m 13s | 169.12µs |
     | Partial Search (50)  | - | 21h 14m 41s | 169.51µs |
-    | Algorithm A | - | 🚧 | 🚧µs |
-    | Algorithm B | 🚧 | 🚧 | 🚧µs |
-    | Algorithm B | 🚧 | 🚧 | 🚧µs |
-    | Algorithm C | 🚧 | 🚧 | 🚧µs |
-    | Algorithm C | 🚧 | 🚧 | 🚧µs |
+    | MCFr | 8 | 28m 38s | 170.19µs |
+    | MCTr | 8 | 18m 29s | 171.47µs |
+    | MCFr | 4 | 13m 44s | 172.50µs |
+    | MCTr | 4 | 4m 53s | 187.20µs |
 
-    🚧 *discuss results...*
+    MCT once again excelled in achieving the best delay bound, surpassing the performance of the partial search algorithm. While we believe it to be very close to the optimal delay bound, the intractability of exhaustive search prevents us from providing definitive proof. However, it is important to note that MCT exhibited a considerably longer runtime compared to other algorithms.
 
-- **Complete Full Ring Network (🚧 Servers, 🚧 Flows)**
+    MCFr, with a maximum depth of 8, achieved a commendable result with a significant improvement in runtime compared to MCT. It strikes a good balance between delay and runtime in this network topology.
+
+    MCTr, with a maximum depth of 8, outperformed MCFr with a maximum depth of 4. Despite a slightly higher runtime, MCTr managed to achieve a better delay bound. This once again demonstrates the strength of MCTr in networks where the depth of flow of interest is less than the depth of the network, even in the context of large-scale networks.
+
+- **Complete Full Ring Network (9 Servers, 81 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
-    | Partial Search (🚧)  | - | 🚧 | 🚧µs |
-    | Algorithm A | - | 🚧 | 🚧µs |
-    | Algorithm B | 🚧 | 🚧 | 🚧µs |
-    | Algorithm B | 🚧 | 🚧 | 🚧µs |
-    | Algorithm C | 🚧 | 🚧 | 🚧µs |
-    | Algorithm C | 🚧 | 🚧 | 🚧µs |
+    | Partial Search (20)  | - | 4h 13m 32s | 205.63µs |
+    | MCT | - | 35m 31s | 205.86µs |
+    | MCFr | 5 | 13m 2s | 211.04µs |
+    | MCFr | 3 | 7m 51s | 216.78µs |
+    | MCTr | 5 | 10m 48s | 222.24µs |
+    | MCTr | 3 | 4m 9s | 235.16µs |
 
-    🚧 *discuss results...*
+    MCT achieved an impressive delay bound, coming very close to the performance of the partial search which tried 20 cuts. While we believe that this delay bound is nearly optimal, its intractability prevents us from providing conclusive proof. As expected, MCT had the longest runtime among the algorithms considered.
+
+    MCFr with a maximum depth of 5 obtained a slightly inferior solution compared to MCT, but it demonstrated a significantly faster runtime.
+
+    On the other hand, MCTr performed poorly in this network topology, highlighting its limitations in achieving desirable delay bounds.
 
 - **Mesh Network (17 Servers, 256 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
-    | Algorithm B | 2 | 6m 22s | 1740.09µs |
-    | Algorithm B | 4 | 10m 32s | 1750.63µs |
-    | Algorithm A | - | 52m 6s | 1798.46µs |
+    | MCFr | 2 | 6m 22s | 1740.09µs |
+    | MCFr | 4 | 10m 32s | 1750.63µs |
+    | MCT | - | 52m 6s | 1798.46µs |
     | Partial Search (50) | - | 5h 22m 56s | 1869.83µs |
-    | Algorithm C | 4 | 2m 55s | 2013.69µs |
-    | Algorithm C | 2 | 1m 34s | 2159.36µs |
+    | MCTr | 4 | 2m 55s | 2013.69µs |
+    | MCTr | 2 | 1m 34s | 2159.36µs |
 
-    Algorithm A, while not achieving the best delay, still surpassed the partial search algorithm which tried 50 cuts. It is important to note that Algorithm A's delay is relatively close to the best bound we obtained. However, its runtime remains considerably higher compared to other algorithms.
+    MCT, while not achieving the best delay, still surpassed the partial search algorithm which tried 50 cuts. It is important to note that MCT's delay is relatively close to the best bound we obtained. However, its runtime remains considerably higher compared to other algorithms.
 
-    Surprisingly, Algorithm B with a maximum depth of 2 achieved exceptional results. It obtained the strongest delay bound, surpassing both Algorithm A and Algorithm B with a depth of 4. Furthermore, it showcased a relatively quick runtime. These outcomes further reinforce Algorithm B's effectiveness in mesh networks, and the importance of introducing cuts to mesh networks.
+    Surprisingly, MCFr with a maximum depth of 2 achieved exceptional results. It obtained the strongest delay bound, surpassing both MCT and MCFr with a depth of 4. Furthermore, it showcased a relatively quick runtime. These outcomes further reinforce MCFr's effectiveness in mesh networks, and the importance of introducing cuts to mesh networks.
 
-    In contrast, Algorithm C exhibited poor performance, indicating its limitations in this particular network configuration. Although it boasted a quick runtime, its delay bound fell short compared to the other algorithms.
+    In contrast, MCTr exhibited poor performance, indicating its limitations in this particular network configuration. Although it boasted a quick runtime, its delay bound fell short compared to the other algorithms.
 
-- **Sink-Tree Tandem Network (128 Servers, 128 Flows)** *MAYBE MAX 96*
+- **Sink-Tree Tandem Network (128 Servers, 128 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
+    | MCT | - | 10h 33m 55s | 1423.20µs |
+    | MCTr | 64 | 1h 40m 19s | 1462.36µs |
+    | MCTr | 24 | 16m 4s | 1508.47µs |
     | Partial Search (100) | - | 22h 24m 46s | 1519.92µs |
-    | Algorithm A | - | 🚧 | 🚧µs |
-    | Algorithm B | 🚧 | 🚧 | 🚧µs |
-    | Algorithm B | 🚧 | 🚧 | 🚧µs |
-    | Algorithm C | 🚧 | 🚧 | 🚧µs |
-    | Algorithm C | 🚧 | 🚧 | 🚧µs |
+    | MCFr | 64 | N.A. | ∞ |
+    | MCFr | 24 | N.A. | ∞ |
 
-    🚧 *discuss results...*
+    MCT demonstrated remarkable performance by achieving the best delay bound among all the algorithms. While we believe it to be the optimal delay bound, the intractability of exhaustive search prevents us from providing definitive proof. However, it is important to note that MCT exhibited a significantly long runtime, exceeding 10 hours.
+
+    MCTr proved to be a strong contender by producing results that were relatively close to those of MCT, while requiring only a fraction of the runtime. This highlights the efficiency and effectiveness of MCTr in this network topology.
+
+    Unfortunately, MCFr encountered difficulties and failed to compute a result. This can be attributed to the shortcomings of the `lpsolve` software used. Despite implementing dynamic timeout updates and dynamic scaling methods to mitigate such issues, certain linear programs remain unsolvable with `lpsolve`. This particular scenario represents one of those instances.
 
 - **Interleaved Tandem Network (128 Servers, 128 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
-    | Algorithm A | - | 34m 13s | 2025.24µs |
-    | Algorithm B | 64 | 3m 54s | 2117.89µs |
+    | MCT | - | 34m 13s | 2025.24µs |
+    | MCFr | 64 | 3m 54s | 2117.89µs |
     | Partial Search (100) | - | 2h 29m 34s | 2195.35µs |
-    | Algorithm B | 24 | 16.64s | 2404.89µs |
-    | Algorithm C | 64 | 1m 24s | 2857.80µs |
-    | Algorithm C | 24 | 9.40s | 4497.40µs |
+    | MCFr | 24 | 16.64s | 2404.89µs |
+    | MCTr | 64 | 1m 24s | 2857.80µs |
+    | MCTr | 24 | 9.40s | 4497.40µs |
 
-    Algorithm A once again achieved the best delay bound, surpassing even partial search. While we believe it represents the optimal delay bound, the intractability of exhaustive search prevents us from proving it definitively. It is worth noting, however, that Algorithm A exhibited significantly longer runtime compared to the other algorithms.
+    MCT once again achieved the best delay bound, surpassing even partial search. While we believe it represents the optimal delay bound, the intractability of exhaustive search prevents us from proving it definitively. It is worth noting, however, that MCT exhibited significantly longer runtime compared to the other algorithms.
 
-    Algorithm B with a maximum depth of 64, despite yielding a lower delay bound than Algorithm A, delivered impressive results thanks to a substantial improvement in runtime. In fact, it even outperformed the partial search which tried 100 cuts.
+    MCFr with a maximum depth of 64, despite yielding a lower delay bound than MCT, delivered impressive results thanks to a substantial improvement in runtime. In fact, it even outperformed the partial search which tried 100 cuts.
 
-    On the other hand, Algorithm C exhibited poor performance overall, highlighting its limitations in this particular network configuration.
+    On the other hand, MCTr exhibited poor performance overall, highlighting its limitations in this particular network configuration.
 
 - **Source-Sink Tandem Network (32 Servers, 63 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
     | Partial Search (100) | - | 2h 35m 5s | 397.97µs |
-    | Algorithm A | - | 🚧 | 🚧µs |
-    | Algorithm B | 🚧 | 🚧 | 🚧µs |
-    | Algorithm B | 🚧 | 🚧 | 🚧µs |
-    | Algorithm C | 🚧 | 🚧 | 🚧µs |
-    | Algorithm C | 🚧 | 🚧 | 🚧µs |
+    | MCT | - | 1m 24s | 397.97µs |
+    | MCFr | 16 | 2m 28s | 409.79µs |
+    | MCTr | 16 | 22.93s | 434.99µs |
+    | MCFr | 6 | 54.87s | 435.19µs |
+    | MCTr | 6 | 25.65s | 457.89µs |
 
-    🚧 *discuss results...*
+    MCT once again achieved the best delay bound, equaling the performance of partial search. Although we believe it represents the optimal delay bound, proving it remains challenging due to the intractability of exhaustive search. Importantly, MCT exhibited a shorter runtime compared to its closest competitor, MCFr with a maximum depth of 16. This demonstrates that MCT is a robust choice in terms of both delay and runtime in this network topology.
+
+    MCFr, with a max depth of 16, approached the best solution but proved to be the slowest algorithm in this context.
+
+    MCTr, with a max depth of 16, slightly outperformed MCFr with a max depth of 6. Notably, MCTr boasted a better runtime, indicating its strength in achieving a favorable trade-off between delay and runtime.
+
+    Finally, MCTr with a maximum depth of 6 yielded a worse solution and unexpectedly required more time compared to MCTr with a maximum depth of 16. This outcome is considered a poor result in terms of both delay and runtime.
 
 ### Contributions
 Our project encompasses several significant contributions that aim to improve the reliability and efficiency of communication systems operating in time-critical environments. We have developed innovative tools and algorithms that streamline network analysis and topology generation, ultimately leading to the design of effective heuristic algorithms. These tools have been instrumental in achieving our project's primary objective. Below, we outline the key contributions that have shaped our solution.
@@ -556,7 +578,7 @@ For a more comprehensive understanding of the heuristic algorithm, we encourage 
 1. **Development of a Heuristic Algorithm**: Our project has resulted in the development of a heuristic algorithm for selecting cuts in the PLP algorithm, which enables accurate computation of worst-case delay bounds in time-sensitive networks. The algorithm addresses the computational challenges associated with the selection of cuts and enhances the efficiency and accuracy of performance analysis in such networks.
 2. **Insights into Cut Selection**: Through extensive research and experimentation, we have gained valuable insights into the relationship between the size, shape, and composition of cuts and their impact on worst-case delay bounds. These insights form the foundation of our heuristic algorithm and guide the selection of cuts that minimize disruptions in the network and preserve the flow of interest, leading to improved worst-case delay bounds.
 3. **Improved Worst-Case Delay Bounds**: Our heuristic algorithm has demonstrated its effectiveness in approximating optimal worst-case delay bounds in different network topologies. In comparison to the existing approaches that rely on simplistic cut selection, our algorithm achieves comparable worst-case delay bounds to the optimal cut obtained through exhaustive search. This improvement contributes to enhancing the reliability and efficiency of communication systems operating in time-critical environments.
-4. **Runtime Considerations**: We have addressed the runtime challenges associated with the PLP algorithm by introducing two modified algorithms: Algorithm B and Algorithm C. These algorithms strike a balance between delay bounds and computational efficiency, reducing the runtime of the PLP algorithm for larger networks while achieving satisfactory delay bounds. Algorithm B and Algorithm C provide practical solutions to the runtime limitations of the PLP algorithm, making it more feasible for real-world time-sensitive networking environments.
+4. **Runtime Considerations**: We have addressed the runtime challenges associated with the PLP algorithm by introducing two modified algorithms: MCFr and MCTr. These algorithms strike a balance between delay bounds and computational efficiency, reducing the runtime of the PLP algorithm for larger networks while achieving satisfactory delay bounds. MCFr and MCTr provide practical solutions to the runtime limitations of the PLP algorithm, making it more feasible for real-world time-sensitive networking environments.
 5. **Comprehensive Experimental Evaluation**: Our achievements are backed by a comprehensive experimental evaluation. We conducted numerical experiments on various network topologies, showcasing the performance of our heuristic algorithm and the modified algorithms. The experimental results demonstrate the effectiveness and practical applicability of our solution in different scenarios, further validating our contributions.
 
 By successfully developing and validating our heuristic algorithm, gaining insights into cut selection, improving worst-case delay bounds, addressing runtime considerations, and conducting a thorough experimental evaluation, our project has significantly contributed to the field of time-sensitive networking and performance analysis in networked systems.
@@ -600,14 +622,24 @@ Skills I had to acquire for the project:
    - This contribution stands as the main highlight of the project, underscoring its importance and impact on solving the problem at hand.
 
 ## Self-Assesment
-🚧 *Provide a self-assessment (where did you succeed most, where did you fail)*
+Throughout the course of this project, I have had the opportunity to challenge myself, apply my skills, and learn valuable lessons. This self-assessment highlights both my successes and areas where I encountered challenges and learned valuable lessons.
+
+I have achieved success in various aspects of the project, showcasing my problem-solving abilities, efficient solutions, and algorithm design skills. By leveraging my knowledge and expertise, I was able to deliver high-quality solutions that effectively addressed the project's objectives. I demonstrated strong problem-solving skills by approaching challenges from different angles, exploring alternative solutions when faced with obstacles. This flexibility and willingness to try different approaches have allowed me to overcome technical difficulties and find effective solutions.
+
+In addition to technical successes, I have also excelled in adhering to good coding practices, maintaining a well-structured repository, and providing thorough documentation. These efforts have resulted in a high-quality project that is easy to navigate, understand, and maintain. By following best practices, I have ensured that the project is accessible to others and can serve as a valuable resource in the field.
+
+While there were successes, there were also challenges that I encountered and valuable lessons I learned along the way. One area where I faced difficulties was getting stuck on setup steps for a significant amount of time. However, this experience taught me the importance of perseverance and the ability to explore different solutions when progress is hindered. I learned to approach problems from various angles, seek assistance when necessary, and explore alternative paths to overcome obstacles. This newfound ability to adapt and try different approaches has significantly enhanced my problem-solving skills.
+
+Furthermore, I gained valuable insights through the process of understanding the intricacies of the underlying theory. There were instances where I developed incorrect or unnecessary solutions due to gaps in my understanding. However, these challenges served as valuable learning opportunities, highlighting the significance of thorough research, seeking clarification when needed, and continually expanding my knowledge base. I have grown as a developer and researcher by recognizing the importance of a solid foundation in the theoretical aspects before diving into implementation.
+
+Overall, this project has provided me with opportunities to apply and refine my skills, allowing me to succeed in various aspects. Additionally, the challenges I encountered have served as valuable learning experiences, enabling me to further improve myself and develop a stronger foundation for future projects. I remain committed to continuous learning and growth, leveraging my successes and lessons learned to excel in future endeavors.
 
 
 
 # Project
 
 ## Introduction
-This project is an extension of the Panco project [[3]](#references), aiming to enhance its functionality and provide a comprehensive solution for network delay analysis. In this section, we will delve into the details of the project, including its structure, file explanations, installation instructions, and a comprehensive guide on how to use the project effectively.
+This project is an extension of the Panco project [[4]](#references), aiming to enhance its functionality and provide a comprehensive solution for network delay analysis. In this section, we will delve into the details of the project, including its structure, file explanations, installation instructions, and a comprehensive guide on how to use the project effectively.
 
 ## Project Structure
     .
@@ -810,11 +842,13 @@ The `Stats` class provides statistical analysis and visualization capabilities f
 The `ECOWCDB` class serves as the main interface for running the project. It orchestrates the workflow by combining the functionalities of the other classes and provides a convenient way to analyze network delay bounds using the implemented algorithms and models.
 
 # References
-[1] Boudec, J.-Y. L. and Thiran, P. (2001). Network calculus: A theory of deterministic queuing systems for the internet. Springer. 
+[1] Boudec, J.-Y. L. and Thiran, P. (2001). *Network calculus: A theory of deterministic queuing systems for the internet*. Springer. 
 
-[2] Bouillard, A. (2022). Trade-off between accuracy and Tractability of network calculus in FIFO networks. Performance Evaluation, 153, 102250. https://doi.org/10.1016/j.peva.2021.102250 
+[2] Bouillard, A., Boyer, M., & Corronc, E. L. (2018). *Deterministic Network Calculus: From Theory to Practical Implementation*. John Wiley & Sons.
 
-[3] https://github.com/Huawei-Paris-Research-Center/panco
+[3] Bouillard, A. (2022). Trade-off between accuracy and Tractability of network calculus in FIFO networks. *Performance Evaluation, 153*, 102250. https://doi.org/10.1016/j.peva.2021.102250 
+
+[4] https://github.com/Huawei-Paris-Research-Center/panco
 
 
 
