@@ -894,7 +894,7 @@ stats.forestsize_runtime_correlation(flow_of_interest)
 ```
 
 ### ECOWCDB
-The `ECOWCDB` class serves as the main interface accessing the heuristic algorithm. It orchestrates the workflow by combining the functionalities of the other classes and provides a convenient way to analyze network delay bounds using the implemented algorithms and models.
+The `ECOWCDB` class serves as the main interface accessing the heuristic algorithm.
 
 **Delay Computation:**
 ```py
