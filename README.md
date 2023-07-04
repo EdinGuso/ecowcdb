@@ -61,7 +61,7 @@ The readme consists of 2 main parts: Report and Project. Report section includes
 ## Introduction
 Time-sensitive networks, as in the context of IEEE Time-Sensitive Networking (TSN) and IETF Deterministic Networking (DetNet), require bounds on the worst-case delays as they support safety-critical applications and offer deterministic services with guaranteed, bounded latency. Finding the exact worst-case delays is known to be an NP-hard problem; hence we are interested in bounds on the worst-case delays.
 
-In the quest to analyze and validate the performance of communication networks, Network Calculus has emerged as a powerful mathematical framework. It provides methods for computing upper bounds on worst-case performance parameters, such as end-to-end delay and backlog [[1][2]](#references). These upper bounds enable network designers to assess the predictability and performance guarantees of their designs and ensure compliance with real-time requirements.
+In the quest to analyze and validate the performance of communication networks, Network Calculus has emerged as a powerful mathematical framework. It provides methods for computing upper bounds on worst-case performance parameters, such as end-to-end delay and backlog [[1,2]](#references). These upper bounds enable network designers to assess the predictability and performance guarantees of their designs and ensure compliance with real-time requirements.
 
 However, computing accurate upper bounds on worst-case performance in time-sensitive networks remains a complex and computationally intensive task. Existing approaches rely on heuristics to overcome the computational intractability of the problem. 
 One notable method is the PLP algorithm, proposed in [[3]](#references). The PLP algorithm leverages linear programming techniques to determine worst-case delay bounds.
@@ -664,7 +664,7 @@ This project is an extension of the Panco project [[4]](#references), aiming to 
     |       └- lp_solve
     |       └- lpSolvePath.py
     |       └- ...
-    └- example/
+    └- examples/
     |   └- ...
     └- images/
     |   └- ...
@@ -691,7 +691,7 @@ This project is an extension of the Panco project [[4]](#references), aiming to 
     - [`panco/`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/panco/): Panco library, not intended to be imported by the user.
         - [`lpsolve`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/panco/lpsolve): The `lp_solve` executable.
         - [`lpSolvePath.py`](https://github.com/EdinGuso/ecowcdb/blob/main/ecowcdb/panco/lpSolvePath.py): You need to change `LPSOLVEPATH` in this file if you change the location of `lpsolve`.
-- [`example/`](https://github.com/EdinGuso/ecowcdb/blob/main/example/): Example programs that display wide range of functionalities of the ecowcdb library.
+- [`examples/`](https://github.com/EdinGuso/ecowcdb/blob/main/examples/): Example programs that display wide range of functionalities of the ecowcdb library.
 - [`images/`](https://github.com/EdinGuso/ecowcdb/blob/main/images/): Images used in this `README`.
 - [`results/`](https://github.com/EdinGuso/ecowcdb/blob/main/results/): Used to save the results obtained during the analysis.
 - [`temp/`](https://github.com/EdinGuso/ecowcdb/blob/main/temp/): Temporary folders generated during runtime.
@@ -720,7 +720,7 @@ pip install .
 This section presents the plug-and-play installation. Please follow the steps in the given order to avoid any unexpected issues.
 
 1. Download the latest version of VirtualBox from this [webpage](https://www.virtualbox.org/wiki/Downloads). The link to the version we used: [VirtualBox 7.0.6](https://download.virtualbox.org/virtualbox/7.0.6/VirtualBox-7.0.6-155176-Win.exe) (Windows installer).
-2. Download `ecowcdbVM.ova` from this [link](🚧🚧🚧).
+2. Download `ecowcdbVM.ova` from this [link]().
 3. Create a new Virtual Machine using VirtualBox.
     - Start Virtual Box.
     - Press "Import".
@@ -731,9 +731,9 @@ This section presents the plug-and-play installation. Please follow the steps in
 5. The project is fully installed and ready to use within the Virtual Machine.
 
 ## How to Use
-This section provides an overview of how to use the project, including the available classes, functions and options. The project offers several features and functionalities that can be utilized for analyzing network delay bounds. 
+This section provides a brief overview of how to use the project, including some of the available classes, functions and options. The project offers several features and functionalities that can be utilized for analyzing network delay bounds. 
 
-Please refer to the extensive documentation within the code and the provided code [examples](https://github.com/EdinGuso/ecowcdb/blob/main/example/) for more detailed instructions on how to utilize each component of the project.
+Please refer to the extensive documentation within the code and the provided code [examples](https://github.com/EdinGuso/ecowcdb/blob/main/examples/) for more detailed instructions on how to utilize each component of the project.
 
 In the following sections, we will provide a general overview of each class.
 
@@ -827,19 +827,89 @@ net = Networks().custom(servers, flows)
 ![Source-Sink Tandem Network Topology](images/tandem_sourcesink.png)<br><br><br>
 
 ### Analysis
-🚧 *analysis class explanation...*
+The `Analysis` class is responsible for performing the delay analysis on networks. This class performs the computation of delay bounds and provides valuable insights into the worst-case delay behavior of the network. It is also an important tool for analyzing the delay-runtime trade-off.
 
-The `Analysis` class is responsible for performing the delay analysis on the network models. It takes various input arguments, including the network topology, forest generation mode, display unit, and verbosity options. This class performs the computation of delay bounds and provides valuable insights into the worst-case delay behavior of the network.
+**Single Cut Delay Computation:**
+```py
+analysis = Analysis(
+    net,
+    forest_generation=ForestGeneration.Empty,
+    timeout=60,
+    temp_folder='temp/',
+    verbose=[
+        VerboseKW.Network,
+        VerboseKW.LP_Errors
+        ]
+    )
+
+flow_of_interest = 0
+forest = [(0, 1), (1, 2), (2, 3), (10, 11), (11, 0)]
+
+delay = analysis.delay(flow_of_interest, forest)
+print(f'{delay=}s')
+```
+
+**Exhaustive Search:**
+```py
+analysis = Analysis(
+    net,
+    forest_generation=ForestGeneration.All,
+    min_edges=0,
+    timeout=600,
+    delay_unit=DisplayUnit.MicroSecond,
+    runtime_unit=DisplayUnit.Second,
+    temp_folder='temp/',
+    results_folder='results/',
+    verbose=[
+        VerboseKW.ES_ProgressBar,
+        VerboseKW.FG_ProgressBar,
+        VerboseKW.LP_Errors
+        ]
+    )
+
+flow_of_interest = 0
+
+analysis.exhaustive_search(flow_of_interest)
+
+filename = 'example'
+analysis.save_results(flow_of_interest, filename)
+analysis.save_raw_results(filename)
+
+analysis.display_results(0)
+```
 
 ### Stats
-🚧 *stats class explanation...*
+The `Stats` class provides statistical analysis capabilities for the computed delay bounds. It allows for generating correlation statistics of the delay results, enabling users to gain a deeper understanding of the network's behavior.
 
-The `Stats` class provides statistical analysis and visualization capabilities for the computed delay bounds. It allows for generating summary statistics and visual representations of the delay results, enabling users to gain a deeper understanding of the network's performance.
+**Correlation:**
+```py
+filename = 'example'
+stats = Stats('results/', filename)
+
+flow_of_interest = 0
+
+stats.delay_runtime_correlation(flow_of_interest)
+stats.forestsize_delay_correlation(flow_of_interest)
+stats.forestsize_runtime_correlation(flow_of_interest)
+```
 
 ### ECOWCDB
-🚧 *ecowcdb class explanation...*
+The `ECOWCDB` class serves as the main interface accessing the heuristic algorithm. It orchestrates the workflow by combining the functionalities of the other classes and provides a convenient way to analyze network delay bounds using the implemented algorithms and models.
 
-The `ECOWCDB` class serves as the main interface for running the project. It orchestrates the workflow by combining the functionalities of the other classes and provides a convenient way to analyze network delay bounds using the implemented algorithms and models.
+**Delay Computation:**
+```py
+ecowcdb = ECOWCDB(net, 'temp/')
+
+flow_of_interest = 0
+
+delay_a, _ = ecowcdb.min_cut_forest(flow_of_interest)
+delay_b, _ = ecowcdb.min_cut_forest_with_restricted_depth(flow_of_interest, max_depth=5)
+delay_c, _ = ecowcdb.min_cut_tree_with_restricted_depth(flow_of_interest, max_depth=5)
+
+print(f'{delay_a=}s')
+print(f'{delay_b=}s')
+print(f'{delay_c=}s')
+```
 
 # References
 [1] Boudec, J.-Y. L. and Thiran, P. (2001). *Network calculus: A theory of deterministic queuing systems for the internet*. Springer. 
