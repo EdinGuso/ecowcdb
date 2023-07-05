@@ -15,7 +15,7 @@ The readme consists of 2 main parts: Report and Project. Report section includes
 - [Report](#report)
     - [Introduction](#introduction)
     - [Solution](#solution)
-        - [Min-Cut Tree (MCT)](#min-cut-tree-mct)
+        - [Min-Cut Forest (MCF)](#min-cut-forest-mcf)
             - [Results](#results)
         - [Runtime](#runtime)
         - [Min-Cut Forest with Restricted Depth (MCFr)](#min-cut-forest-with-restricted-depth-mcfr)
@@ -87,9 +87,9 @@ To evaluate the effectiveness of our heuristic algorithm, we compared its perfor
 
 In the following sections, we will delve into further details of our solution, describing the implementation of the heuristic algorithm and showcasing the numerical results obtained from our experimentation. Through this comprehensive analysis, we aim to establish the robustness and practical applicability of our solution in the realm of time-sensitive networking.
 
-### Min-Cut Tree (MCT)
+### Min-Cut Forest (MCF)
 ```
-tree <- []
+forest <- []
 node_depth <- []
 visited <- {}
 
@@ -99,7 +99,7 @@ node_depth.append(node, 0)
 for every edge=(node1,node2) in reverse(foi):
     visited.add(node1)
     node_depth.append(node1, node2.depth+1)
-    tree.append(edge)
+    forest.append(edge)
 
 while node_depth is not empty:
     node, depth <- node with the smallest depth
@@ -107,9 +107,9 @@ while node_depth is not empty:
         if neighbour is not visited:
             visited.add(neighbour)
             node_depth.append(neighbour, node.depth+1)
-            tree.append(edge)
+            forest.append(edge)
 
-return tree
+return forest
 ```
 
 #### Results
@@ -123,7 +123,7 @@ Burst (Flow) = 8Kb
 Maximum load (Server) = 50%
 ```
 
-| Network Topology | Number of Servers | Exhaustive Search | MCT |
+| Network Topology | Number of Servers | Exhaustive Search | MCF |
 |:-:|:-:|:-:|:-:|
 | Semi Ring | 12 | 84.65µs | 84.65µs |
 | Full Ring | 12 | 149.13µs | 149.13µs |
@@ -184,7 +184,7 @@ return forest
 ```
 
 #### Results
-In this section, we present the numerical results obtained from our experimentation to evaluate the performance of MCFr, a modified version of our heuristic algorithm for selecting cuts in the PLP algorithm. MCFr introduces a maximum depth parameter and cuts the network into smaller trees after reaching this depth, striking a balance between delay bounds and computational efficiency. While MCFr generally performs slightly worse than MCT in terms of delay bounds, the significant runtime improvements it offers make it a valuable tool, particularly for larger networks. The runtime benefits achieved by MCFr will be examined in greater detail in the [Results and Discussion](#results-and-discussion) section. Our experiments were conducted on a range of generic network topologies, which are shown in the [Network Topologies](#network-topologies) section. These topologies encompass diverse network configurations, enabling us to assess the effectiveness and applicability of MCFr across different scenarios.
+In this section, we present the numerical results obtained from our experimentation to evaluate the performance of MCFr, a modified version of our heuristic algorithm for selecting cuts in the PLP algorithm. MCFr introduces a maximum depth parameter and cuts the network into smaller trees after reaching this depth, striking a balance between delay bounds and computational efficiency. While MCFr generally performs slightly worse than MCF in terms of delay bounds, the significant runtime improvements it offers make it a valuable tool, particularly for larger networks. The runtime benefits achieved by MCFr will be examined in greater detail in the [Results and Discussion](#results-and-discussion) section. Our experiments were conducted on a range of generic network topologies, which are shown in the [Network Topologies](#network-topologies) section. These topologies encompass diverse network configurations, enabling us to assess the effectiveness and applicability of MCFr across different scenarios.
 
 For each network topology, we used the following parameters:
 ```
@@ -259,7 +259,7 @@ Maximum load (Server) = 50%
 | Source-sink Tandem | 12 | 5 | 147.05µs | 159.89µs |
 
 ### Results and Discussion
-Now, we present an extensive evaluation of the performance-runtime trade-off in computing delay bounds. We compare the effectiveness of three heuristic algorithms (MCT, MCFr, and MCTr) with the best results obtained through exhaustive or partial search methods, depending on the size of the network.
+Now, we present an extensive evaluation of the performance-runtime trade-off in computing delay bounds. We compare the effectiveness of three heuristic algorithms (MCF, MCFr, and MCTr) with the best results obtained through exhaustive or partial search methods, depending on the size of the network.
 
 To ensure a comprehensive analysis, we separately evaluate each network topology type, taking into account the unique characteristics and complexities associated with different network structures. Furthermore, investigating different network sizes within each topology type allows us to assess how algorithmic efficiency scales with network complexity.
 
@@ -284,15 +284,15 @@ In this subsection, we focus on analyzing small to medium-sized networks. These 
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
     | Exhaustive Search | - | 14m 22s | 84.65µs |
-    | MCT | - | 7.41s | 84.65µs |
+    | MCF | - | 7.41s | 84.65µs |
     | MCFr | 6 | 2.86s | 85.99µs |
     | MCTr | 6 | 1.76s | 86.57µs |
     | MCFr | 4 | 1.70s | 88.16µs |
     | MCTr | 4 | 1.08s | 90.73µs |
 
-    MCT demonstrated its capability by successfully identifying the optimal cut, achieving the best possible result. This highlights the effectiveness of MCT in this network topology. 
+    MCF demonstrated its capability by successfully identifying the optimal cut, achieving the best possible result. This highlights the effectiveness of MCF in this network topology. 
 
-    Moving on, MCFr with a maximum depth of 6 showed promising results, producing a solution that was close to optimal while significantly reducing the runtime compared to MCT. This indicates that MCFr strikes a good balance between accuracy and efficiency in this network.
+    Moving on, MCFr with a maximum depth of 6 showed promising results, producing a solution that was close to optimal while significantly reducing the runtime compared to MCF. This indicates that MCFr strikes a good balance between accuracy and efficiency in this network.
 
     Next, we compared MCFr with a maximum depth of 4 to MCTr with a maximum depth of 6. Surprisingly, MCTr outperformed MCFr in terms of delay bound even though their runtimes were comparable. This showcases its strength in networks where the depth of the flow of interest is less than the overall depth of the network. 
 
@@ -302,15 +302,15 @@ In this subsection, we focus on analyzing small to medium-sized networks. These 
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
     | Exhaustive Search | - | 7h 31m 41s | 149.13µs |
-    | MCT | - | 51.98s | 149.13µs |
+    | MCF | - | 51.98s | 149.13µs |
     | MCFr | 6 | 16.02s | 154.85µs |
     | MCFr | 4 | 10.96s | 159.15µs |
     | MCTr | 6 | 11.25s | 161.91µs |
     | MCTr | 4 | 5.87s | 167.16µs |
 
-    MCT once again demonstrated its capability by successfully identifying the optimal cut, achieving the best possible result. This highlights MCT's effectiveness in this network topology.
+    MCF once again demonstrated its capability by successfully identifying the optimal cut, achieving the best possible result. This highlights MCF's effectiveness in this network topology.
 
-    Moving on, MCFr with a maximum depth of 6 achieved a result that was considered mediocre, falling short of the optimal cut. However, it showcased a significant reduction in runtime compared to MCT. This indicates that MCFr offers a trade-off between accuracy and efficiency, making it a viable option in scenarios where runtime is a critical factor.
+    Moving on, MCFr with a maximum depth of 6 achieved a result that was considered mediocre, falling short of the optimal cut. However, it showcased a significant reduction in runtime compared to MCF. This indicates that MCFr offers a trade-off between accuracy and efficiency, making it a viable option in scenarios where runtime is a critical factor.
 
     On the other hand, MCTr with a maximum depth of 6 did not perform as well as MCFr with a maximum depth of 4 in terms of both delay and runtime. This reveals the shortcomings of MCTr in the context of the networks where the flow of interest goes through a large portion of the network.
 
@@ -318,15 +318,15 @@ In this subsection, we focus on analyzing small to medium-sized networks. These 
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
     | Exhaustive Search | - | 15h 11m 48s | 109.17µs |
-    | MCT | - | 3m 27s | 109.17µs |
+    | MCF | - | 3m 27s | 109.17µs |
     | MCFr | 6 | 1m 10s | 109.65µs |
     | MCTr | 6 | 53.46s | 110.11µs |
     | MCFr | 4 | 49.08s | 111.71µs |
     | MCTr | 4 | 25.78s | 113.95µs |
 
-    Once again, MCT showcased its effectiveness by successfully identifying the optimal cut, achieving the best possible result.
+    Once again, MCF showcased its effectiveness by successfully identifying the optimal cut, achieving the best possible result.
 
-    Furthermore, MCFr with a maximum depth of 6 demonstrated a commendable performance, achieving a result that was relatively close to the optimal cut while significantly reducing the runtime compared to MCT. This highlights MCFr as a promising choice when considering a balance between accuracy and efficiency in networks with complete semi ring topologies.
+    Furthermore, MCFr with a maximum depth of 6 demonstrated a commendable performance, achieving a result that was relatively close to the optimal cut while significantly reducing the runtime compared to MCF. This highlights MCFr as a promising choice when considering a balance between accuracy and efficiency in networks with complete semi ring topologies.
 
     MCTr with a maximum depth of 6 outperformed MCFr with a maximum depth of 4, showcasing its strength in networks where the depth of the flow of interest is less than the depth of the network. Despite a slight increase in runtime, MCTr achieved a better delay bound, indicating its capability to effectively analyze cuts in such network configurations.
 
@@ -336,15 +336,15 @@ In this subsection, we focus on analyzing small to medium-sized networks. These 
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
     | Exhaustive Search | - | 1h 18m 7s | 139.18µs |
-    | MCT | - | 2m 4s | 139.27µs |
+    | MCF | - | 2m 4s | 139.27µs |
     | MCFr | 4 | 56.24s | 142.63µs |
     | MCTr | 4 | 50.84s | 146.65µs |
     | MCFr | 2 | 31.82s | 146.99µs |
     | MCTr | 2 | 20.82s | 156.12µs |
 
-    MCT once again demonstrated its effectiveness by achieving a result that was extremely close to the optimal cut, showcasing its accuracy.
+    MCF once again demonstrated its effectiveness by achieving a result that was extremely close to the optimal cut, showcasing its accuracy.
 
-    MCFr, with a maximum depth of 4, achieved a commendable result while reducing the runtime compared to MCT. This highlights MCFr as a viable choice when considering a balance between accuracy and efficiency in networks with complete full ring topologies.
+    MCFr, with a maximum depth of 4, achieved a commendable result while reducing the runtime compared to MCF. This highlights MCFr as a viable choice when considering a balance between accuracy and efficiency in networks with complete full ring topologies.
 
     However, MCTr with a maximum depth of 4 did not perform as well as MCFr with a maximum depth of 2. Despite achieving a comparable delay bound, MCTr had a worse runtime, indicating its limitations in this particular network configuration. These results suggest that MCTr may not be the optimal choice for networks with complete full ring topologies.
 
@@ -354,11 +354,11 @@ In this subsection, we focus on analyzing small to medium-sized networks. These 
     | Exhaustive Search | - | 1h 41m 20s | 89.25µs |
     | MCFr | 2 | 1.62s | 94.30µs |
     | MCFr | 1 | 1.96s | 97.50µs |
-    | MCT | - | 1.13s | 98.39µs |
+    | MCF | - | 1.13s | 98.39µs |
     | MCTr | 2 | 1.83s | 100.60µs |
     | MCTr | 1 | 2.31s | 104.09µs |
 
-    It is worth noting that MCT did not perform as strongly in terms of obtaining a desirable delay bound. However, it is important to highlight that this behavior might not be indicative of MCT's overall performance, as the large version of this network, which will be discussed in [Medium-Large Networks](#medium-large-networks), yields different outcomes.
+    It is worth noting that MCF did not perform as strongly in terms of obtaining a desirable delay bound. However, it is important to highlight that this behavior might not be indicative of MCF's overall performance, as the large version of this network, which will be discussed in [Medium-Large Networks](#medium-large-networks), yields different outcomes.
 
     MCFr, with a maximum depth of 2, achieved the closest result to the optimal cut. While the performance was relatively better compared to the other algorithms, it is evident that there is still room for improvement in terms of the achieved delay bound.
 
@@ -368,13 +368,13 @@ In this subsection, we focus on analyzing small to medium-sized networks. These 
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
     | Exhaustive Search | - | 1h 46s | 133.01µs |
-    | MCT | - | 0.20s | 133.01µs |
+    | MCF | - | 0.20s | 133.01µs |
     | MCFr | 6 | 0.59s | 135.52s |
     | MCTr | 6 | 0.73s | 135.97µs |
     | MCFr | 4 | 1.13s | 137.05µs |
     | MCTr | 4 | 1.46s | 138.11µs |
 
-    Once again, MCT demonstrated its effectiveness by finding the optimal cut, surprising with its superior runtime performance. This can be attributed to the smaller size of the network and the overhead of cutting networks, as discussed in [Runtime](#runtime). It is important to note that this runtime advantage is not observed in larger versions of this network, which will be discussed in [Medium-Large Networks](#medium-large-networks).
+    Once again, MCF demonstrated its effectiveness by finding the optimal cut, surprising with its superior runtime performance. This can be attributed to the smaller size of the network and the overhead of cutting networks, as discussed in [Runtime](#runtime). It is important to note that this runtime advantage is not observed in larger versions of this network, which will be discussed in [Medium-Large Networks](#medium-large-networks).
 
     MCFr, with a maximum depth of 6, achieved a result that was reasonably close to the optimal cut. This indicates the reliability of MCFr in providing accurate solutions in the context of the sink-tree tandem network.
 
@@ -390,11 +390,11 @@ In this subsection, we focus on analyzing small to medium-sized networks. These 
     | Exhaustive Search | - | 35m 36s | 145.92µs |
     | MCFr | 6 | 0.42s | 146.05µs |
     | MCFr | 4 | 0.46s | 147.07µs |
-    | MCT | - | 0.16s | 147.38µs |
+    | MCF | - | 0.16s | 147.38µs |
     | MCTr | 6 | 0.90s | 151.93µs |
     | MCTr | 4 | 1.04s | 155.90µs |
 
-    Notably, MCT did not achieve the optimal delay bound, which raises concerns about its effectiveness. However, it is important to acknowledge that the performance of MCT in this network might not be indicative of its overall capabilities, as in [Medium-Large Networks](#medium-large-networks) we examine the large version of this network, displaying different outcomes.
+    Notably, MCF did not achieve the optimal delay bound, which raises concerns about its effectiveness. However, it is important to acknowledge that the performance of MCF in this network might not be indicative of its overall capabilities, as in [Medium-Large Networks](#medium-large-networks) we examine the large version of this network, displaying different outcomes.
 
     In contrast, MCFr, with a maximum depth of 6, exhibited impressive performance by closely approaching the optimal cut. This highlights the effectiveness of MCFr in accurately analyzing cuts within the interleaved tandem networks.
 
@@ -404,15 +404,15 @@ In this subsection, we focus on analyzing small to medium-sized networks. These 
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
     | Exhaustive Search | - | 2h 3m 59s | 147.05µs |
-    | MCT | - | 0.46s | 147.05µs |
+    | MCF | - | 0.46s | 147.05µs |
     | MCFr | 6 | 0.97s | 151.64µs |
     | MCFr | 4 | 1.26s | 155.42µs |
     | MCTr | 6 | 1.95s | 157.73µs |
     | MCTr | 4 | 2.51s | 162.01µs |
 
-    Once again, MCT exhibited its exceptional capability by finding the optimal cut. This impressive result was accompanied by the best runtime, which can be attributed to the smaller size of the network and the overhead caused by cutting networks, just like in the Sink-Tree Tandem Network previously discussed. However, it is important to note that this runtime advantage is not observed in larger versions of this network, as will be discussed in [Medium-Large Networks](#medium-large-networks).
+    Once again, MCF exhibited its exceptional capability by finding the optimal cut. This impressive result was accompanied by the best runtime, which can be attributed to the smaller size of the network and the overhead caused by cutting networks, just like in the Sink-Tree Tandem Network previously discussed. However, it is important to note that this runtime advantage is not observed in larger versions of this network, as will be discussed in [Medium-Large Networks](#medium-large-networks).
 
-    MCFr, with a maximum depth of 6, achieved a satisfactory result, although it was not as close to the optimal cut as MCT. This indicates the reliable performance of MCFr in providing reasonably accurate solutions for the source-sink tandem network.
+    MCFr, with a maximum depth of 6, achieved a satisfactory result, although it was not as close to the optimal cut as MCF. This indicates the reliable performance of MCFr in providing reasonably accurate solutions for the source-sink tandem network.
 
     However, MCTr with a maximum depth of 6 performed worse than MCFr with a maximum depth of 4 in terms of both delay and runtime. This highlights the limitations of MCTr in this specific network configuration.
 
@@ -422,16 +422,16 @@ In this subsection, we shift our focus to medium to large-sized networks where e
 - **Semi Ring Network (24 Servers, 24 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
-    | MCT | - | 19m 43s | 158.98µs |
+    | MCF | - | 19m 43s | 158.98µs |
     | Partial Search (50) | - | 1h 48m 3s | 159.02µs |
     | MCFr | 12 | 4m 8s | 161.91µs |
     | MCTr | 12 | 1m 53s | 163.61µs |
     | MCFr | 6 | 1m 25s | 167.46µs |
     | MCTr | 6 | 26.67s | 178.73µs |
 
-    MCT demonstrated its prowess by achieving the best delay bound, surpassing even partial search which tried 50 cuts. Although we believe MCT's result to be the optimal delay bound, the intractability of exhaustive search prevents us from confirming it. However, it is important to note that MCT incurred a significantly longer runtime compared to other algorithms, indicating a trade-off between quality and computational efficiency.
+    MCF demonstrated its prowess by achieving the best delay bound, surpassing even partial search which tried 50 cuts. Although we believe MCF's result to be the optimal delay bound, the intractability of exhaustive search prevents us from confirming it. However, it is important to note that MCF incurred a significantly longer runtime compared to other algorithms, indicating a trade-off between quality and computational efficiency.
 
-    MCFr, with a maximum depth of 12, delivered a commendable performance with a good delay bound and notably lower runtime than MCT. This highlights the effectiveness of MCFr in achieving satisfactory results within a reasonable computational timeframe.
+    MCFr, with a maximum depth of 12, delivered a commendable performance with a good delay bound and notably lower runtime than MCF. This highlights the effectiveness of MCFr in achieving satisfactory results within a reasonable computational timeframe.
 
     Impressively, MCTr, also with a maximum depth of 12, outperformed MCFr with a maximum depth of 6. Despite similar runtimes, MCTr demonstrated a significantly improved delay bound. This emphasizes the strength of MCTr in networks where the depth of the flow of interest is less than the depth of the network, extending its effectiveness to large-scale networks as well.
 
@@ -440,32 +440,32 @@ In this subsection, we shift our focus to medium to large-sized networks where e
 - **Full Ring Network (24 Servers, 24 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
-    | MCT | - | 2h 38m 19s | 301.11µs |
+    | MCF | - | 2h 38m 19s | 301.11µs |
     | MCFr | 12 | 40m 35s | 312.40µs |
     | Partial Search (50) | - | 26h 55m 14s | 318.27µs |
     | MCFr | 6 | 14m 17s | 329.00µs |
     | MCTr | 12 | 17m 33s | 332.64µs |
     | MCTr | 6 | 3m 58s | 349.65µs |
 
-    MCT once again achieved the best delay bound, surpassing the performance of the partial search which tried 50 cuts. While we believe it is equal to the optimal delay bound, the intractability of exhaustive search prevents us from providing definitive proof. However, it is important to note that MCT exhibited a significantly longer runtime compared to other algorithms.
+    MCF once again achieved the best delay bound, surpassing the performance of the partial search which tried 50 cuts. While we believe it is equal to the optimal delay bound, the intractability of exhaustive search prevents us from providing definitive proof. However, it is important to note that MCF exhibited a significantly longer runtime compared to other algorithms.
 
-    MCFr, with a maximum depth of 12, obtained an inferior result compared to MCT, but its remarkable runtime improvement is noteworthy. It even outperformed the partial search which tried 50 cuts.
+    MCFr, with a maximum depth of 12, obtained an inferior result compared to MCF, but its remarkable runtime improvement is noteworthy. It even outperformed the partial search which tried 50 cuts.
 
     On the other hand, MCTr performed poorly overall, highlighting its limitations in delivering satisfactory outcomes in this network topology.
 
 - **Complete Semi Ring Network (15 Servers, 120 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
-    | MCT | - | 1h 39m 13s | 169.12µs |
+    | MCF | - | 1h 39m 13s | 169.12µs |
     | Partial Search (50)  | - | 21h 14m 41s | 169.51µs |
     | MCFr | 8 | 28m 38s | 170.19µs |
     | MCTr | 8 | 18m 29s | 171.47µs |
     | MCFr | 4 | 13m 44s | 172.50µs |
     | MCTr | 4 | 4m 53s | 187.20µs |
 
-    MCT once again excelled in achieving the best delay bound, surpassing the performance of the partial search algorithm. While we believe it to be very close to the optimal delay bound, the intractability of exhaustive search prevents us from providing definitive proof. However, it is important to note that MCT exhibited a considerably longer runtime compared to other algorithms.
+    MCF once again excelled in achieving the best delay bound, surpassing the performance of the partial search algorithm. While we believe it to be very close to the optimal delay bound, the intractability of exhaustive search prevents us from providing definitive proof. However, it is important to note that MCF exhibited a considerably longer runtime compared to other algorithms.
 
-    MCFr, with a maximum depth of 8, achieved a commendable result with a significant improvement in runtime compared to MCT. It strikes a good balance between delay and runtime in this network topology.
+    MCFr, with a maximum depth of 8, achieved a commendable result with a significant improvement in runtime compared to MCF. It strikes a good balance between delay and runtime in this network topology.
 
     MCTr, with a maximum depth of 8, outperformed MCFr with a maximum depth of 4. Despite a slightly higher runtime, MCTr managed to achieve a better delay bound. This once again demonstrates the strength of MCTr in networks where the depth of flow of interest is less than the depth of the network, even in the context of large-scale networks.
 
@@ -473,15 +473,15 @@ In this subsection, we shift our focus to medium to large-sized networks where e
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
     | Partial Search (20)  | - | 4h 13m 32s | 205.63µs |
-    | MCT | - | 35m 31s | 205.86µs |
+    | MCF | - | 35m 31s | 205.86µs |
     | MCFr | 5 | 13m 2s | 211.04µs |
     | MCFr | 3 | 7m 51s | 216.78µs |
     | MCTr | 5 | 10m 48s | 222.24µs |
     | MCTr | 3 | 4m 9s | 235.16µs |
 
-    MCT achieved an impressive delay bound, coming very close to the performance of the partial search which tried 20 cuts. While we believe that this delay bound is nearly optimal, its intractability prevents us from providing conclusive proof. As expected, MCT had the longest runtime among the algorithms considered.
+    MCF achieved an impressive delay bound, coming very close to the performance of the partial search which tried 20 cuts. While we believe that this delay bound is nearly optimal, its intractability prevents us from providing conclusive proof. As expected, MCF had the longest runtime among the algorithms considered.
 
-    MCFr with a maximum depth of 5 obtained a slightly inferior solution compared to MCT, but it demonstrated a significantly faster runtime.
+    MCFr with a maximum depth of 5 obtained a slightly inferior solution compared to MCF, but it demonstrated a significantly faster runtime.
 
     On the other hand, MCTr performed poorly in this network topology, highlighting its limitations in achieving desirable delay bounds.
 
@@ -490,46 +490,46 @@ In this subsection, we shift our focus to medium to large-sized networks where e
     |:-:|:-:|:-:|:-:|
     | MCFr | 2 | 6m 22s | 1740.09µs |
     | MCFr | 4 | 10m 32s | 1750.63µs |
-    | MCT | - | 52m 6s | 1798.46µs |
+    | MCF | - | 52m 6s | 1798.46µs |
     | Partial Search (50) | - | 5h 22m 56s | 1869.83µs |
     | MCTr | 4 | 2m 55s | 2013.69µs |
     | MCTr | 2 | 1m 34s | 2159.36µs |
 
-    MCT, while not achieving the best delay, still surpassed the partial search algorithm which tried 50 cuts. It is important to note that MCT's delay is relatively close to the best bound we obtained. However, its runtime remains considerably higher compared to other algorithms.
+    MCF, while not achieving the best delay, still surpassed the partial search algorithm which tried 50 cuts. It is important to note that MCF's delay is relatively close to the best bound we obtained. However, its runtime remains considerably higher compared to other algorithms.
 
-    Surprisingly, MCFr with a maximum depth of 2 achieved exceptional results. It obtained the strongest delay bound, surpassing both MCT and MCFr with a depth of 4. Furthermore, it showcased a relatively quick runtime. These outcomes further reinforce MCFr's effectiveness in mesh networks, and the importance of introducing cuts to mesh networks.
+    Surprisingly, MCFr with a maximum depth of 2 achieved exceptional results. It obtained the strongest delay bound, surpassing both MCF and MCFr with a depth of 4. Furthermore, it showcased a relatively quick runtime. These outcomes further reinforce MCFr's effectiveness in mesh networks, and the importance of introducing cuts to mesh networks.
 
     In contrast, MCTr exhibited poor performance, indicating its limitations in this particular network configuration. Although it boasted a quick runtime, its delay bound fell short compared to the other algorithms.
 
 - **Sink-Tree Tandem Network (128 Servers, 128 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
-    | MCT | - | 10h 33m 55s | 1423.20µs |
+    | MCF | - | 10h 33m 55s | 1423.20µs |
     | MCTr | 64 | 1h 40m 19s | 1462.36µs |
     | MCTr | 24 | 16m 4s | 1508.47µs |
     | Partial Search (100) | - | 22h 24m 46s | 1519.92µs |
     | MCFr | 64 | N.A. | ∞ |
     | MCFr | 24 | N.A. | ∞ |
 
-    MCT demonstrated remarkable performance by achieving the best delay bound among all the algorithms. While we believe it to be the optimal delay bound, the intractability of exhaustive search prevents us from providing definitive proof. However, it is important to note that MCT exhibited a significantly long runtime, exceeding 10 hours.
+    MCF demonstrated remarkable performance by achieving the best delay bound among all the algorithms. While we believe it to be the optimal delay bound, the intractability of exhaustive search prevents us from providing definitive proof. However, it is important to note that MCF exhibited a significantly long runtime, exceeding 10 hours.
 
-    MCTr proved to be a strong contender by producing results that were relatively close to those of MCT, while requiring only a fraction of the runtime. This highlights the efficiency and effectiveness of MCTr in this network topology.
+    MCTr proved to be a strong contender by producing results that were relatively close to those of MCF, while requiring only a fraction of the runtime. This highlights the efficiency and effectiveness of MCTr in this network topology.
 
     Unfortunately, MCFr encountered difficulties and failed to compute a result. This can be attributed to the shortcomings of the `lpsolve` software used. Despite implementing dynamic timeout updates and dynamic scaling methods to mitigate such issues, certain linear programs remain unsolvable with `lpsolve`. This particular scenario represents one of those instances.
 
 - **Interleaved Tandem Network (128 Servers, 128 Flows)**
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
-    | MCT | - | 34m 13s | 2025.24µs |
+    | MCF | - | 34m 13s | 2025.24µs |
     | MCFr | 64 | 3m 54s | 2117.89µs |
     | Partial Search (100) | - | 2h 29m 34s | 2195.35µs |
     | MCFr | 24 | 16.64s | 2404.89µs |
     | MCTr | 64 | 1m 24s | 2857.80µs |
     | MCTr | 24 | 9.40s | 4497.40µs |
 
-    MCT once again achieved the best delay bound, surpassing even partial search. While we believe it represents the optimal delay bound, the intractability of exhaustive search prevents us from proving it definitively. It is worth noting, however, that MCT exhibited significantly longer runtime compared to the other algorithms.
+    MCF once again achieved the best delay bound, surpassing even partial search. While we believe it represents the optimal delay bound, the intractability of exhaustive search prevents us from proving it definitively. It is worth noting, however, that MCF exhibited significantly longer runtime compared to the other algorithms.
 
-    MCFr with a maximum depth of 64, despite yielding a lower delay bound than MCT, delivered impressive results thanks to a substantial improvement in runtime. In fact, it even outperformed the partial search which tried 100 cuts.
+    MCFr with a maximum depth of 64, despite yielding a lower delay bound than MCF, delivered impressive results thanks to a substantial improvement in runtime. In fact, it even outperformed the partial search which tried 100 cuts.
 
     On the other hand, MCTr exhibited poor performance overall, highlighting its limitations in this particular network configuration.
 
@@ -537,13 +537,13 @@ In this subsection, we shift our focus to medium to large-sized networks where e
     | Method | Max Depth | Runtime | Delay Bound (▾) |
     |:-:|:-:|:-:|:-:|
     | Partial Search (100) | - | 2h 35m 5s | 397.97µs |
-    | MCT | - | 1m 24s | 397.97µs |
+    | MCF | - | 1m 24s | 397.97µs |
     | MCFr | 16 | 2m 28s | 409.79µs |
     | MCTr | 16 | 22.93s | 434.99µs |
     | MCFr | 6 | 54.87s | 435.19µs |
     | MCTr | 6 | 25.65s | 457.89µs |
 
-    MCT once again achieved the best delay bound, equaling the performance of partial search. Although we believe it represents the optimal delay bound, proving it remains challenging due to the intractability of exhaustive search. Importantly, MCT exhibited a shorter runtime compared to its closest competitor, MCFr with a maximum depth of 16. This demonstrates that MCT is a robust choice in terms of both delay and runtime in this network topology.
+    MCF once again achieved the best delay bound, equaling the performance of partial search. Although we believe it represents the optimal delay bound, proving it remains challenging due to the intractability of exhaustive search. Importantly, MCF exhibited a shorter runtime compared to its closest competitor, MCFr with a maximum depth of 16. This demonstrates that MCF is a robust choice in terms of both delay and runtime in this network topology.
 
     MCFr, with a max depth of 16, approached the best solution but proved to be the slowest algorithm in this context.
 
