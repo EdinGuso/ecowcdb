@@ -720,7 +720,7 @@ pip install .
 This section presents the plug-and-play installation. Please follow the steps in the given order to avoid any unexpected issues.
 
 1. Download the latest version of VirtualBox from this [webpage](https://www.virtualbox.org/wiki/Downloads). The link to the version we used: [VirtualBox 7.0.6](https://download.virtualbox.org/virtualbox/7.0.6/VirtualBox-7.0.6-155176-Win.exe) (Windows installer).
-2. Download `ecowcdbVM.ova` from this [link]().
+2. Download `ecowcdbVM.ova` from this [link](https://drive.google.com/file/d/1Wuo7YxZXfouenHLkFR2QN_5YVzshNqoo/view?usp=sharing).
 3. Create a new Virtual Machine using VirtualBox.
     - Start Virtual Box.
     - Press "Import".
