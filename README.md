@@ -583,7 +583,7 @@ For a more comprehensive understanding of the heuristic algorithm, we encourage 
 
 By successfully developing and validating our heuristic algorithm, gaining insights into cut selection, improving worst-case delay bounds, addressing runtime considerations, and conducting a thorough experimental evaluation, our project has significantly contributed to the field of time-sensitive networking and performance analysis in networked systems.
 
-The heuristic algorithms and the tools described in [Contriburions](contributions) have been implemented in Python. This project, including the modifications done to the existing codebase as well as the ECOWCDB library, exceeds 2500 lines of code, out of which ~500 lines are high value code.
+The heuristic algorithms and the tools described in [Contributions](#contributions) have been implemented in Python. This project, including the modifications done to the existing codebase as well as the ECOWCDB library, exceeds 2500 lines of code, out of which ~500 lines are high value code.
 
 ## Skills
 Skills that I have exercised throughout the project:
